@@ -69,6 +69,16 @@ func main() {
 	blockTypes.CreateBlockItemTypes(itemTypes)
 
 	worldPath := flag.Arg(0)
+	fi, err := os.Stat(worldPath)
+	if err != nil {
+		log.Printf("Error loading world from directory %v: %v", worldPath, err)
+		os.Exit(1)
+	}
+	if !fi.IsDirectory() {
+		log.Printf("Error loading world %v: Not a directory", worldPath)
+		os.Exit(1)
+	}
+
 	game, err := chunkymonkey.NewGame(worldPath, blockTypes, itemTypes)
 	if err != nil {
 		log.Panic(err)
