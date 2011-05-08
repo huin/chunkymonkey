@@ -54,6 +54,23 @@ type EntityId int32
 // The type of mob
 type EntityMobType byte
 
+const (
+	MobTypeIdCreeper      = EntityMobType(50)
+	MobTypeIdSkeleton     = EntityMobType(51)
+	MobTypeIdSpider       = EntityMobType(52)
+	MobTypeIdGiantZombie  = EntityMobType(53)
+	MobTypeIdZombie       = EntityMobType(54)
+	MobTypeIdSlime        = EntityMobType(55)
+	MobTypeIdGhast        = EntityMobType(56)
+	MobTypeIdZombiePigman = EntityMobType(57)
+	MobTypeIdPig          = EntityMobType(90)
+	MobTypeIdSheep        = EntityMobType(91)
+	MobTypeIdCow          = EntityMobType(92)
+	MobTypeIdHen          = EntityMobType(93)
+	MobTypeIdSquid        = EntityMobType(94)
+	MobTypeIdWolf         = EntityMobType(95)
+)
+
 type EntityStatus byte
 
 type EntityAnimation byte

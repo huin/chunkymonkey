@@ -280,8 +280,26 @@ func writeEntityMetadataField(writer io.Writer, data []EntityMetadata) (err os.E
 		if err = binary.Write(writer, binary.BigEndian, entryType); err != nil {
 			return
 		}
-
-		if err = binary.Write(writer, binary.BigEndian, &item.Field3); err != nil {
+		switch item.Field1 {
+		case 0:
+			err = binary.Write(writer, binary.BigEndian, item.Field3.(byte))
+		case 1:
+			err = binary.Write(writer, binary.BigEndian, item.Field3.(int16))
+		case 2:
+			err = binary.Write(writer, binary.BigEndian, item.Field3.(int32))
+		case 3:
+			err = binary.Write(writer, binary.BigEndian, item.Field3.(float32))
+		case 4:
+			err = writeString16(writer, item.Field3.(string))
+		case 5:
+			type position struct {
+				X int16
+				Y byte
+				Z int16
+			}
+			err = binary.Write(writer, binary.BigEndian, item.Field3.(position))
+		}
+		if err != nil {
 			return
 		}
 	}
