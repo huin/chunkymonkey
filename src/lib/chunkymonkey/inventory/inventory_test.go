@@ -6,7 +6,7 @@ import (
 
 func TestInventory_Init(t *testing.T) {
 	var inv Inventory
-	inv.Init(10)
+	inv.Init(10, nil)
 
 	for i, slot := range inv.slots {
 		if slot.ItemType != nil || slot.Count != 0 || slot.Data != 0 {

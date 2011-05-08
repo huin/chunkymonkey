@@ -118,8 +118,8 @@ func TestLoadBlockDefs(t *testing.T) {
 				Attachable:   true,
 			},
 			Aspect: &StandardAspect{
-				DroppedItems: []BlockDropItem{
-					BlockDropItem{
+				DroppedItems: []blockDropItem{
+					blockDropItem{
 						DroppedItem: 4,
 						Probability: 100,
 						Count:       1,
