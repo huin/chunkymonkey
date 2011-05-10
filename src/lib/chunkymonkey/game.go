@@ -33,6 +33,8 @@ type Game struct {
 	rand          *rand.Rand
 	serverId      string
 	worldStore    *worldstore.WorldStore
+	// If set, logins are not allowed.
+	UnderMaintenanceMsg string
 }
 
 func NewGame(worldPath string, gameRules *gamerules.GameRules) (game *Game, err os.Error) {
@@ -65,6 +67,11 @@ func (game *Game) Login(conn net.Conn) {
 		return
 	}
 	log.Print("Client ", conn.RemoteAddr(), " connected as ", username)
+	if game.UnderMaintenanceMsg != "" {
+		log.Println("Server under maintenance, kicking player:", username)
+		proto.WriteDisconnect(conn, game.UnderMaintenanceMsg)
+		return
+	}
 
 	err = proto.ServerWriteHandshake(conn, game.serverId)
 	if err != nil {
@@ -75,7 +82,7 @@ func (game *Game) Login(conn net.Conn) {
 	}
 
 	// TODO put authentication into a seperate module behind an interface so
-	// that authentication is pluggable
+	// that authentication is pluggable.
 	if game.serverId != "-" {
 		var authenticated bool
 		authenticated, err = server_auth.CheckUserAuth(game.serverId, username)
@@ -143,9 +150,8 @@ func (game *Game) RemoveEntity(entity *Entity) {
 	game.entityManager.RemoveEntity(entity)
 }
 
-// Add a player to the game
-// This function sends spawn messages to all players in range.  It also spawns
-// all existing players so the new player can see them.
+// AddPlayer sends spawn messages to all players in range. It also spawns all
+// existing players so the new player can see them.
 func (game *Game) AddPlayer(newPlayer IPlayer) {
 	entity := newPlayer.GetEntity()
 	game.AddEntity(entity)
@@ -153,7 +159,7 @@ func (game *Game) AddPlayer(newPlayer IPlayer) {
 	name := newPlayer.GetName()
 	game.SendChatMessage(fmt.Sprintf("%s has joined", name))
 
-	// Spawn new player for existing players
+	// Spawn new player for existing players.
 	newPlayer.Enqueue(func(newPlayer IPlayer) {
 		buf := &bytes.Buffer{}
 		if err := newPlayer.SendSpawn(buf); err != nil {
@@ -164,7 +170,7 @@ func (game *Game) AddPlayer(newPlayer IPlayer) {
 		})
 	})
 
-	// Spawn existing players for new player
+	// Spawn existing players for new player.
 	p1, p2 := getChunkRadius(newPlayer.LockedGetChunkPosition())
 	for _, existing := range game.players {
 		if existing != newPlayer {
@@ -181,8 +187,7 @@ func (game *Game) AddPlayer(newPlayer IPlayer) {
 	}
 }
 
-// Remove a player from the game
-// This function sends destroy messages so the other players see the player
+// RemovePlayer sends destroy messages so the other players see the player
 // disappear.
 func (game *Game) RemovePlayer(player IPlayer) {
 	// Destroy player for other players
@@ -235,8 +240,9 @@ func (game *Game) sendTimeUpdate() {
 	buf := &bytes.Buffer{}
 	proto.ServerWriteTimeUpdate(buf, game.time)
 
-	// The "keep-alive" packet to client(s) sent here as well, as there seems
-	// no particular reason to send time and keep-alive separately for now.
+	// The "keep-alive" packet to client(s) sent here as well, as there
+	// seems no particular reason to send time and keep-alive separately
+	// for now.
 	proto.WriteKeepAlive(buf)
 
 	game.MulticastPacket(buf.Bytes(), nil)
@@ -250,8 +256,8 @@ func (game *Game) sendTimeUpdate() {
 }
 
 func (game *Game) physicsTick() {
-	// TODO - consider using sync.Cond to broadcast ticks to chunks instead of
-	// channels
+	// TODO: consider using sync.Cond to broadcast ticks to chunks instead
+	// of channels
 	for chunk := range game.chunkManager.ChunksActive() {
 		chunk.Enqueue(func(chunk IChunk) {
 			chunk.Tick()
@@ -267,7 +273,7 @@ func (game *Game) tick() {
 	game.physicsTick()
 }
 
-// Transmit a packet to all players near the sender (except the sender itself)
+// Transmit a packet to all players near the sender (except the sender itself).
 func (game *Game) multicastRadiusPacket(packet []byte, sender IPlayer) {
 	p1, p2 := getChunkRadius(sender.LockedGetChunkPosition())
 

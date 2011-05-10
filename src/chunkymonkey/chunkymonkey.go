@@ -32,6 +32,11 @@ var recipeDefs = flag.String(
 	"recipes", "recipes.json",
 	"The JSON file containing recipe definitions.")
 
+var underMaintenaceMsg = flag.String(
+	"underMaintenanceMsg", "",
+	"If set, all logins will be denied and this message will be given as reason.")
+
+
 func usage() {
 	os.Stderr.WriteString("usage: " + os.Args[0] + " [flags] <world>\n")
 	flag.PrintDefaults()
@@ -78,7 +83,7 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
-
+	game.UnderMaintenanceMsg = *underMaintenaceMsg
 	err = startHttpServer(*httpAddr)
 	if err != nil {
 		log.Panic(err)
