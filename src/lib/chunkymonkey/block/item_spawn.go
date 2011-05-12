@@ -16,7 +16,7 @@ func spawnItemInBlock(instance *BlockInstance, itemType *itemtype.ItemType, coun
 	position.X += AbsCoord(blockItemSpawnFromEdge + rand.Float64()*(1-2*blockItemSpawnFromEdge))
 	position.Y += AbsCoord(blockItemSpawnFromEdge)
 	position.Z += AbsCoord(blockItemSpawnFromEdge + rand.Float64()*(1-2*blockItemSpawnFromEdge))
-	instance.Chunk.AddItem(
+	instance.Chunk.AddSpawner(
 		item.NewItem(
 			itemType, count, data,
 			position,

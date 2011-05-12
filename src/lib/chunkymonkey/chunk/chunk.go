@@ -4,6 +4,7 @@ package chunk
 
 import (
 	"bytes"
+	"flag"
 	"log"
 	"rand"
 	"sync"
@@ -11,9 +12,11 @@ import (
 
 	"chunkymonkey/block"
 	"chunkymonkey/chunkstore"
+	"chunkymonkey/entity"
 	. "chunkymonkey/interfaces"
 	"chunkymonkey/item"
 	"chunkymonkey/itemtype"
+	"chunkymonkey/mob"
 	"chunkymonkey/proto"
 	"chunkymonkey/recipe"
 	"chunkymonkey/slot"
@@ -26,18 +29,25 @@ const (
 	playerAabY = AbsCoord(2.00) // From player's feet position upwards.
 )
 
+var enableMobs = flag.Bool(
+	"enableMobs", false, "EXPERIMENTAL: spawn mobs.")
 
-// A chunk is slice of the world map
+
+// A chunk is slice of the world map.
 type Chunk struct {
-	mainQueue     chan func(IChunk)
-	mgr           *ChunkManager
-	loc           ChunkXz
-	blocks        []byte
-	blockData     []byte
-	blockLight    []byte
-	skyLight      []byte
-	heightMap     []byte
-	items         map[EntityId]*item.Item
+	mainQueue  chan func(IChunk)
+	mgr        *ChunkManager
+	loc        ChunkXz
+	blocks     []byte
+	blockData  []byte
+	blockLight []byte
+	skyLight   []byte
+	heightMap  []byte
+	// spawners are typically mobs or items.
+	// TODO: (discuss) Maybe split this back into mobs and items?
+	// There are many more users of "spawners" than of only mobs or items. So
+	// I'm inclined to leave it as is.
+	spawners      map[EntityId]entity.ISpawn
 	blockExtra    map[BlockIndex]interface{} // Used by IBlockAspect to store private specific data.
 	rand          *rand.Rand
 	neighbours    neighboursCache
@@ -56,7 +66,7 @@ func newChunkFromReader(reader chunkstore.ChunkReader, mgr *ChunkManager) (chunk
 		skyLight:      reader.SkyLight(),
 		blockLight:    reader.BlockLight(),
 		heightMap:     reader.HeightMap(),
-		items:         make(map[EntityId]*item.Item),
+		spawners:      make(map[EntityId]entity.ISpawn),
 		blockExtra:    make(map[BlockIndex]interface{}),
 		rand:          rand.New(rand.NewSource(time.UTC().Seconds())),
 		subscribers:   make(map[IChunkSubscriber]bool),
@@ -70,7 +80,7 @@ func newChunkFromReader(reader chunkstore.ChunkReader, mgr *ChunkManager) (chunk
 // Sets a block and its data. Returns true if the block was not changed.
 func (chunk *Chunk) setBlock(blockLoc *BlockXyz, subLoc *SubChunkXyz, index BlockIndex, blockType BlockId, blockMetadata byte) {
 
-	// Invalidate cached packet
+	// Invalidate cached packet.
 	chunk.cachedPacket = nil
 
 	index.SetBlockId(chunk.blocks, blockType)
@@ -78,12 +88,12 @@ func (chunk *Chunk) setBlock(blockLoc *BlockXyz, subLoc *SubChunkXyz, index Bloc
 
 	chunk.blockExtra[index] = nil, false
 
-	// Tell players that the block changed
+	// Tell players that the block changed.
 	packet := &bytes.Buffer{}
 	proto.WriteBlockChange(packet, blockLoc, blockType, blockMetadata)
 	chunk.multicastSubscribers(packet.Bytes())
 
-	// Update neighbour caches of this change
+	// Update neighbour caches of this change.
 	chunk.neighbours.setBlock(subLoc, blockType)
 
 	return
@@ -119,38 +129,40 @@ func (chunk *Chunk) GetItemType(itemTypeId ItemTypeId) (itemType *itemtype.ItemT
 	return
 }
 
-func (chunk *Chunk) AddItem(item *item.Item) {
+func (chunk *Chunk) TransferSpawner(s entity.ISpawn) {
+	chunk.spawners[s.GetEntity().EntityId] = s
+}
+
+// AddSpawner creates a mob or item in this chunk and notifies the new spawn to
+// all chunk subscribers.
+func (chunk *Chunk) AddSpawner(s entity.ISpawn) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 	chunk.mgr.game.Enqueue(func(game IGame) {
-		entity := item.GetEntity()
-		game.AddEntity(entity)
-		chunk.items[entity.EntityId] = item
+		e := s.GetEntity()
+		game.AddEntity(e)
+		chunk.spawners[e.EntityId] = s
 		wg.Done()
 	})
 	wg.Wait()
 
-	// Spawn new item for players
+	// Spawn new item/mob for players.
 	buf := &bytes.Buffer{}
-	item.SendSpawn(buf)
+	s.SendSpawn(buf)
 	chunk.multicastSubscribers(buf.Bytes())
 }
 
-func (chunk *Chunk) removeItem(item *item.Item) {
+func (chunk *Chunk) removeSpawner(s entity.ISpawn) {
+	e := s.GetEntity()
 	chunk.mgr.game.Enqueue(func(game IGame) {
-		game.RemoveEntity(item.GetEntity())
+		game.RemoveEntity(e)
 	})
-	chunk.items[item.EntityId] = nil, false
-
-	// Tell all subscribers that the item's entity is
+	chunk.spawners[e.EntityId] = nil, false
+	// Tell all subscribers that the spawner's entity is
 	// destroyed.
 	buf := &bytes.Buffer{}
-	proto.WriteEntityDestroy(buf, item.EntityId)
+	proto.WriteEntityDestroy(buf, e.EntityId)
 	chunk.multicastSubscribers(buf.Bytes())
-}
-
-func (chunk *Chunk) TransferItem(item *item.Item) {
-	chunk.items[item.GetEntity().EntityId] = item
 }
 
 func (chunk *Chunk) GetBlockExtra(subLoc *SubChunkXyz) interface{} {
@@ -256,7 +268,7 @@ func (chunk *Chunk) PlayerBlockInteract(player IPlayer, target *BlockXyz, agains
 		destChunkLoc, destSubLoc := destLoc.ToChunkLocal()
 
 		// Place the block.
-		if sameChunk := (destChunkLoc.X == chunk.loc.X && destChunkLoc.Z == chunk.loc.Z); sameChunk {
+		if chunk.IsSameChunk(destChunkLoc) {
 			chunk.placeBlock(player, destLoc, destSubLoc, againstFace)
 		} else {
 			chunk.mgr.game.Enqueue(func(game IGame) {
@@ -373,7 +385,7 @@ func (chunk *Chunk) Tick() {
 		blockType, isWithinChunk, blockUnknownId := chunk.blockQuery(blockLoc)
 		if blockUnknownId {
 			// If we are in doubt, we assume that the block asked about is
-			// solid (this way items don't fly off the side of the map
+			// solid (this way objects don't fly off the side of the map
 			// needlessly).
 			isSolid = true
 		} else {
@@ -381,49 +393,85 @@ func (chunk *Chunk) Tick() {
 		}
 		return
 	}
+	outgoingSpawners := []entity.ISpawn{}
 
-	leftItems := []*item.Item{}
-
-	for _, item := range chunk.items {
-		if item.Tick(blockQuery) {
-			if item.GetPosition().Y <= 0 {
-				// Item fell out of the world
-				chunk.removeItem(item)
+	for _, e := range chunk.spawners {
+		if e.Tick(blockQuery) {
+			if e.GetPosition().Y <= 0 {
+				// Item or mob fell out of the world.
+				chunk.removeSpawner(e)
 			} else {
-				leftItems = append(leftItems, item)
+				outgoingSpawners = append(outgoingSpawners, e)
 			}
 		}
 	}
 
-	if len(leftItems) > 0 {
-		// Remove items from this chunk
-		for _, item := range leftItems {
-			chunk.items[item.GetEntity().EntityId] = nil, false
+	if len(outgoingSpawners) > 0 {
+		// Remove mob/items from this chunk.
+		for _, e := range outgoingSpawners {
+			chunk.spawners[e.GetEntity().EntityId] = nil, false
 		}
 
-		// Send items to new chunk
+		// Send items to new chunk.
 		chunk.mgr.game.Enqueue(func(game IGame) {
 			mgr := game.GetChunkManager()
-			for _, item := range leftItems {
-				chunkLoc := item.GetPosition().ToChunkXz()
+			for _, e := range outgoingSpawners {
+				chunkLoc := e.GetPosition().ToChunkXz()
 				blockChunk := mgr.Get(chunkLoc)
 				blockChunk.Enqueue(func(blockChunk IChunk) {
-					blockChunk.AddItem(item)
+					blockChunk.AddSpawner(e)
 				})
 			}
 		})
 	}
+	// XXX: Testing hack. If player is in a chunk with no mobs, spawn a pig.
+	if *enableMobs {
+		for _, playerPos := range chunk.subscriberPos {
+			loc, _ := playerPos.ToBlockXyz().ToChunkLocal()
+			if chunk.IsSameChunk(loc) {
+				ms := chunk.mobs()
+				if len(ms) == 0 {
+					log.Println("spawning a mob", chunk.loc, "at", playerPos)
+					m := mob.NewPig(playerPos, &AbsVelocity{5, 5, 5})
+					chunk.AddSpawner(&m.Mob)
+				}
+				break
+			}
+		}
+	}
+}
+
+func (chunk *Chunk) mobs() (s []*mob.Mob) {
+	s = make([]*mob.Mob, 0, 3)
+	for _, e := range chunk.spawners {
+		switch e.(type) {
+		case *mob.Mob:
+			s = append(s, e.(*mob.Mob))
+		}
+	}
+	return
+}
+
+func (chunk *Chunk) items() (s []*item.Item) {
+	s = make([]*item.Item, 0, 10)
+	for _, e := range chunk.spawners {
+		switch e.(type) {
+		case *item.Item:
+			s = append(s, e.(*item.Item))
+		}
+	}
+	return
 }
 
 func (chunk *Chunk) AddSubscriber(subscriber IChunkSubscriber) {
 	chunk.subscribers[subscriber] = true
 	subscriber.TransmitPacket(chunk.chunkPacket())
 
-	// Send spawns of all items in the chunk
-	if len(chunk.items) > 0 {
+	// Send spawns of all mobs/items in the chunk.
+	if len(chunk.spawners) > 0 {
 		buf := &bytes.Buffer{}
-		for _, item := range chunk.items {
-			item.SendSpawn(buf)
+		for _, e := range chunk.spawners {
+			e.SendSpawn(buf)
 		}
 		subscriber.TransmitPacket(buf.Bytes())
 	}
@@ -455,7 +503,7 @@ func (chunk *Chunk) SetSubscriberPosition(subscriber IChunkSubscriber, pos *AbsX
 		minY := pos.Y
 		maxY := pos.Y + playerAabY
 
-		for entityId, item := range chunk.items {
+		for entityId, item := range chunk.items() {
 			// TODO This check should be performed when items move as well.
 			pos := item.GetPosition()
 			if pos.X >= minX && pos.X <= maxX && pos.Y >= minY && pos.Y <= maxY && pos.Z >= minZ && pos.Z <= maxZ {
@@ -468,9 +516,9 @@ func (chunk *Chunk) SetSubscriberPosition(subscriber IChunkSubscriber, pos *AbsX
 
 					// Tell all subscribers to animate the item flying at the
 					// subscriber.
-					proto.WriteItemCollect(buf, entityId, subscriber.GetEntityId())
+					proto.WriteItemCollect(buf, EntityId(entityId), subscriber.GetEntityId())
 					chunk.multicastSubscribers(buf.Bytes())
-					chunk.removeItem(item)
+					chunk.removeSpawner(item)
 				}
 
 				// TODO Check for how to properly handle partially consumed
@@ -496,12 +544,16 @@ func (chunk *Chunk) chunkPacket() []byte {
 
 func (chunk *Chunk) SendUpdate() {
 	buf := &bytes.Buffer{}
-	for _, item := range chunk.items {
-		item.SendUpdate(buf)
+	for _, e := range chunk.spawners {
+		e.SendUpdate(buf)
 	}
 	chunk.multicastSubscribers(buf.Bytes())
 }
 
 func (chunk *Chunk) sideCacheSetNeighbour(side ChunkSideDir, neighbour *Chunk) {
 	chunk.neighbours.sideCacheSetNeighbour(side, neighbour, chunk.blocks)
+}
+
+func (chunk *Chunk) IsSameChunk(otherChunkLoc *ChunkXz) bool {
+	return otherChunkLoc.X == chunk.loc.X && otherChunkLoc.Z == chunk.loc.Z
 }

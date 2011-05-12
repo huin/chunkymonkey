@@ -7,7 +7,6 @@ import (
 
 	"chunkymonkey/entity"
 	"chunkymonkey/gamerules"
-	"chunkymonkey/item"
 	"chunkymonkey/itemtype"
 	"chunkymonkey/slot"
 	. "chunkymonkey/types"
@@ -60,9 +59,9 @@ type IChunk interface {
 
 	// Intended for use by blocks/entities within the chunk.
 	GetRand() *rand.Rand
-	AddItem(item *item.Item)
-	// Tells the chunk to take posession of the item.
-	TransferItem(item *item.Item)
+	AddSpawner(spawner entity.ISpawn)
+	// Tells the chunk to take posession of the item/mob.
+	TransferSpawner(e entity.ISpawn)
 	GetBlock(subLoc *SubChunkXyz) (blockType BlockId, ok bool)
 	PlayerBlockHit(player IPlayer, subLoc *SubChunkXyz, digStatus DigStatus) (ok bool)
 	PlayerBlockInteract(player IPlayer, target *BlockXyz, againstFace Face)

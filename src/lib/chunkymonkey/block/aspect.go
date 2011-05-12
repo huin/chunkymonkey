@@ -3,7 +3,7 @@ package block
 import (
 	"rand"
 
-	"chunkymonkey/item"
+	"chunkymonkey/entity"
 	"chunkymonkey/itemtype"
 	"chunkymonkey/recipe"
 	. "chunkymonkey/types"
@@ -23,7 +23,7 @@ type IBlockPlayer interface {
 type IChunkBlock interface {
 	GetRand() *rand.Rand
 	GetItemType(itemTypeId ItemTypeId) (itemType *itemtype.ItemType, ok bool)
-	AddItem(item *item.Item)
+	AddSpawner(s entity.ISpawn)
 	GetBlockExtra(subLoc *SubChunkXyz) interface{}
 	SetBlockExtra(subLoc *SubChunkXyz, extra interface{})
 	GetRecipeSet() *recipe.RecipeSet

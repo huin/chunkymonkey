@@ -1,6 +1,9 @@
 package entity
 
 import (
+	"io"
+	"os"
+	"chunkymonkey/physics"
 	. "chunkymonkey/types"
 )
 
@@ -38,4 +41,15 @@ func (mgr *EntityManager) AddEntity(entity *Entity) {
 
 func (mgr *EntityManager) RemoveEntity(entity *Entity) {
 	mgr.entities[entity.EntityId] = nil, false
+}
+
+// ISpawn has the ability to spawn an item or mob. It's used for example by the
+// chunks.
+// This can't be on interfaces.go because it would create a dependency loop.
+type ISpawn interface {
+	SendSpawn(io.Writer) os.Error
+	GetEntity() *Entity
+	GetPosition() *AbsXyz
+	SendUpdate(io.Writer) os.Error
+	Tick(physics.BlockQueryFn) (leftBlock bool)
 }
