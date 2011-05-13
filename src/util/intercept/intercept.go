@@ -6,7 +6,7 @@ import (
 	"log"
 	"net"
 	"os"
-	parser "intercept_parse"
+	parser "util/intercept/intercept_parse"
 )
 
 type RelayReport struct {

@@ -10,7 +10,7 @@ import (
 
 	"chunkymonkey/chunkstore"
 	. "chunkymonkey/types"
-	"nbt"
+	"chunkymonkey/nbt"
 )
 
 type WorldStore struct {

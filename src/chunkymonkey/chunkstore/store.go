@@ -5,7 +5,7 @@ import (
 	"os"
 
 	. "chunkymonkey/types"
-	"nbt"
+	"chunkymonkey/nbt"
 )
 
 type ChunkStore interface {

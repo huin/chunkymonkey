@@ -8,7 +8,7 @@ import (
 
 	"chunkymonkey/worldstore"
 	. "chunkymonkey/types"
-	"nbt"
+	"chunkymonkey/nbt"
 )
 
 func usage() {
