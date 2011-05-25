@@ -74,6 +74,11 @@ improvement in the following regards.
 *   Identifier naming generally makes use of CamelCasing. Leading
     upper/lowercase letter dictates private/public to package, as defined by
     the Go programming language.
+*   Getter method names should *not* start with "Get". See
+    http://golang.org/doc/effective_go.html#Getters
+*   Functions and methods should preferably return objects by reference
+    (pointer) and callers can change them freely without fear of
+    synchronization issues, thanks to our clear channels-based design.
 
 To ease the above, there are three make targets:
 

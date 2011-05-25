@@ -21,6 +21,7 @@ func main() {
 
 	v := NewNodeChecker(fset)
 	v.InterfaceName = regexp.MustCompile("[Ii][A-Z][A-Za-z]+")
+	v.InvalidFuncName = regexp.MustCompile("^Get.+") // can't do negative match in Go's regexp?
 
 	for _, pkg := range pkgMap {
 		ast.Walk(v, pkg)
@@ -28,8 +29,9 @@ func main() {
 }
 
 type NodeChecker struct {
-	fset          *token.FileSet
-	InterfaceName *regexp.Regexp
+	fset            *token.FileSet
+	InterfaceName   *regexp.Regexp
+	InvalidFuncName *regexp.Regexp
 }
 
 func NewNodeChecker(fset *token.FileSet) *NodeChecker {
@@ -42,6 +44,10 @@ func (v *NodeChecker) Visit(node ast.Node) (w ast.Visitor) {
 	switch n := node.(type) {
 	case *ast.TypeSpec:
 		v.checkTypeName(n)
+	case *ast.FuncDecl:
+		if n.Recv != nil { // is a method.
+			v.checkFunc(n)
+		}
 	}
 	return v
 }
@@ -60,6 +66,12 @@ func (v *NodeChecker) report(pos token.Pos, format string, args ...interface{}) 
 		os.Stderr,
 		"%s:%d:%d: "+format,
 		allArgs...)
+}
+
+func (v *NodeChecker) checkFunc(f *ast.FuncDecl) {
+	if v.InvalidFuncName.MatchString(f.Name.String()) {
+		v.report(f.Name.NamePos, "Bad name for method %q\n", f.Name)
+	}
 }
 
 func (v *NodeChecker) checkTypeName(typeSpec *ast.TypeSpec) {
