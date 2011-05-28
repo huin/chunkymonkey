@@ -32,25 +32,29 @@ const (
 	blockAxisMoveZ = blockAxisMove(iota)
 )
 
+type BlockQueryFn func(*BlockXyz) (isSolid bool, isWithinChunk bool)
+
 type PointObject struct {
 	// Used in knowing what to send as client updates
 	LastSentPosition AbsIntXyz
 	LastSentVelocity Velocity
 
 	// Used in physical modelling
-	Position  AbsXyz
-	Velocity  AbsVelocity
+	position  AbsXyz
+	velocity  AbsVelocity
 	onGround  bool
 	remainder TickTime
 }
 
-type BlockQueryFn func(*BlockXyz) (isSolid bool, isWithinChunk bool)
+func (obj *PointObject) Position() *AbsXyz {
+	return &obj.position
+}
 
 func (obj *PointObject) Init(position *AbsXyz, velocity *AbsVelocity) {
 	obj.LastSentPosition = *position.ToAbsIntXyz()
 	obj.LastSentVelocity = *velocity.ToVelocity()
-	obj.Position = *position
-	obj.Velocity = *velocity
+	obj.position = *position
+	obj.velocity = *velocity
 	obj.onGround = false
 }
 
@@ -60,7 +64,7 @@ func (obj *PointObject) Init(position *AbsXyz, velocity *AbsVelocity) {
 // before, or that the previous position/velocity sent was generated from the
 // LastSentPosition and LastSentVelocity attributes.
 func (obj *PointObject) SendUpdate(writer io.Writer, entityId EntityId, look *LookBytes) (err os.Error) {
-	curPosition := obj.Position.ToAbsIntXyz()
+	curPosition := obj.position.ToAbsIntXyz()
 
 	dx := curPosition.X - obj.LastSentPosition.X
 	dy := curPosition.Y - obj.LastSentPosition.Y
@@ -87,7 +91,7 @@ func (obj *PointObject) SendUpdate(writer io.Writer, entityId EntityId, look *Lo
 		obj.LastSentPosition = *curPosition
 	}
 
-	curVelocity := obj.Velocity.ToVelocity()
+	curVelocity := obj.velocity.ToVelocity()
 	if curVelocity.X != obj.LastSentVelocity.X || curVelocity.Y != obj.LastSentVelocity.Y || curVelocity.Z != obj.LastSentVelocity.Z {
 		if err = proto.WriteEntityVelocity(writer, entityId, curVelocity); err != nil {
 			return
@@ -103,8 +107,8 @@ func (obj *PointObject) Tick(blockQuery BlockQueryFn) (leftBlock bool) {
 	// to keep things simple and more or less correct
 	// TODO flowing water movement of items
 
-	p := &obj.Position
-	v := &obj.Velocity
+	p := &obj.position
+	v := &obj.velocity
 
 	// FIXME note that if the block under the item should become non-solid,
 	// then we need to turn off onGround to re-enable physics
@@ -212,7 +216,7 @@ func (obj *PointObject) Tick(blockQuery BlockQueryFn) (leftBlock bool) {
 }
 
 func (obj *PointObject) updateVelocity() (stopped bool) {
-	v := &obj.Velocity
+	v := &obj.velocity
 
 	if !obj.onGround {
 		v.Y -= gravityBlocksPerTick2 * AbsVelocityCoord(1.0+float64(obj.remainder))
@@ -243,8 +247,8 @@ func (obj *PointObject) updateVelocity() (stopped bool) {
 }
 
 func (obj *PointObject) nextBlockToEnter(move blockAxisMove) *BlockXyz {
-	p := &obj.Position
-	v := &obj.Velocity
+	p := &obj.position
+	v := &obj.velocity
 
 	block := p.ToBlockXyz()
 

@@ -14,7 +14,7 @@ import (
 type Item struct {
 	EntityId
 	slot.Slot
-	physObj     physics.PointObject
+	physics.PointObject
 	orientation OrientationBytes
 }
 
@@ -26,7 +26,7 @@ func NewItem(itemType *itemtype.ItemType, count ItemCount, data ItemData, positi
 	item.Slot.ItemType = itemType
 	item.Slot.Count = count
 	item.Slot.Data = data
-	item.physObj.Init(position, velocity)
+	item.PointObject.Init(position, velocity)
 	return
 }
 
@@ -38,28 +38,16 @@ func (item *Item) GetItemTypeId() ItemTypeId {
 	return item.ItemType.Id
 }
 
-func (item *Item) GetCount() ItemCount {
-	return item.Count
-}
-
-func (item *Item) SetCount(count ItemCount) {
-	item.Count = count
-}
-
-func (item *Item) Position() *AbsXyz {
-	return &item.physObj.Position
-}
-
 func (item *Item) SendSpawn(writer io.Writer) (err os.Error) {
 	// TODO pass uses value instead of 0
 	err = proto.WriteItemSpawn(
-		writer, item.EntityId, item.ItemType.Id, item.Count, 0,
-		&item.physObj.LastSentPosition, &item.orientation)
+		writer, item.EntityId, item.ItemType.Id, item.Slot.Count, 0,
+		&item.PointObject.LastSentPosition, &item.orientation)
 	if err != nil {
 		return
 	}
 
-	err = proto.WriteEntityVelocity(writer, item.EntityId, &item.physObj.LastSentVelocity)
+	err = proto.WriteEntityVelocity(writer, item.EntityId, &item.PointObject.LastSentVelocity)
 	if err != nil {
 		return
 	}
@@ -72,11 +60,7 @@ func (item *Item) SendUpdate(writer io.Writer) (err os.Error) {
 		return
 	}
 
-	err = item.physObj.SendUpdate(writer, item.EntityId, &LookBytes{0, 0})
+	err = item.PointObject.SendUpdate(writer, item.EntityId, &LookBytes{0, 0})
 
 	return
-}
-
-func (item *Item) Tick(blockQuery physics.BlockQueryFn) (leftBlock bool) {
-	return item.physObj.Tick(blockQuery)
 }
