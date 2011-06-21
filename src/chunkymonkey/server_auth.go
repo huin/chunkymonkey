@@ -19,7 +19,45 @@ func init() {
 	expVarServerAuthTimeNs = expvar.NewInt("server-auth-time-ns")
 }
 
-func CheckUserAuth(serverId, user string) (authenticated bool, err os.Error) {
+// An Authenticator takes a serverId and a user string and attempts to
+// authenticate against a server. This interface allows for the use of a dummy
+// authentication server for testing purposes.
+type Authenticator interface {
+	Authenticate(string, string) (bool, os.Error)
+}
+
+// DummyAuth is a no-op authentication server, always returning the value of
+// 'Valid'.
+type DummyAuth struct {
+	Result bool
+}
+
+// ServerAuth represents authentication against a server, particularly the
+// main minecraft server at http://www.minecraft.net/game/checkserver.jsp.
+type ServerAuth struct {
+	Url string
+}
+
+// Authenticate implements the Authenticator.Authenticate method
+func (d *DummyAuth) Authenticate(serverId, user string) (authenticated bool, err os.Error) {
+	return d.Result, nil
+}
+
+// Build a URL+query string based on a given server URL, serverId and user
+// input
+func (s *ServerAuth) BuildQuery(serverId, user string) (query string) {
+	query = s.Url + "?" + http.EncodeQuery(
+		map[string][]string{
+			"serverId": {serverId},
+			"user":     {user},
+		},
+	)
+
+	return
+}
+
+// Authenticate implements the Authenticator.Authenticate method
+func (s *ServerAuth) Authenticate(serverId, user string) (authenticated bool, err os.Error) {
 	before := time.Nanoseconds()
 	defer func() {
 		after := time.Nanoseconds()
@@ -33,12 +71,7 @@ func CheckUserAuth(serverId, user string) (authenticated bool, err os.Error) {
 
 	authenticated = false
 
-	url := "http://www.minecraft.net/game/checkserver.jsp?" + http.EncodeQuery(
-		map[string][]string{
-			"serverId": {serverId},
-			"user":     {user},
-		},
-	)
+	url := s.BuildQuery(serverId, user)
 
 	response, _, err := http.Get(url)
 	if err != nil {

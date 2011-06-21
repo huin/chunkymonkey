@@ -84,11 +84,10 @@ func (game *Game) login(conn net.Conn) {
 		return
 	}
 
-	// TODO put authentication into a seperate module behind an interface so
-	// that authentication is pluggable.
 	if game.serverId != "-" {
 		var authenticated bool
-		authenticated, err = server_auth.CheckUserAuth(game.serverId, username)
+		authserver := &server_auth.ServerAuth{"http://www.minecraft.net/game/checkserver.jsp"}
+		authenticated, err = authserver.Authenticate(game.serverId, username)
 		if !authenticated || err != nil {
 			var reason string
 			if err != nil {
