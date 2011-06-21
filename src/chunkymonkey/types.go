@@ -166,8 +166,8 @@ const (
 	FaceMinValid = 0
 	FaceBottom   = 0
 	FaceTop      = 1
-	FaceWest     = 2
-	FaceEast     = 3
+	FaceEast     = 2
+	FaceWest     = 3
 	FaceNorth    = 4
 	FaceSouth    = 5
 	FaceMaxValid = 5
@@ -672,10 +672,38 @@ type BlockXyz struct {
 	Z BlockCoord
 }
 
+const (
+	MaxXCoord = math.MaxInt32
+	MinXCoord = math.MinInt32
+	MaxYCoord = math.MaxInt8
+	MinYCoord = 0
+	MaxZCoord = math.MaxInt32
+	MinZCoord = math.MinInt32
+)
+
 // Test if a block location is not appropriate to the situation, but block
 // location data passed (such as using an item not on a block).
 func (b *BlockXyz) IsNull() bool {
 	return b.Y == -1 && b.X == -1 && b.Z == -1
+}
+
+// Translate one block location to another by dx, dy, dz, checking for
+// overflow. If overflow occurs, return nil. There may be a more elegant
+// solution to check this, here we go for simplicity and clarity. This
+// function assumes we cannot have a negative Y coordinate.
+func (b *BlockXyz) AddXyz(dx BlockCoord, dy BlockYCoord, dz BlockCoord) (newb *BlockXyz) {
+	if dx > 0 && dx > (MaxXCoord - b.X) { return nil }
+	if dx < 0 && dx < (MinXCoord - b.X) { return nil }
+	if dy > 0 && dy > (MaxYCoord - b.Y) { return nil }
+	if dy < 0 && dy < (MinYCoord - b.Y) { return nil }
+	if dz > 0 && dz > (MaxZCoord - b.Z) { return nil }
+	if dz < 0 && dz < (MinZCoord - b.Z) { return nil }
+
+	return &BlockXyz{
+		b.X + dx,
+		b.Y + dy,
+		b.Z + dz,
+	}
 }
 
 func coordDivMod(num, denom int32) (div, mod int32) {

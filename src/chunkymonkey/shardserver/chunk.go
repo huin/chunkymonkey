@@ -262,15 +262,14 @@ func (chunk *Chunk) reqInteractBlock(player stub.IShardPlayerClient, held slot.S
 		// The player is interacting with a block that can be attached to.
 
 		// Work out the position to put the block at.
-		// TODO check for overflow, especially in Y.
 		dx, dy, dz := againstFace.GetDxyz()
-		destLoc := BlockXyz{
-			target.X + dx,
-			target.Y + dy,
-			target.Z + dz,
+		destLoc := target.AddXyz(dx, dy, dz)
+		if destLoc == nil {
+			// there is overflow with the translation, so do nothing
+			return
 		}
 
-		player.ReqPlaceHeldItem(destLoc, held)
+		player.ReqPlaceHeldItem(*destLoc, held)
 	} else {
 		// Player is otherwise interacting with the block.
 		blockType.Aspect.Interact(blockInstance, player)

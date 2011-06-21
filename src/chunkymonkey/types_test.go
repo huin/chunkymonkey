@@ -398,6 +398,43 @@ func TestBlockIndex_SetBlockData(t *testing.T) {
 
 // }}} BlockIndex tests
 
+func TestAddXyz_Overflow(t *testing.T) {
+	type Test struct {
+		input *BlockXyz
+		dx BlockCoord
+		dy BlockYCoord
+		dz BlockCoord
+		expected *BlockXyz
+	}
+	maxblock := &BlockXyz{MaxXCoord, MaxYCoord, MaxZCoord}
+	minblock := &BlockXyz{MinXCoord, MinYCoord, MinZCoord}
+	var tests = []Test{
+		{&BlockXyz{0, 0, 0}, 5, 5, 5, &BlockXyz{5, 5, 5}},
+		{maxblock, 0, 0, 0, maxblock},
+		{minblock, 0, 0, 0, minblock},
+		{maxblock, 1, 0, 0, nil},
+		{maxblock, 0, 1, 0, nil},
+		{maxblock, 0, 0, 1, nil},
+		{minblock, -1, 0, 0, nil},
+		{minblock, 0, -1, 0, nil},
+		{minblock, 0, 0, -1, nil},
+		{&BlockXyz{MaxXCoord, 0, 0}, 0, 5, -5, &BlockXyz{MaxXCoord, 5, -5}},
+		{&BlockXyz{MinXCoord, 0, 0}, 0, 5, -5, &BlockXyz{MinXCoord, 5, -5}},
+	}
+
+	for _, r := range tests {
+		result := r.input.AddXyz(r.dx, r.dy, r.dz)
+		if r.expected == nil {
+			if result != nil {
+				t.Errorf("BlockXyz%v expected nil got BlockXyz%v", r.input, result)
+			}
+		} else if r.expected.X != result.X || r.expected.Y != result.Y || r.expected.Z != result.Z {
+			t.Errorf("BlockXyz%v expected BlockXyz%v got BlockXyz%v",
+				r.input, r.expected, result)
+		}
+	}
+}
+
 func TestBlockXyz_ToAbsIntXyz(t *testing.T) {
 	type Test struct {
 		input    BlockXyz
