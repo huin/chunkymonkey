@@ -19,7 +19,7 @@ type WorldStore struct {
 
 	LevelData     *nbt.NamedTag
 	ChunkStore    chunkstore.IChunkStore
-	StartPosition AbsXyz
+	SpawnPosition AbsXyz
 }
 
 func LoadWorldStore(worldPath string) (world *WorldStore, err os.Error) {
@@ -28,8 +28,22 @@ func LoadWorldStore(worldPath string) (world *WorldStore, err os.Error) {
 		return
 	}
 
-	startPosition, err := absXyzFromNbt(levelData, "/Data/Player/Pos")
-	if err != nil {
+	// In both single-player and SMP maps, the 'spawn position' is stored in
+	// the level data.
+	var spawnPosition AbsXyz
+
+	x, xok := levelData.Lookup("/Data/SpawnX").(*nbt.Int)
+	y, yok := levelData.Lookup("/Data/SpawnY").(*nbt.Int)
+	z, zok := levelData.Lookup("/Data/SpawnZ").(*nbt.Int)
+
+	if xok && yok && zok {
+		spawnPosition = AbsXyz{
+			AbsCoord(x.Value),
+			AbsCoord(y.Value),
+			AbsCoord(z.Value),
+		}
+	} else {
+		err = os.NewError("Invalid map level data: does not contain Spawn{X,Y,Z}")
 		return
 	}
 
@@ -53,7 +67,7 @@ func LoadWorldStore(worldPath string) (world *WorldStore, err os.Error) {
 		WorldPath:     worldPath,
 		LevelData:     levelData,
 		ChunkStore:    chunkstore.NewChunkService(chunkstore.NewMultiStore(chunkStores)),
-		StartPosition: startPosition,
+		SpawnPosition: spawnPosition,
 	}
 
 	go world.ChunkStore.Serve()
@@ -75,6 +89,25 @@ func loadLevelData(worldPath string) (levelData *nbt.NamedTag, err os.Error) {
 	defer gzipReader.Close()
 
 	levelData, err = nbt.Read(gzipReader)
+
+	return
+}
+
+func (world *WorldStore) PlayerData(user string) (playerData *nbt.NamedTag, err os.Error) {
+	// TODO: This code opens a file, so needs to handle 'bad' usernames
+	file, err := os.Open(path.Join(world.WorldPath, "players", user+".dat"))
+	if err != nil {
+		return
+	}
+	defer file.Close()
+
+	gzipReader, err := gzip.NewReader(file)
+	if err != nil {
+		return
+	}
+	defer gzipReader.Close()
+
+	playerData, err = nbt.Read(gzipReader)
 
 	return
 }
@@ -104,5 +137,5 @@ func absXyzFromNbt(tag nbt.ITag, path string) (pos AbsXyz, err os.Error) {
 type BadType string
 
 func (err BadType) String() string {
-	return fmt.Sprintf("Bad type in level.dat for %s", err)
+	return fmt.Sprintf("Bad type in level.dat for %s", string(err))
 }

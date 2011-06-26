@@ -12,6 +12,7 @@ import (
 	. "chunkymonkey/entity"
 	"chunkymonkey/gamerules"
 	"chunkymonkey/itemtype"
+	"chunkymonkey/nbt"
 	"chunkymonkey/player"
 	"chunkymonkey/proto"
 	"chunkymonkey/server_auth"
@@ -38,6 +39,9 @@ type Game struct {
 
 func NewGame(worldPath string, gameRules *gamerules.GameRules) (game *Game, err os.Error) {
 	worldStore, err := worldstore.LoadWorldStore(worldPath)
+	if err != nil {
+		return nil, err
+	}
 
 	game = &Game{
 		mainQueue:        make(chan func(*Game), 256),
@@ -111,12 +115,34 @@ func (game *Game) login(conn net.Conn) {
 		return
 	}
 
-	startPosition := game.worldStore.StartPosition
-
 	entityId := game.entityManager.NewEntity()
 
-	// TODO pass player's last position in the world, not necessarily the spawn
-	// position.
+	startPosition := game.worldStore.SpawnPosition
+	playerData, err := game.worldStore.PlayerData(username)
+	if playerData != nil {
+		// Data for this player already exists in the world, so attempt to
+		// load that and use the player's last position instead of the spawn
+		// position.
+		posData, ok := playerData.Lookup("/Pos").(*nbt.List)
+
+		// TODO: This appears to load the player slightly too low
+		if ok {
+			posList := posData.Value
+			if len(posList) == 3 { // Paranoid check for valid data
+				x, xok := posList[0].(*nbt.Double)
+				y, yok := posList[1].(*nbt.Double)
+				z, zok := posList[2].(*nbt.Double)
+				if xok && yok && zok {
+					startPosition = AbsXyz{
+						AbsCoord(x.Value),
+						AbsCoord(y.Value),
+						AbsCoord(z.Value),
+					}
+				}
+			}
+		}
+	}
+
 	player := player.NewPlayer(entityId, game.chunkManager, &game.gameRules, conn, username, startPosition, game.playerDisconnect)
 
 	addedChan := make(chan struct{})
