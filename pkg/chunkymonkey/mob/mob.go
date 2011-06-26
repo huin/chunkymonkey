@@ -159,6 +159,15 @@ func NewSpider(position *AbsXyz, velocity *AbsVelocity) (s *Spider) {
 	return
 }
 
+type Zombie struct {
+	Mob
+}
+
+func NewZombie(position *AbsXyz, velocity *AbsVelocity) (s *Zombie) {
+	s = new(Zombie)
+	s.Mob.Init(ZombieType.Id, position, velocity)
+	return
+}
 
 // Passive mobs.
 

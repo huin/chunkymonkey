@@ -777,14 +777,22 @@ func (chunk *Chunk) addEntities(entities []*nbt.Compound) {
 			newEntity = mob.NewHen(pos, velocity)
 		case "Cow":
 			newEntity = mob.NewCow(pos, velocity)
+		case "Creeper":
+			newEntity = mob.NewCreeper(pos, velocity)
 		case "Pig":
 			newEntity = mob.NewPig(pos, velocity)
 		case "Sheep":
 			newEntity = mob.NewSheep(pos, velocity)
+		case "Skeleton":
+			newEntity = mob.NewSkeleton(pos, velocity)
 		case "Squid":
 			newEntity = mob.NewSquid(pos, velocity)
+		case "Spider":
+			newEntity = mob.NewSpider(pos, velocity)
 		case "Wolf":
 			newEntity = mob.NewWolf(pos, velocity)
+		case "Zombie":
+			newEntity = mob.NewZombie(pos, velocity)
 		default:
 			// Handle all other objects
 			objType, ok := ObjTypeMap[entityObjectId]
