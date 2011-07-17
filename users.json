@@ -1,0 +1,10 @@
+{
+  "agon":{
+    "groups":["admin"],
+    "permissions":["server.web.*", "admin.*", "server.status"]
+  },
+  "huin":{
+    "groups":["admin"],
+    "permissions":["server.*", "admin.*"]
+  }
+}

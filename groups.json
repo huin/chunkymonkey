@@ -1,0 +1,10 @@
+{
+  "default":{
+    "default":true,
+    "permissions":["user.commands.help", "user.commands.kill", "user.commands.me", "world.build"]
+  },
+  "admin":{
+    "inheritance":["default"],
+    "permissions":["admin.commands.give", "world.*"]
+  }
+}
