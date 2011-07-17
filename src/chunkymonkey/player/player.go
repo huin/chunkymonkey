@@ -12,6 +12,7 @@ import (
 
 	"chunkymonkey/gamerules"
 	"chunkymonkey/nbtutil"
+	"chunkymonkey/physics"
 	"chunkymonkey/proto"
 	. "chunkymonkey/types"
 	"chunkymonkey/window"
@@ -215,6 +216,24 @@ func (player *Player) PacketPlayerLook(look *LookDegrees, onGround bool) {
 func (player *Player) PacketPlayerBlockHit(status DigStatus, target *BlockXyz, face Face) {
 	player.lock.Lock()
 	defer player.lock.Unlock()
+
+	// This packet handles 'throwing' an item as well, with status = 4, and
+	// the zero values for target and face, so check for that.
+	if status == 4 && target.IsZero() && face == 0 {
+		blockLoc := player.position.ToBlockXyz()
+		shardClient, _, ok := player.chunkSubs.ShardClientForBlockXyz(blockLoc)
+		if !ok {
+			return
+		}
+
+		var itemToThrow gamerules.Slot
+		player.inventory.TakeOneHeldItem(&itemToThrow)
+		if !itemToThrow.IsEmpty() {
+			velocity := physics.VelocityFromLook(player.look, 0.30)
+			shardClient.ReqDropItem(itemToThrow, player.position, velocity)
+		}
+		return
+	}
 
 	// TODO validate that the player is actually somewhere near the block
 

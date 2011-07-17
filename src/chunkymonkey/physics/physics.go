@@ -328,3 +328,25 @@ func applyCollision(p *AbsCoord, v *AbsVelocityCoord) {
 	}
 	*v = 0
 }
+
+// Create a velocity from a look (yaw and pitch) and a momentum.
+func VelocityFromLook(look LookDegrees, speed float64) AbsVelocity {
+	yaw := float64(look.Yaw) * (math.Pi / 180)
+	pitch := float64(look.Pitch) * (math.Pi / 180)
+
+	psin, pcos := math.Sincos(-pitch)
+	ysin, ycos := math.Sincos(-yaw)
+
+	y := speed * psin
+	h := speed * pcos
+	x := h * ysin
+	z := h * ycos
+
+	v := AbsVelocity{
+		AbsVelocityCoord(x),
+		AbsVelocityCoord(y),
+		AbsVelocityCoord(z),
+	}
+
+	return v
+}

@@ -117,3 +117,21 @@ func Test_getBlockAxisMove(t *testing.T) {
 		}
 	}
 }
+
+func Test_VelocityFromLook(t *testing.T) {
+	type Test struct {
+		look     LookDegrees
+		momentum float64
+		want     AbsVelocity
+	}
+	tests := []Test{}
+
+	// TODO: Add some unit tests that accurately reflect the desired
+	// behaviour.
+	for _, test := range tests {
+		v := VelocityFromLook(test.look, test.momentum)
+		if v.X != test.want.X || v.Y != test.want.Y || v.Z != test.want.Z {
+			t.Errorf("VelocityFromLook, wanted %+v, got %+v", test.want, v)
+		}
+	}
+}

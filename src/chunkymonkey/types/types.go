@@ -638,6 +638,13 @@ func (b *BlockXyz) IsNull() bool {
 	return b.Y == -1 && b.X == -1 && b.Z == -1
 }
 
+// Test if a block location is the 0 block. This is used in certain situations
+// such as PacketPlayerBlockHit, when the player is throwing an item rather
+// than hitting an item in a chunk.
+func (b *BlockXyz) IsZero() bool {
+	return b.Y == 0 && b.X == 0 && b.Z == 0
+}
+
 // Translate one block location to another by dx, dy, dz, checking for
 // overflow. If overflow occurs, return nil. There may be a more elegant
 // solution to check this, here we go for simplicity and clarity. This
