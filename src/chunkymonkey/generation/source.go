@@ -4,18 +4,15 @@ import (
 	"math"
 )
 
-
 type ISource interface {
 	At2d(x, y float64) float64
 }
-
 
 type Const float64
 
 func (gen Const) At2d(x, y float64) float64 {
 	return float64(gen)
 }
-
 
 type Offset struct {
 	Dx, Dy float64
@@ -25,7 +22,6 @@ type Offset struct {
 func (gen *Offset) At2d(x, y float64) float64 {
 	return gen.Source.At2d(x+gen.Dx, y+gen.Dy)
 }
-
 
 type Turbulence struct {
 	Dx, Dy ISource
@@ -39,7 +35,6 @@ func (gen *Turbulence) At2d(x, y float64) float64 {
 	return gen.Source.At2d(x+dx, y+dy)
 }
 
-
 type Scale struct {
 	Wavelength float64
 	Amplitude  float64
@@ -49,7 +44,6 @@ type Scale struct {
 func (gen *Scale) At2d(x, y float64) float64 {
 	return gen.Source.At2d(x/gen.Wavelength, y/gen.Wavelength) * gen.Amplitude
 }
-
 
 type Pow struct {
 	Source ISource
@@ -67,7 +61,6 @@ func (gen *Pow) At2d(x, y float64) float64 {
 	return math.Pow(v, power)
 }
 
-
 type Mult struct {
 	A, B ISource
 }
@@ -75,7 +68,6 @@ type Mult struct {
 func (gen *Mult) At2d(x, y float64) float64 {
 	return gen.A.At2d(x, y) * gen.B.At2d(x, y)
 }
-
 
 type Add struct {
 	Source ISource
@@ -85,7 +77,6 @@ type Add struct {
 func (gen *Add) At2d(x, y float64) float64 {
 	return gen.Source.At2d(x, y) + gen.Value
 }
-
 
 type Sum struct {
 	Inputs []ISource

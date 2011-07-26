@@ -15,7 +15,6 @@ type header struct {
 	Length    int32 // length of data bytes
 }
 
-
 type ReaderRecorder struct {
 	reader        io.Reader
 	log           io.WriteCloser
@@ -48,7 +47,6 @@ func (recorder *ReaderRecorder) Read(b []byte) (n int, err os.Error) {
 func (recorder *ReaderRecorder) Close() os.Error {
 	return recorder.log.Close()
 }
-
 
 type ReaderReplayer struct {
 	writer        io.Writer

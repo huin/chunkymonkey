@@ -51,7 +51,6 @@ func checkSlot(t *testing.T, expected, result Slot) {
 	}
 }
 
-
 // Utility type to keep track of the number of ticks that a furnace has been
 // run for.
 type furnaceRunner struct {

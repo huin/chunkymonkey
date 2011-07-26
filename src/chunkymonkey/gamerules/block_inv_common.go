@@ -11,26 +11,26 @@ func (aspect *InventoryAspect) Name() string {
 	return aspect.name
 }
 
-func (aspect *InventoryAspect) Interact(instance *BlockInstance, player IShardPlayerClient) {
+func (aspect *InventoryAspect) Interact(instance *BlockInstance, player IPlayerClient) {
 	blkInv := aspect.blockInv(instance, true)
 	if blkInv != nil {
 		blkInv.AddSubscriber(player)
 	}
 }
 
-func (aspect *InventoryAspect) InventoryClick(instance *BlockInstance, player IShardPlayerClient, click *Click) {
+func (aspect *InventoryAspect) InventoryClick(instance *BlockInstance, player IPlayerClient, click *Click) {
 	blkInv := aspect.blockInv(instance, false)
 	if blkInv != nil {
 		blkInv.Click(player, click)
 	} else {
 		// No inventory to act on (shouldn't happen, normally).
-		player.ReqInventoryTxState(blkInv.instance.BlockLoc, click.TxId, false)
-		player.ReqInventoryCursorUpdate(instance.BlockLoc, click.Cursor)
+		player.InventoryTxState(blkInv.instance.BlockLoc, click.TxId, false)
+		player.InventoryCursorUpdate(instance.BlockLoc, click.Cursor)
 		return
 	}
 }
 
-func (aspect *InventoryAspect) InventoryUnsubscribed(instance *BlockInstance, player IShardPlayerClient) {
+func (aspect *InventoryAspect) InventoryUnsubscribed(instance *BlockInstance, player IPlayerClient) {
 	blkInv := aspect.blockInv(instance, false)
 	if blkInv != nil {
 		blkInv.RemoveSubscriber(player.GetEntityId())

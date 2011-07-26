@@ -10,7 +10,6 @@ import (
 	"rand"
 )
 
-
 type PerlinNoise struct {
 	seed   int64
 	permut [256]int

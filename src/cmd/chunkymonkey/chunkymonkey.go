@@ -49,7 +49,6 @@ var groupDefs = flag.String(
 	"groups", "groups.json",
 	"The JSON file containing group permissions.")
 
-
 func usage() {
 	os.Stderr.WriteString("usage: " + os.Args[0] + " [flags] <world>\n")
 	flag.PrintDefaults()

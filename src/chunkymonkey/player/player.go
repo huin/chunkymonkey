@@ -37,7 +37,7 @@ func init() {
 
 type Player struct {
 	EntityId
-	shardReceiver  shardPlayerClient
+	playerClient   playerClient
 	shardConnecter gamerules.IShardConnecter
 	conn           net.Conn
 	name           string
@@ -59,6 +59,8 @@ type Player struct {
 	mainQueue chan func(*Player)
 	txQueue   chan []byte
 
+	game gamerules.IGame
+
 	// TODO remove this lock, packet handling shouldn't use a lock, it should use
 	// a channel instead (ideally).
 	lock sync.Mutex
@@ -66,7 +68,7 @@ type Player struct {
 	onDisconnect chan<- EntityId
 }
 
-func NewPlayer(entityId EntityId, shardConnecter gamerules.IShardConnecter, conn net.Conn, name string, spawnBlock BlockXyz, onDisconnect chan<- EntityId) *Player {
+func NewPlayer(entityId EntityId, shardConnecter gamerules.IShardConnecter, conn net.Conn, name string, spawnBlock BlockXyz, onDisconnect chan<- EntityId, game gamerules.IGame) *Player {
 	player := &Player{
 		EntityId:       entityId,
 		shardConnecter: shardConnecter,
@@ -89,13 +91,35 @@ func NewPlayer(entityId EntityId, shardConnecter gamerules.IShardConnecter, conn
 		mainQueue: make(chan func(*Player), 128),
 		txQueue:   make(chan []byte, 128),
 
+		game: game,
+
 		onDisconnect: onDisconnect,
 	}
 
-	player.shardReceiver.Init(player)
+	player.playerClient.Init(player)
 	player.inventory.Init(player.EntityId, player)
 
 	return player
+}
+
+func (player *Player) Name() string {
+	return player.name
+}
+
+func (player *Player) Position() AbsXyz {
+	return player.position
+}
+
+func (player *Player) SetPosition(pos AbsXyz) {
+	player.position = pos
+}
+
+func (player *Player) Client() gamerules.IPlayerClient {
+	return &player.playerClient
+}
+
+func (player *Player) Look() LookDegrees {
+	return player.look
 }
 
 // ReadNbt reads the player data from their persistently stored NBT data. It
@@ -154,7 +178,9 @@ func (player *Player) PacketKeepAlive() {
 func (player *Player) PacketChatMessage(message string) {
 	prefix := gamerules.CommandFramework.Prefix()
 	if message[0:len(prefix)] == prefix {
-		gamerules.CommandFramework.Process(message, player)
+		// We pass the IPlayerClient to the command framework to avoid having
+		// to fetch it as the first part of every command.
+		gamerules.CommandFramework.Process(&player.playerClient, message, player.game)
 	} else {
 		player.sendChatMessage(fmt.Sprintf("<%s> %s", player.name, message), true)
 	}
@@ -442,7 +468,7 @@ func (player *Player) mainLoop() {
 	}
 }
 
-func (player *Player) reqNotifyChunkLoad() {
+func (player *Player) notifyChunkLoad() {
 	// Player seems to fall through block unless elevated very slightly.
 	player.position.Y += 0.01
 
@@ -462,7 +488,7 @@ func (player *Player) reqNotifyChunkLoad() {
 	}
 }
 
-func (player *Player) reqInventorySubscribed(block *BlockXyz, invTypeId InvTypeId, slots []proto.WindowSlot) {
+func (player *Player) inventorySubscribed(block *BlockXyz, invTypeId InvTypeId, slots []proto.WindowSlot) {
 	if player.remoteInv != nil {
 		player.closeCurrentWindow(true)
 	}
@@ -489,7 +515,7 @@ func (player *Player) reqInventorySubscribed(block *BlockXyz, invTypeId InvTypeI
 	player.TransmitPacket(buf.Bytes())
 }
 
-func (player *Player) reqInventorySlotUpdate(block *BlockXyz, slot *gamerules.Slot, slotId SlotId) {
+func (player *Player) inventorySlotUpdate(block *BlockXyz, slot *gamerules.Slot, slotId SlotId) {
 	if player.remoteInv == nil || !player.remoteInv.IsForBlock(block) {
 		return
 	}
@@ -497,7 +523,7 @@ func (player *Player) reqInventorySlotUpdate(block *BlockXyz, slot *gamerules.Sl
 	player.remoteInv.slotUpdate(slot, slotId)
 }
 
-func (player *Player) reqInventoryProgressUpdate(block *BlockXyz, prgBarId PrgBarId, value PrgBarValue) {
+func (player *Player) inventoryProgressUpdate(block *BlockXyz, prgBarId PrgBarId, value PrgBarValue) {
 	if player.remoteInv == nil || !player.remoteInv.IsForBlock(block) {
 		return
 	}
@@ -505,7 +531,7 @@ func (player *Player) reqInventoryProgressUpdate(block *BlockXyz, prgBarId PrgBa
 	player.remoteInv.progressUpdate(prgBarId, value)
 }
 
-func (player *Player) reqInventoryCursorUpdate(block *BlockXyz, cursor *gamerules.Slot) {
+func (player *Player) inventoryCursorUpdate(block *BlockXyz, cursor *gamerules.Slot) {
 	if player.remoteInv == nil || !player.remoteInv.IsForBlock(block) {
 		return
 	}
@@ -516,7 +542,7 @@ func (player *Player) reqInventoryCursorUpdate(block *BlockXyz, cursor *gamerule
 	player.TransmitPacket(buf.Bytes())
 }
 
-func (player *Player) reqInventoryTxState(block *BlockXyz, txId TxId, accepted bool) {
+func (player *Player) inventoryTxState(block *BlockXyz, txId TxId, accepted bool) {
 	if player.remoteInv == nil || !player.remoteInv.IsForBlock(block) || player.curWindow == nil {
 		return
 	}
@@ -526,7 +552,7 @@ func (player *Player) reqInventoryTxState(block *BlockXyz, txId TxId, accepted b
 	player.TransmitPacket(buf.Bytes())
 }
 
-func (player *Player) reqInventoryUnsubscribed(block *BlockXyz) {
+func (player *Player) inventoryUnsubscribed(block *BlockXyz) {
 	if player.remoteInv == nil || !player.remoteInv.IsForBlock(block) {
 		return
 	}
@@ -534,7 +560,7 @@ func (player *Player) reqInventoryUnsubscribed(block *BlockXyz) {
 	player.closeCurrentWindow(true)
 }
 
-func (player *Player) reqPlaceHeldItem(target *BlockXyz, wasHeld *gamerules.Slot) {
+func (player *Player) placeHeldItem(target *BlockXyz, wasHeld *gamerules.Slot) {
 	curHeld, _ := player.inventory.HeldItem()
 
 	// Currently held item has changed since chunk saw it.
@@ -557,7 +583,7 @@ func (player *Player) reqPlaceHeldItem(target *BlockXyz, wasHeld *gamerules.Slot
 // Used to receive items picked up from chunks. It is synchronous so that the
 // passed item can be looked at by the caller afterwards to see if it has been
 // consumed.
-func (player *Player) reqOfferItem(fromChunk *ChunkXz, entityId EntityId, item *gamerules.Slot) {
+func (player *Player) offerItem(fromChunk *ChunkXz, entityId EntityId, item *gamerules.Slot) {
 	if player.inventory.CanTakeItem(item) {
 		shardClient, ok := player.chunkSubs.ShardClientForChunkXz(fromChunk)
 		if ok {
@@ -568,7 +594,7 @@ func (player *Player) reqOfferItem(fromChunk *ChunkXz, entityId EntityId, item *
 	return
 }
 
-func (player *Player) reqGiveItem(atPosition *AbsXyz, item *gamerules.Slot) {
+func (player *Player) giveItem(atPosition *AbsXyz, item *gamerules.Slot) {
 	defer func() {
 		// Check if item not fully consumed. If it is not, then throw the remains
 		// back to the chunk.
@@ -626,23 +652,17 @@ func (player *Player) closeCurrentWindow(sendClosePacket bool) {
 	player.inventory.Resubscribe()
 }
 
-// ICommandHandler implementations
-func (player *Player) SendMessageToPlayer(msg string) {
+// setPositionLook sets the player's position and look angle. It also notifies
+// other players in the area of interest that the player has moved.
+func (player *Player) setPositionLook(pos AbsXyz, look LookDegrees) {
+	player.position = pos
+	player.look = look
+	player.height = StanceNormal - pos.Y
+	player.chunkSubs.Move(&player.position)
+
+	// Notify the player about their new position
+	// Tell the player's client about their new position
 	buf := new(bytes.Buffer)
-	proto.WriteChatMessage(buf, msg)
-	packet := buf.Bytes()
-	player.TransmitPacket(packet)
-}
-
-func (player *Player) BroadcastMessage(msg string, self bool) {
-	player.sendChatMessage(msg, self)
-}
-
-func (player *Player) GiveItem(id int, quantity int, data int) {
-	item := gamerules.Slot{
-		ItemTypeId: ItemTypeId(id),
-		Count:      ItemCount(quantity),
-		Data:       ItemData(data),
-	}
-	player.reqGiveItem(&player.position, &item)
+	proto.WritePlayerPosition(buf, &pos, StanceNormal, true)
+	player.TransmitPacket(buf.Bytes())
 }

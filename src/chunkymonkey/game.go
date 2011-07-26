@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"time"
 
+	"chunkymonkey/command"
 	. "chunkymonkey/entity"
 	"chunkymonkey/gamerules"
 	"chunkymonkey/player"
@@ -25,13 +26,13 @@ import (
 // That is: characters that might be abused in filename components, etc.
 var validPlayerUsername = regexp.MustCompile(`^[\-a-zA-Z0-9_]+$`)
 
-
 type Game struct {
 	chunkManager     *shardserver.LocalShardManager
 	mainQueue        chan func(*Game)
 	playerDisconnect chan EntityId
 	entityManager    EntityManager
 	players          map[EntityId]*player.Player
+	playerNames      map[string]*player.Player
 	time             Ticks
 	serverId         string
 	worldStore       *worldstore.WorldStore
@@ -49,6 +50,7 @@ func NewGame(worldPath string) (game *Game, err os.Error) {
 		mainQueue:        make(chan func(*Game), 256),
 		playerDisconnect: make(chan EntityId),
 		players:          make(map[EntityId]*player.Player),
+		playerNames:      make(map[string]*player.Player),
 		time:             worldStore.Time,
 		worldStore:       worldStore,
 	}
@@ -59,6 +61,9 @@ func NewGame(worldPath string) (game *Game, err os.Error) {
 	//game.serverId = "-"
 
 	game.chunkManager = shardserver.NewLocalShardManager(worldStore.ChunkStore, &game.entityManager)
+
+	// TODO: Load the prefix from a config file
+	gamerules.CommandFramework = command.NewCommandFramework("/")
 
 	go game.mainLoop()
 	return
@@ -144,7 +149,7 @@ func (game *Game) login(conn net.Conn) {
 		return
 	}
 
-	player := player.NewPlayer(entityId, game.chunkManager, conn, username, game.worldStore.SpawnPosition, game.playerDisconnect)
+	player := player.NewPlayer(entityId, game.chunkManager, conn, username, game.worldStore.SpawnPosition, game.playerDisconnect, game)
 	if playerData != nil {
 		if err = player.ReadNbt(playerData); err != nil {
 			// Don't let the player log in, as they will only have default inventory
@@ -187,10 +192,13 @@ func (game *Game) Serve(addr string) {
 // addPlayer adds the player to the set of connected players.
 func (game *Game) addPlayer(newPlayer *player.Player) {
 	game.players[newPlayer.GetEntityId()] = newPlayer
+	game.playerNames[newPlayer.Name()] = newPlayer
 }
 
 func (game *Game) removePlayer(entityId EntityId) {
+	oldPlayer := game.players[entityId]
 	game.players[entityId] = nil, false
+	game.playerNames[oldPlayer.Name()] = nil, false
 	game.entityManager.RemoveEntityById(entityId)
 }
 
@@ -240,4 +248,46 @@ func (game *Game) tick() {
 	if game.time%TicksPerSecond == 0 {
 		game.sendTimeUpdate()
 	}
+}
+
+func (game *Game) BroadcastMessage(msg string) {
+	buf := new(bytes.Buffer)
+	proto.WriteChatMessage(buf, msg)
+
+	game.enqueue(func(_ *Game) {
+		game.multicastPacket(buf.Bytes(), nil)
+	})
+}
+
+func (game *Game) ItemTypeById(id int) (gamerules.ItemType, bool) {
+	itemType, ok := gamerules.Items[ItemTypeId(id)]
+	return *itemType, ok
+}
+
+func (game *Game) PlayerByEntityId(id EntityId) gamerules.IPlayerClient {
+	result := make(chan gamerules.IPlayerClient)
+	game.enqueue(func(_ *Game) {
+		player, ok := game.players[id]
+		if ok {
+			result <- player.Client()
+		} else {
+			result <- nil
+		}
+		close(result)
+	})
+	return <-result
+}
+
+func (game *Game) PlayerByName(name string) gamerules.IPlayerClient {
+	result := make(chan gamerules.IPlayerClient)
+	game.enqueue(func(_ *Game) {
+		player, ok := game.playerNames[name]
+		if ok {
+			result <- player.Client()
+		} else {
+			result <- nil
+		}
+		close(result)
+	})
+	return <-result
 }

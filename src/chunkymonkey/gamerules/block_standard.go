@@ -38,7 +38,7 @@ func (aspect *StandardAspect) Check() os.Error {
 	return nil
 }
 
-func (aspect *StandardAspect) Hit(instance *BlockInstance, player IShardPlayerClient, digStatus DigStatus) (destroyed bool) {
+func (aspect *StandardAspect) Hit(instance *BlockInstance, player IPlayerClient, digStatus DigStatus) (destroyed bool) {
 	if aspect.BreakOn != digStatus {
 		return
 	}
@@ -48,13 +48,13 @@ func (aspect *StandardAspect) Hit(instance *BlockInstance, player IShardPlayerCl
 	return
 }
 
-func (aspect *StandardAspect) Interact(instance *BlockInstance, player IShardPlayerClient) {
+func (aspect *StandardAspect) Interact(instance *BlockInstance, player IPlayerClient) {
 }
 
-func (aspect *StandardAspect) InventoryClick(instance *BlockInstance, player IShardPlayerClient, click *Click) {
+func (aspect *StandardAspect) InventoryClick(instance *BlockInstance, player IPlayerClient, click *Click) {
 }
 
-func (aspect *StandardAspect) InventoryUnsubscribed(instance *BlockInstance, player IShardPlayerClient) {
+func (aspect *StandardAspect) InventoryUnsubscribed(instance *BlockInstance, player IPlayerClient) {
 }
 
 func (aspect *StandardAspect) Destroy(instance *BlockInstance) {

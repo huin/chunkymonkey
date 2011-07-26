@@ -10,7 +10,6 @@ import (
 	te "testencoding"
 )
 
-
 type Test struct {
 	Serialized te.IBytesMatcher
 	Value      ITag
@@ -60,7 +59,6 @@ func (test *Test) testWrite(t *testing.T) {
 		t.Errorf("  Fail: got result = %x:\n    %v", result, err)
 	}
 }
-
 
 func TestSerialization(t *testing.T) {
 	tests := []Test{

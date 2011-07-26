@@ -3,6 +3,8 @@ package command
 import (
 	"strings"
 	"os"
+
+	"chunkymonkey/gamerules"
 )
 
 var ErrCmdExists = os.NewError("The command already exists.")
@@ -18,8 +20,8 @@ type CommandFramework struct {
 func NewCommandFramework(prefix string) *CommandFramework {
 	cf := &CommandFramework{prefix: prefix}
 	cmds := getCommands()
-	commandHelp := NewCommand(helpCmd, helpDesc, helpUsage, func(msg string, cmdHandler ICommandHandler) {
-		cmdHelp(msg, cf, cmdHandler)
+	commandHelp := NewCommand(helpCmd, helpDesc, helpUsage, func(player gamerules.IPlayerClient, msg string, game gamerules.IGame) {
+		cmdHelp(player, msg, cf, game)
 	})
 	cmds[helpCmd] = commandHelp
 	cmds[helpShortCmd] = commandHelp
@@ -35,13 +37,13 @@ func (cf *CommandFramework) Commands() map[string]*Command {
 	return cf.cmds
 }
 
-func (cf *CommandFramework) Process(message string, cmdHandler ICommandHandler) {
+func (cf *CommandFramework) Process(player gamerules.IPlayerClient, message string, game gamerules.IGame) {
 	if len(message) < 2 || message[0:len(cf.prefix)] != cf.prefix {
 		return
 	}
 	attr := strings.Split(message, " ", -1)
 	trigger := attr[0][1:]
 	if cmd, ok := cf.cmds[trigger]; ok {
-		cmd.Callback(message, cmdHandler)
+		cmd.Callback(player, message, game)
 	}
 }

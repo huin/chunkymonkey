@@ -46,7 +46,6 @@ type ITag interface {
 	Lookup(path string) ITag
 }
 
-
 // TagType is the header byte value that identifies the type of tag(s).
 type TagType byte
 
@@ -104,7 +103,6 @@ func (tt TagType) write(writer io.Writer) os.Error {
 	return binary.Write(writer, binary.BigEndian, tt)
 }
 
-
 type Byte struct {
 	Value int8
 }
@@ -124,7 +122,6 @@ func (b *Byte) Read(reader io.Reader) (err os.Error) {
 func (b *Byte) Write(writer io.Writer) (err os.Error) {
 	return binary.Write(writer, binary.BigEndian, &b.Value)
 }
-
 
 type Short struct {
 	Value int16
@@ -146,7 +143,6 @@ func (*Short) Lookup(path string) ITag {
 	return nil
 }
 
-
 type Int struct {
 	Value int32
 }
@@ -166,7 +162,6 @@ func (i *Int) Write(writer io.Writer) (err os.Error) {
 func (*Int) Lookup(path string) ITag {
 	return nil
 }
-
 
 type Long struct {
 	Value int64
@@ -188,7 +183,6 @@ func (*Long) Lookup(path string) ITag {
 	return nil
 }
 
-
 type Float struct {
 	Value float32
 }
@@ -209,7 +203,6 @@ func (*Float) Lookup(path string) ITag {
 	return nil
 }
 
-
 type Double struct {
 	Value float64
 }
@@ -229,7 +222,6 @@ func (d *Double) Write(writer io.Writer) (err os.Error) {
 func (*Double) Lookup(path string) ITag {
 	return nil
 }
-
 
 type ByteArray struct {
 	Value []byte
@@ -272,7 +264,6 @@ func (*ByteArray) Lookup(path string) ITag {
 	return nil
 }
 
-
 type String struct {
 	Value string
 }
@@ -313,7 +304,6 @@ func (s *String) Write(writer io.Writer) (err os.Error) {
 func (*String) Lookup(path string) ITag {
 	return nil
 }
-
 
 type List struct {
 	TagType TagType
@@ -376,7 +366,6 @@ func (l *List) Write(writer io.Writer) (err os.Error) {
 func (*List) Lookup(path string) ITag {
 	return nil
 }
-
 
 type Compound struct {
 	Tags map[string]ITag
@@ -472,7 +461,6 @@ func (c *Compound) Lookup(path string) (tag ITag) {
 
 	return tag
 }
-
 
 // Read reads an NBT structure from the given reader. It expects it to contain
 // a Compound at the root.

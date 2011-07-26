@@ -8,7 +8,6 @@ BINARIES=\
 	bin/style
 
 MOCK_FILES=\
-	src/chunkymonkey/command/mock_icommandhandler_test.go \
 	src/chunkymonkey/gamerules/mock_stub_test.go \
 	src/chunkymonkey/physics/mock_physics_test.go
 
@@ -22,6 +21,7 @@ all: $(BINARIES)
 
 clean:
 	@-rm -f $(BINARIES)
+	@-rm -f $(MOCK_FILES)
 	@gd $(GD_OPTS) -lib _obj -clean src
 	@gd $(GD_OPTS) -lib _test -clean .
 
@@ -57,9 +57,6 @@ diagrams/deps.dot:
 	@sed -ri '/->/{/"[^"]+" -> "(cmd|chunkymonkey|nbt|perlin|testencoding|testmatcher)[/"]/b ok ; d ; : ok}' $@
 
 mocks: $(MOCK_FILES)
-
-src/chunkymonkey/command/mock_icommandhandler_test.go: src/chunkymonkey/command/icommandhandler.go
-	mockgen -package command -destination $@ -source $<
 
 src/chunkymonkey/gamerules/mock_stub_test.go: src/chunkymonkey/gamerules/stub.go
 	mockgen -package gamerules -destination $@ -source $< -imports .=chunkymonkey/types

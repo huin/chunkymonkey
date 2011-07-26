@@ -291,7 +291,6 @@ type destActiveShard struct {
 	blocks []BlockXyz
 }
 
-
 // shardSelfClient implements IShardShardClient for a shard to efficiently talk
 // to itself.
 type shardSelfClient struct {

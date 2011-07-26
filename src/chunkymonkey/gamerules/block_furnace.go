@@ -28,7 +28,7 @@ func createFurnaceInventory(instance *BlockInstance) *blockInventory {
 	)
 }
 
-func (aspect *FurnaceAspect) InventoryClick(instance *BlockInstance, player IShardPlayerClient, click *Click) {
+func (aspect *FurnaceAspect) InventoryClick(instance *BlockInstance, player IPlayerClient, click *Click) {
 
 	aspect.InventoryAspect.InventoryClick(instance, player, click)
 

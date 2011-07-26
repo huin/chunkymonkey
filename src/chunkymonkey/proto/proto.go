@@ -386,7 +386,6 @@ type ObjectData struct {
 // * Those without a client or server prefix don't differ in content or meaning
 //   between client and server.
 
-
 // packetIdKeepAlive
 
 func WriteKeepAlive(writer io.Writer) os.Error {
@@ -1200,7 +1199,6 @@ func WriteEntityAction(writer io.Writer, entityId EntityId, action EntityAction)
 
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
-
 
 func readEntityAction(reader io.Reader, handler IPacketHandler) (err os.Error) {
 	var packet struct {
@@ -2867,7 +2865,6 @@ func readDisconnect(reader io.Reader, handler IPacketHandler) (err os.Error) {
 	handler.PacketDisconnect(reason)
 	return
 }
-
 
 // End of packet reader/writer functions
 

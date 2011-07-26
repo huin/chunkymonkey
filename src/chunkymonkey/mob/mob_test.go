@@ -15,7 +15,6 @@ type testCase struct {
 	want   te.IBytesMatcher
 }
 
-
 func TestMobSpawn(t *testing.T) {
 	tests := []testCase{
 		{

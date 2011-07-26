@@ -9,62 +9,11 @@ import (
 // IShardConnecter is used to look up shards and connect to them.
 type IShardConnecter interface {
 	// PlayerShardConnect makes a connection from a player to a shard.
-	PlayerShardConnect(entityId EntityId, player IShardPlayerClient, shardLoc ShardXz) IPlayerShardClient
+	PlayerShardConnect(entityId EntityId, player IPlayerClient, shardLoc ShardXz) IPlayerShardClient
 
 	// ShardShardConnect makes a connection from one shard to another.
 	// TODO Consider making this package-private to shardserver.
 	ShardShardConnect(shardLoc ShardXz) IShardShardClient
-}
-
-// IShardPlayerClient is the interface by which shards communicate to players on
-// the frontend.
-type IShardPlayerClient interface {
-	GetEntityId() EntityId
-
-	TransmitPacket(packet []byte)
-
-	// ReqNotifyChunkLoad informs Player that a chunk subscription request with
-	// notify=true has completed.
-	ReqNotifyChunkLoad()
-
-	// ReqInventorySubscribed informs the player that an inventory has been
-	// opened. The block position 
-	ReqInventorySubscribed(block BlockXyz, invTypeId InvTypeId, slots []proto.WindowSlot)
-
-	// ReqInventorySlotUpdate informs the player of a change to a slot in the
-	// open inventory.
-	ReqInventorySlotUpdate(block BlockXyz, slot Slot, slotId SlotId)
-
-	// ReqInventoryProgressUpdate informs the player of a change of a progress
-	// bar in a window.
-	ReqInventoryProgressUpdate(block BlockXyz, prgBarId PrgBarId, value PrgBarValue)
-
-	// ReqInventoryCursorUpdate informs the player of their new cursor contents.
-	ReqInventoryCursorUpdate(block BlockXyz, cursor Slot)
-
-	// ReqInventoryTxState requests that the player report the transaction state
-	// as accepted or not. This is used by remote inventories when
-	// TxStateDeferred is returned from Click.
-	ReqInventoryTxState(block BlockXyz, txId TxId, accepted bool)
-
-	// ReqInventorySubscribed informs the player that an inventory has been
-	// closed.
-	ReqInventoryUnsubscribed(block BlockXyz)
-
-	// ReqPlaceHeldItem requests that the player frontend take one item from the
-	// held item stack and send it in a ReqPlaceItem to the target block.  The
-	// player code may *not* honour this request (e.g there might be no suitable
-	// held item).
-	ReqPlaceHeldItem(target BlockXyz, wasHeld Slot)
-
-	// ReqOfferItem requests that the player check if it can take the item.  If
-	// it can then it should ReqTakeItem from the chunk.
-	ReqOfferItem(fromChunk ChunkXz, entityId EntityId, item Slot)
-
-	// ReqGiveItem requests that the player takes the item contents into their
-	// inventory. If they cannot, then the player should drop the item at the
-	// given position.
-	ReqGiveItem(atPosition AbsXyz, item Slot)
 }
 
 // IPlayerShardClient is the interface by which shards can be communicated to by
@@ -131,4 +80,90 @@ type IShardShardClient interface {
 	ReqSetActiveBlocks(blocks []BlockXyz)
 
 	ReqTransferEntity(loc ChunkXz, entity object.INonPlayerEntity)
+}
+
+// IGame provide an interface for interacting with and taking action on the
+// game, including getting information about the game state, etc.
+type IGame interface {
+	// Broadcast a message to all players on the server
+	BroadcastMessage(msg string)
+
+	// Return a player from their name
+	PlayerByName(name string) IPlayerClient
+
+	// Return a player from an EntityId
+	PlayerByEntityId(id EntityId) IPlayerClient
+
+	// Return an ItemType from a numeric item. The boolean flag indicates
+	// whether or not 'id' was a valid item type.
+	ItemTypeById(id int) (ItemType, bool)
+}
+
+// IShardClient is the interface by which shards communicate to players on
+// the frontend.
+type IPlayerClient interface {
+	GetEntityId() EntityId
+
+	TransmitPacket(packet []byte)
+
+	// NotifyChunkLoad informs Player that a chunk subscription request with
+	// notify=true has completed.
+	NotifyChunkLoad()
+
+	// InventorySubscribed informs the player that an inventory has been
+	// opened.
+	InventorySubscribed(block BlockXyz, invTypeId InvTypeId, slots []proto.WindowSlot)
+
+	// InventorySlotUpdate informs the player of a change to a slot in the
+	// open inventory.
+	InventorySlotUpdate(block BlockXyz, slot Slot, slotId SlotId)
+
+	// InventoryProgressUpdate informs the player of a change of a progress
+	// bar in a window.
+	InventoryProgressUpdate(block BlockXyz, prgBarId PrgBarId, value PrgBarValue)
+
+	// InventoryCursorUpdate informs the player of their new cursor contents.
+	InventoryCursorUpdate(block BlockXyz, cursor Slot)
+
+	// InventoryTxState requests that the player report the transaction state
+	// as accepted or not. This is used by remote inventories when
+	// TxStateDeferred is returned from Click.
+	InventoryTxState(block BlockXyz, txId TxId, accepted bool)
+
+	// InventorySubscribed informs the player that an inventory has been
+	// closed.
+	InventoryUnsubscribed(block BlockXyz)
+
+	// PlaceHeldItem requests that the player frontend take one item from the
+	// held item stack and send it in a ReqPlaceItem to the target block.  The
+	// player code may *not* honour this request (e.g there might be no suitable
+	// held item).
+	PlaceHeldItem(target BlockXyz, wasHeld Slot)
+
+	// OfferItem requests that the player check if it can take the item.  If
+	// it can then it should ReqTakeItem from the chunk.
+	OfferItem(fromChunk ChunkXz, entityId EntityId, item Slot)
+
+	// GiveItemAtPosition requests that the player takes the item contents
+	// into their inventory. If they cannot, then the player should drop the
+	// item at the given position.
+	GiveItemAtPosition(atPosition AbsXyz, item Slot)
+
+	// GiveItem is a wrapper for GiveItemAtPosition that uses the player's
+	// current position as the 'atPosition'.
+	GiveItem(item Slot)
+
+	// PositionLook returns the player's current position and look
+	PositionLook() (AbsXyz, LookDegrees)
+
+	// SetPositionLook changes the player's position and look
+	SetPositionLook(AbsXyz, LookDegrees)
+
+	// EchoMessage displays a message to the player
+	EchoMessage(string)
+}
+
+type ICommandFramework interface {
+	Prefix() string
+	Process(player IPlayerClient, cmd string, game IGame)
 }

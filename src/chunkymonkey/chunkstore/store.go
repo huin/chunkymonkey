@@ -66,13 +66,11 @@ func ChunkStoreForLevel(worldPath string, levelData nbt.ITag, dimension Dimensio
 	return
 }
 
-
 type UnknownLevelVersion int32
 
 func (err UnknownLevelVersion) String() string {
 	return fmt.Sprintf("Unknown level version %d", err)
 }
-
 
 type NoSuchChunkError bool
 

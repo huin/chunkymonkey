@@ -21,7 +21,7 @@ type shardRef struct {
 type chunkSubscriptions struct {
 	player         *Player
 	shardConnecter gamerules.IShardConnecter
-	shardReceiver  gamerules.IShardPlayerClient
+	playerClient   gamerules.IPlayerClient
 	entityId       EntityId
 	curShardLoc    ShardXz                      // Shard the player is currently in.
 	curChunkLoc    ChunkXz                      // Chunk the player is currently in.
@@ -31,7 +31,7 @@ type chunkSubscriptions struct {
 
 func (sub *chunkSubscriptions) Init(player *Player) {
 	sub.player = player
-	sub.shardReceiver = &player.shardReceiver
+	sub.playerClient = &player.playerClient
 	sub.shardConnecter = player.shardConnecter
 	sub.entityId = player.EntityId
 	sub.curShardLoc = player.position.ToShardXz()
@@ -135,7 +135,7 @@ func (sub *chunkSubscriptions) subscribeToChunks(chunkLocs []ChunkXz, notify boo
 		ref, ok := sub.shardClients[shardKey]
 		if !ok {
 			ref = &shardRef{
-				shard: sub.shardConnecter.PlayerShardConnect(sub.entityId, sub.shardReceiver, shardLoc),
+				shard: sub.shardConnecter.PlayerShardConnect(sub.entityId, sub.playerClient, shardLoc),
 				count: 0,
 			}
 			sub.shardClients[shardKey] = ref

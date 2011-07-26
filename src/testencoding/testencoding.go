@@ -11,7 +11,6 @@ import (
 	"strings"
 )
 
-
 type MatchError struct {
 	FailedMatcher IBytesMatcher
 	NextBytes     []byte
@@ -21,7 +20,6 @@ func (err *MatchError) String() string {
 	return fmt.Sprintf("failed to match %v on bytes: %x", err.FailedMatcher, err.NextBytes)
 }
 
-
 type TrailingBytesError struct {
 	FailedMatcher IBytesMatcher
 	TrailingBytes []byte
@@ -30,7 +28,6 @@ type TrailingBytesError struct {
 func (err *TrailingBytesError) String() string {
 	return fmt.Sprintf("trailing bytes when matching %v: %x", err.FailedMatcher, err.TrailingBytes)
 }
-
 
 // IBytesMatcher is the interface that tests if a sequence of bytes matches
 // expectations.
@@ -46,7 +43,6 @@ type IBytesMatcher interface {
 
 	String() string
 }
-
 
 // BytesLiteral matches a literal sequence of bytes.
 type BytesLiteral struct {
@@ -78,7 +74,6 @@ func (bm *BytesLiteral) Write(writer *bytes.Buffer) {
 func (bm *BytesLiteral) String() string {
 	return fmt.Sprintf("&BytesLiteral{%x}", bm.Bytes)
 }
-
 
 // BytesMatcherInOrder matches a sequence of BytesMatchers that must match in
 // the order given.
@@ -120,7 +115,6 @@ func (bm *BytesMatcherInOrder) String() string {
 	s := strings.Join(parts, ", ")
 	return fmt.Sprintf("&BytesMatcherInOrder{%s}", s)
 }
-
 
 // BytesMatcherAnyOrder matches a set of BytesMatchers, but they do not have to
 // match in any particular order.
@@ -182,7 +176,6 @@ func (bm *BytesMatcherAnyOrder) String() string {
 	s := strings.Join(parts, ", ")
 	return fmt.Sprintf("&BytesMatcherAnyOrder{%s}", s)
 }
-
 
 func Matches(matcher IBytesMatcher, b []byte) os.Error {
 	n, err := matcher.Match(b)

@@ -6,7 +6,6 @@ import (
 	"strings"
 )
 
-
 type StringPrefix struct {
 	Prefix string
 }

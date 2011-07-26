@@ -79,7 +79,6 @@ func (mob *Mob) SendUpdate(writer io.Writer) (err os.Error) {
 	return
 }
 
-
 func (mob *Mob) SendSpawn(writer io.Writer) (err os.Error) {
 	err = proto.WriteEntitySpawn(
 		writer,
@@ -138,7 +137,6 @@ func NewSkeleton(position *AbsXyz, velocity *AbsVelocity, look *LookDegrees) (s 
 	s.Mob.Init(SkeletonType.Id, position, velocity, look)
 	return
 }
-
 
 type Spider struct {
 	Mob

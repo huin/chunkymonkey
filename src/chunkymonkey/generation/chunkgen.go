@@ -64,7 +64,6 @@ func (data *ChunkData) RootTag() nbt.ITag {
 	return nil
 }
 
-
 // TestGenerator implements chunkstore.IChunkStore.
 type TestGenerator struct {
 	heightSource ISource

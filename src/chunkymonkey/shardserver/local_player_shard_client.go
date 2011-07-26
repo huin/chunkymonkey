@@ -8,11 +8,11 @@ import (
 // localPlayerShardClient implements IPlayerShardClient for LocalShardManager.
 type localPlayerShardClient struct {
 	entityId EntityId
-	player   gamerules.IShardPlayerClient
+	player   gamerules.IPlayerClient
 	shard    *ChunkShard
 }
 
-func newLocalPlayerShardClient(entityId EntityId, player gamerules.IShardPlayerClient, shard *ChunkShard) *localPlayerShardClient {
+func newLocalPlayerShardClient(entityId EntityId, player gamerules.IPlayerClient, shard *ChunkShard) *localPlayerShardClient {
 	return &localPlayerShardClient{
 		entityId: entityId,
 		player:   player,

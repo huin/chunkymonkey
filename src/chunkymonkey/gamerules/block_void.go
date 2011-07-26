@@ -24,18 +24,18 @@ func (aspect *VoidAspect) Check() os.Error {
 	return nil
 }
 
-func (aspect *VoidAspect) Hit(instance *BlockInstance, player IShardPlayerClient, digStatus DigStatus) (destroyed bool) {
+func (aspect *VoidAspect) Hit(instance *BlockInstance, player IPlayerClient, digStatus DigStatus) (destroyed bool) {
 	destroyed = false
 	return
 }
 
-func (aspect *VoidAspect) Interact(instance *BlockInstance, player IShardPlayerClient) {
+func (aspect *VoidAspect) Interact(instance *BlockInstance, player IPlayerClient) {
 }
 
-func (aspect *VoidAspect) InventoryClick(instance *BlockInstance, player IShardPlayerClient, click *Click) {
+func (aspect *VoidAspect) InventoryClick(instance *BlockInstance, player IPlayerClient, click *Click) {
 }
 
-func (aspect *VoidAspect) InventoryUnsubscribed(instance *BlockInstance, player IShardPlayerClient) {
+func (aspect *VoidAspect) InventoryUnsubscribed(instance *BlockInstance, player IPlayerClient) {
 }
 
 func (aspect *VoidAspect) Destroy(instance *BlockInstance) {

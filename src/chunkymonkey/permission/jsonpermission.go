@@ -14,7 +14,6 @@ type JsonPermission struct {
 	defaultUser *CachedUser
 }
 
-
 func LoadJsonPermissionFromFiles(userDefFile, groupDefFile string) (jPermission *JsonPermission, err os.Error) {
 	// Load users
 	usersFile, err := os.Open(userDefFile)

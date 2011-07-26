@@ -3,7 +3,6 @@ package gamerules
 import (
 	"os"
 
-	"chunkymonkey/command"
 	"chunkymonkey/permission"
 )
 
@@ -13,7 +12,8 @@ var (
 	Items            ItemTypeMap
 	Recipes          *RecipeSet
 	FurnaceReactions FurnaceData
-	CommandFramework *command.CommandFramework
+	// TODO: Commands should maybe be accessible via IGame.
+	CommandFramework ICommandFramework
 	Permissions      permission.IPermissions
 )
 
@@ -39,9 +39,6 @@ func LoadGameRules(blocksDefFile, itemsDefFile, recipesDefFile, furnaceDefFile, 
 	if err != nil {
 		return
 	}
-
-	// TODO: Load the prefix from a config file
-	CommandFramework = command.NewCommandFramework("/")
 
 	Permissions, err = permission.LoadJsonPermissionFromFiles(userDefFile, groupDefFile)
 	if err != nil {

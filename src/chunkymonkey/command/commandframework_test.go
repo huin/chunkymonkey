@@ -5,6 +5,7 @@ import (
 
 	"gomock.googlecode.com/hg/gomock"
 
+	"chunkymonkey/gamerules"
 	"testmatcher"
 )
 
@@ -12,23 +13,42 @@ func TestCommandFramework(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	mockPlayer := NewMockICommandHandler(mockCtrl)
+	mockGame := gamerules.NewMockIGame(mockCtrl)
+	mockPlayer := gamerules.NewMockIPlayerClient(mockCtrl)
+	mockOther := gamerules.NewMockIPlayerClient(mockCtrl)
 
 	cf := NewCommandFramework("/")
 
-	mockPlayer.EXPECT().BroadcastMessage("§dthis is a broadcast", true)
-	cf.Process("/say this is a broadcast", mockPlayer)
+	mockGame.EXPECT().BroadcastMessage("§dthis is a broadcast")
+	cf.Process(mockPlayer, "/say this is a broadcast", mockGame)
 
-	mockPlayer.EXPECT().GiveItem(1, 64, 0)
-	cf.Process("/give 1 64", mockPlayer)
+	mockGame.EXPECT().PlayerByName("thePlayer").Return(mockPlayer)
+	mockGame.EXPECT().ItemTypeById(1)
+	mockPlayer.EXPECT().EchoMessage("Giving 64 of 1 to thePlayer")
+	mockPlayer.EXPECT().GiveItemAtPosition("thePlayer", gamerules.Slot{1, 64, 0})
+	cf.Process(mockPlayer, "/give thePlayer 1 64", mockGame)
 
-	mockPlayer.EXPECT().SendMessageToPlayer(&testmatcher.StringPrefix{"Commands:"})
-	cf.Process("/help", mockPlayer)
+	mockGame.EXPECT().PlayerByName("otherPlayer")
+	mockPlayer.EXPECT().EchoMessage("'otherPlayer' is not logged in")
+	cf.Process(mockPlayer, "/give otherPlayer 1 64", mockGame)
+
+	mockGame.EXPECT().PlayerByName("otherPlayer").Return(mockOther)
+	mockGame.EXPECT().ItemTypeById(1).Return(gamerules.ItemType{}, false)
+	mockPlayer.EXPECT().EchoMessage("'1' is not a valid item id")
+	cf.Process(mockPlayer, "/give otherPlayer 1 64", mockGame)
+
+	mockGame.EXPECT().PlayerByName("otherPlayer").Return(mockOther)
+	mockGame.EXPECT().ItemTypeById(1)
+	mockPlayer.EXPECT().EchoMessage("Cannot give more than 512 items at once")
+	cf.Process(mockPlayer, "/give otherPlayer 1 513", mockGame)
+
+	mockPlayer.EXPECT().EchoMessage(&testmatcher.StringPrefix{"Commands:"})
+	cf.Process(mockPlayer, "/help", mockGame)
 
 	gomock.InOrder(
-		mockPlayer.EXPECT().SendMessageToPlayer("Command: /help"),
-		mockPlayer.EXPECT().SendMessageToPlayer("Usage: help|?"),
-		mockPlayer.EXPECT().SendMessageToPlayer("Description: Shows a list of all commands."),
+		mockPlayer.EXPECT().EchoMessage("Command: /help"),
+		mockPlayer.EXPECT().EchoMessage("Usage: help|?"),
+		mockPlayer.EXPECT().EchoMessage("Description: Shows a list of all commands."),
 	)
-	cf.Process("/help help", mockPlayer)
+	cf.Process(mockPlayer, "/help help", mockGame)
 }

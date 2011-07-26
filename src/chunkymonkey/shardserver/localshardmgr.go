@@ -46,7 +46,7 @@ func (mgr *LocalShardManager) getShard(loc ShardXz, create bool) *ChunkShard {
 	return shard
 }
 
-func (mgr *LocalShardManager) PlayerShardConnect(entityId EntityId, player gamerules.IShardPlayerClient, shardLoc ShardXz) gamerules.IPlayerShardClient {
+func (mgr *LocalShardManager) PlayerShardConnect(entityId EntityId, player gamerules.IPlayerClient, shardLoc ShardXz) gamerules.IPlayerShardClient {
 	mgr.lock.Lock()
 	defer mgr.lock.Unlock()
 

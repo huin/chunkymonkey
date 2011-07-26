@@ -64,18 +64,18 @@ type IBlockAspect interface {
 	Check() os.Error
 
 	// Hit is called when the player hits a block.
-	Hit(instance *BlockInstance, player IShardPlayerClient, digStatus DigStatus) (destroyed bool)
+	Hit(instance *BlockInstance, player IPlayerClient, digStatus DigStatus) (destroyed bool)
 
 	// Interact is called when a player right-clicks a block.
-	Interact(instance *BlockInstance, player IShardPlayerClient)
+	Interact(instance *BlockInstance, player IPlayerClient)
 
 	// InventoryClick is called when the player clicked on a slot inside the
 	// inventory for the block (assuming it still has one).
-	InventoryClick(instance *BlockInstance, player IShardPlayerClient, click *Click)
+	InventoryClick(instance *BlockInstance, player IPlayerClient, click *Click)
 
 	// InventoryUnsubscribed is called when the player closes the window for the
 	// inventory for the block (assuming it still has one).
-	InventoryUnsubscribed(instance *BlockInstance, player IShardPlayerClient)
+	InventoryUnsubscribed(instance *BlockInstance, player IPlayerClient)
 
 	// Destroy is called when the block is destroyed by a player hitting it.
 	// TODO And in other situations, maybe?

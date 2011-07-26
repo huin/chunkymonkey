@@ -15,7 +15,6 @@ type IChunkStoreForeground interface {
 	LoadChunk(chunkLoc ChunkXz) (reader IChunkReader, err os.Error)
 }
 
-
 // ChunkService adapts an IChunkStoreForeground (which can only be accessed
 // from one goroutine) to an IChunkStore.
 type ChunkService struct {
