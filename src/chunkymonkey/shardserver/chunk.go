@@ -27,7 +27,7 @@ type Chunk struct {
 	skyLight     []byte
 	heightMap    []byte
 	entities     map[EntityId]gamerules.INonPlayerEntity // Entities (mobs, items, etc)
-	blockExtra   map[BlockIndex]interface{}           // Used by IBlockAspect to store private specific data.
+	blockExtra   map[BlockIndex]interface{}              // Used by IBlockAspect to store private specific data.
 	rand         *rand.Rand
 	cachedPacket []byte                                 // Cached packet data for this chunk.
 	subscribers  map[EntityId]gamerules.IPlayerClient   // Players getting updates from the chunk.

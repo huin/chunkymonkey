@@ -143,6 +143,26 @@ func (world *WorldStore) PlayerData(user string) (playerData nbt.ITag, err os.Er
 	return
 }
 
+func (world *WorldStore) WritePlayerData(user string, data *nbt.Compound) (err os.Error) {
+	filename := path.Join(world.WorldPath, "players", user+".dat")
+	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0666)
+
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	gzipWriter, err := gzip.NewWriter(file)
+	if err != nil {
+		return
+	}
+
+	err = nbt.Write(gzipWriter, data)
+	gzipWriter.Close()
+
+	return
+}
+
 func absXyzFromNbt(tag nbt.ITag, path string) (pos AbsXyz, err os.Error) {
 	posList, posOk := tag.Lookup(path).(*nbt.List)
 	if !posOk {

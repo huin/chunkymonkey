@@ -27,17 +27,23 @@ import (
 var validPlayerUsername = regexp.MustCompile(`^[\-a-zA-Z0-9_]+$`)
 
 type Game struct {
-	chunkManager     *shardserver.LocalShardManager
-	mainQueue        chan func(*Game)
+	chunkManager  *shardserver.LocalShardManager
+	entityManager EntityManager
+	worldStore    *worldstore.WorldStore
+
+	// Mapping between entityId/name and player object
+	players     map[EntityId]*player.Player
+	playerNames map[string]*player.Player
+
+	// Channels for events/actions
+	workQueue        chan func(*Game)
+	playerConnect    chan *player.Player
 	playerDisconnect chan EntityId
-	entityManager    EntityManager
-	players          map[EntityId]*player.Player
-	playerNames      map[string]*player.Player
-	time             Ticks
-	serverId         string
-	worldStore       *worldstore.WorldStore
-	// If set, logins are not allowed.
-	UnderMaintenanceMsg string
+
+	// Server information
+	time                Ticks
+	serverId            string
+	UnderMaintenanceMsg string // if set, logins are disallowed.
 }
 
 func NewGame(worldPath string) (game *Game, err os.Error) {
@@ -47,10 +53,11 @@ func NewGame(worldPath string) (game *Game, err os.Error) {
 	}
 
 	game = &Game{
-		mainQueue:        make(chan func(*Game), 256),
-		playerDisconnect: make(chan EntityId),
 		players:          make(map[EntityId]*player.Player),
 		playerNames:      make(map[string]*player.Player),
+		workQueue:        make(chan func(*Game), 256),
+		playerConnect:    make(chan *player.Player),
+		playerDisconnect: make(chan EntityId),
 		time:             worldStore.Time,
 		worldStore:       worldStore,
 	}
@@ -69,9 +76,56 @@ func NewGame(worldPath string) (game *Game, err os.Error) {
 	return
 }
 
-// login negotiates a player client login, and adds a new player if successful.
-// Note that it does not run in the game's goroutine.
+// Fetch external events and respond appropriately
+func (game *Game) mainLoop() {
+	ticker := time.NewTicker(NanosecondsInSecond / TicksPerSecond)
+
+	for {
+		select {
+		case f := <-game.workQueue:
+			f(game)
+		case <-ticker.C:
+			game.onTick()
+		case player := <-game.playerConnect:
+			game.onPlayerConnect(player)
+		case entityId := <-game.playerDisconnect:
+			game.onPlayerDisconnect(entityId)
+		}
+	}
+}
+
+// A new player has connected to the server
+func (game *Game) onPlayerConnect(newPlayer *player.Player) {
+	game.players[newPlayer.GetEntityId()] = newPlayer
+	game.playerNames[newPlayer.Name()] = newPlayer
+}
+
+// A player has disconnected from the server
+func (game *Game) onPlayerDisconnect(entityId EntityId) {
+	oldPlayer := game.players[entityId]
+	game.players[entityId] = nil, false
+	game.playerNames[oldPlayer.Name()] = nil, false
+	game.entityManager.RemoveEntityById(entityId)
+
+	playerData := oldPlayer.WriteNbt()
+
+	if err := game.worldStore.WritePlayerData(oldPlayer.Name(), playerData); err != nil {
+		log.Printf("Failed when writing player data: %s", err)
+	}
+}
+
+func (game *Game) onTick() {
+	game.time++
+	if game.time%TicksPerSecond == 0 {
+		game.sendTimeUpdate()
+	}
+}
+
+// Negotiate a new player client login. This function runs in a new goroutine
+// for each player connection and therefore should not attempt to alter the
+// game structure without enqueue().
 func (game *Game) login(conn net.Conn) {
+	// TODO: This function should access game in a thread-safe way for reading
 	var err, clientErr os.Error
 
 	defer func() {
@@ -161,13 +215,7 @@ func (game *Game) login(conn net.Conn) {
 		}
 	}
 
-	addedChan := make(chan struct{})
-	game.enqueue(func(_ *Game) {
-		game.addPlayer(player)
-		addedChan <- struct{}{}
-	})
-	_ = <-addedChan
-
+	game.playerConnect <- player
 	player.Start()
 }
 
@@ -189,48 +237,9 @@ func (game *Game) Serve(addr string) {
 	}
 }
 
-// addPlayer adds the player to the set of connected players.
-func (game *Game) addPlayer(newPlayer *player.Player) {
-	game.players[newPlayer.GetEntityId()] = newPlayer
-	game.playerNames[newPlayer.Name()] = newPlayer
-}
+// Utility functions
 
-func (game *Game) removePlayer(entityId EntityId) {
-	oldPlayer := game.players[entityId]
-	game.players[entityId] = nil, false
-	game.playerNames[oldPlayer.Name()] = nil, false
-	game.entityManager.RemoveEntityById(entityId)
-}
-
-func (game *Game) multicastPacket(packet []byte, except interface{}) {
-	for _, player := range game.players {
-		if player == except {
-			continue
-		}
-
-		player.TransmitPacket(packet)
-	}
-}
-
-func (game *Game) enqueue(f func(*Game)) {
-	game.mainQueue <- f
-}
-
-func (game *Game) mainLoop() {
-	ticker := time.NewTicker(NanosecondsInSecond / TicksPerSecond)
-
-	for {
-		select {
-		case f := <-game.mainQueue:
-			f(game)
-		case <-ticker.C:
-			game.tick()
-		case entityId := <-game.playerDisconnect:
-			game.removePlayer(entityId)
-		}
-	}
-}
-
+// Send a time/keepalive packet
 func (game *Game) sendTimeUpdate() {
 	buf := new(bytes.Buffer)
 	proto.ServerWriteTimeUpdate(buf, game.time)
@@ -243,12 +252,24 @@ func (game *Game) sendTimeUpdate() {
 	game.multicastPacket(buf.Bytes(), nil)
 }
 
-func (game *Game) tick() {
-	game.time++
-	if game.time%TicksPerSecond == 0 {
-		game.sendTimeUpdate()
+// Send a packet to every player connected to the server
+func (game *Game) multicastPacket(packet []byte, except interface{}) {
+	for _, player := range game.players {
+		if player == except {
+			continue
+		}
+
+		player.TransmitPacket(packet)
 	}
 }
+
+// Safely enqueue some work to be executed at some point in the future
+func (game *Game) enqueue(f func(*Game)) {
+	game.workQueue <- f
+}
+
+
+// The following functions implement the IGame interface
 
 func (game *Game) BroadcastMessage(msg string) {
 	buf := new(bytes.Buffer)

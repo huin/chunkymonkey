@@ -58,6 +58,36 @@ func ReadShort(tag nbt.ITag, path string) (v int16, err os.Error) {
 	return vTag.Value, nil
 }
 
+func ReadByte(tag nbt.ITag, path string) (v int8, err os.Error) {
+	vTag, ok := tag.Lookup(path).(*nbt.Byte)
+	if !ok {
+		err = fmt.Errorf("ReadByte %q: was not a Byte", path)
+		return
+	}
+
+	return vTag.Value, nil
+}
+
+func ReadInt(tag nbt.ITag, path string) (v int32, err os.Error) {
+	vTag, ok := tag.Lookup(path).(*nbt.Int)
+	if !ok {
+		err = fmt.Errorf("ReadInt %q: was not a Int", path)
+		return
+	}
+
+	return vTag.Value, nil
+}
+
+func ReadFloat(tag nbt.ITag, path string) (v float32, err os.Error) {
+	vTag, ok := tag.Lookup(path).(*nbt.Float)
+	if !ok {
+		err = fmt.Errorf("ReadFloat %q: was not a Float", path)
+		return
+	}
+
+	return vTag.Value, nil
+}
+
 func ReadAbsXyz(tag nbt.ITag, path string) (pos AbsXyz, err os.Error) {
 	x, y, z, err := ReadDouble3(tag, path)
 	if err != nil {

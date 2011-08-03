@@ -178,3 +178,54 @@ func (w *PlayerInventory) ReadNbt(tag nbt.ITag) (err os.Error) {
 
 	return
 }
+
+func (w *PlayerInventory) WriteNbt() nbt.ITag {
+	slots := make([]nbt.ITag, 0, 0)
+
+	// Add the holding inventory
+	for i := 0; i < int(w.holding.NumSlots()); i++ {
+		slot := w.holding.Slot(SlotId(i))
+		if !slot.IsEmpty() {
+			slots = append(slots, &nbt.Compound{
+				map[string]nbt.ITag{
+					"Slot":   &nbt.Byte{int8(i)},
+					"id":     &nbt.Short{int16(slot.ItemTypeId)},
+					"Count":  &nbt.Byte{int8(slot.Count)},
+					"Damage": &nbt.Short{int16(slot.Data)},
+				},
+			})
+		}
+	}
+
+	// Add the main inventory
+	for i := 0; i < int(w.main.NumSlots()); i++ {
+		slot := w.main.Slot(SlotId(i))
+		if !slot.IsEmpty() {
+			slots = append(slots, &nbt.Compound{
+				map[string]nbt.ITag{
+					"Slot":   &nbt.Byte{int8(i + playerInvHoldingNum)},
+					"id":     &nbt.Short{int16(slot.ItemTypeId)},
+					"Count":  &nbt.Byte{int8(slot.Count)},
+					"Damage": &nbt.Short{int16(slot.Data)},
+				},
+			})
+		}
+	}
+
+	// Add the armor inventory
+	for i := 0; i < int(w.armor.NumSlots()); i++ {
+		slot := w.armor.Slot(SlotId(i))
+		if !slot.IsEmpty() {
+			slots = append(slots, &nbt.Compound{
+				map[string]nbt.ITag{
+					"Slot":   &nbt.Byte{int8(i + 100)},
+					"id":     &nbt.Short{int16(slot.ItemTypeId)},
+					"Count":  &nbt.Byte{int8(slot.Count)},
+					"Damage": &nbt.Short{int16(slot.Data)},
+				},
+			})
+		}
+	}
+
+	return &nbt.List{nbt.TagCompound, slots}
+}

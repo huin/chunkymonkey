@@ -36,19 +36,39 @@ func init() {
 }
 
 type Player struct {
+	// These entities should be unchanged through a single login
 	EntityId
 	playerClient   playerClient
 	shardConnecter gamerules.IShardConnecter
 	conn           net.Conn
 	name           string
-	spawnBlock     BlockXyz
-	position       AbsXyz
-	height         AbsCoord
-	look           LookDegrees
-	chunkSubs      chunkSubscriptions
+	loginComplete  bool
 	spawnComplete  bool
 
-	health Health
+	// Data entries that may change
+	spawnBlock BlockXyz
+	position   AbsXyz
+	height     AbsCoord
+	look       LookDegrees
+	chunkSubs  chunkSubscriptions
+	health     Health
+
+	// The following data fields are loaded, but not used yet
+	dimension    int32
+	onGround     int8
+	sleeping     int8
+	fallDistance float32
+	sleepTimer   int16
+	attackTime   int16
+	deathTime    int16
+	hurtTime     int16
+	motion       struct {
+		x float64
+		y float64
+		z float64
+	}
+	air  int16
+	fire int16
 
 	cursor       gamerules.Slot // Item being moved by mouse cursor.
 	inventory    window.PlayerInventory
@@ -143,7 +163,88 @@ func (player *Player) ReadNbt(playerData nbt.ITag) (err os.Error) {
 		return
 	}
 
+	if player.onGround, err = nbtutil.ReadByte(playerData, "OnGround"); err != nil {
+		return
+	}
+
+	if player.dimension, err = nbtutil.ReadInt(playerData, "Dimension"); err != nil {
+		return
+	}
+
+	if player.sleeping, err = nbtutil.ReadByte(playerData, "Sleeping"); err != nil {
+		return
+	}
+
+	if player.fallDistance, err = nbtutil.ReadFloat(playerData, "FallDistance"); err != nil {
+		return
+	}
+
+	if player.sleepTimer, err = nbtutil.ReadShort(playerData, "SleepTimer"); err != nil {
+		return
+	}
+
+	if player.attackTime, err = nbtutil.ReadShort(playerData, "AttackTime"); err != nil {
+		return
+	}
+
+	if player.deathTime, err = nbtutil.ReadShort(playerData, "DeathTime"); err != nil {
+		return
+	}
+
+	motion := player.motion
+	if motion.x, motion.y, motion.z, err = nbtutil.ReadDouble3(playerData, "Motion"); err != nil {
+		return
+	}
+
+	if player.hurtTime, err = nbtutil.ReadShort(playerData, "HurtTime"); err != nil {
+		return
+	}
+
+	if player.air, err = nbtutil.ReadShort(playerData, "Air"); err != nil {
+		return
+	}
+
+	if player.fire, err = nbtutil.ReadShort(playerData, "Fire"); err != nil {
+		return
+	}
+
 	return
+}
+
+// Serialize the player data to an Nbt tag so it can be written to file
+func (player *Player) WriteNbt() *nbt.Compound {
+	data := &nbt.Compound{
+		map[string]nbt.ITag{
+			"OnGround":     &nbt.Byte{player.onGround},
+			"Dimension":    &nbt.Int{player.dimension},
+			"Sleeping":     &nbt.Byte{player.sleeping},
+			"FallDistance": &nbt.Float{player.fallDistance},
+			"SleepTimer":   &nbt.Short{player.sleepTimer},
+			"AttackTime":   &nbt.Short{player.attackTime},
+			"DeathTime":    &nbt.Short{player.deathTime},
+			"Motion": &nbt.List{nbt.TagDouble, []nbt.ITag{
+				&nbt.Double{player.motion.x},
+				&nbt.Double{player.motion.y},
+				&nbt.Double{player.motion.z},
+			}},
+			"HurtTime":  &nbt.Short{player.hurtTime},
+			"Inventory": player.inventory.WriteNbt(),
+			"Air":       &nbt.Short{player.air},
+			"Rotation": &nbt.List{nbt.TagFloat, []nbt.ITag{
+				&nbt.Float{float32(player.look.Yaw)},
+				&nbt.Float{float32(player.look.Pitch)},
+			}},
+			"Pos": &nbt.List{nbt.TagDouble, []nbt.ITag{
+				&nbt.Double{float64(player.position.X)},
+				&nbt.Double{float64(player.position.Y)},
+				&nbt.Double{float64(player.position.Z)},
+			}},
+			"Fire":   &nbt.Short{player.fire},
+			"Health": &nbt.Short{int16(player.health)},
+		},
+	}
+
+	return data
 }
 
 func (player *Player) getHeldItemTypeId() ItemTypeId {
