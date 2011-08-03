@@ -62,13 +62,9 @@ type Player struct {
 	attackTime   int16
 	deathTime    int16
 	hurtTime     int16
-	motion       struct {
-		x float64
-		y float64
-		z float64
-	}
-	air  int16
-	fire int16
+	motion       AbsVelocity
+	air          int16
+	fire         int16
 
 	cursor       gamerules.Slot // Item being moved by mouse cursor.
 	inventory    window.PlayerInventory
@@ -191,8 +187,7 @@ func (player *Player) ReadNbt(playerData nbt.ITag) (err os.Error) {
 		return
 	}
 
-	motion := player.motion
-	if motion.x, motion.y, motion.z, err = nbtutil.ReadDouble3(playerData, "Motion"); err != nil {
+	if player.motion, err = nbtutil.ReadAbsVelocity(playerData, "Motion"); err != nil {
 		return
 	}
 
@@ -223,9 +218,9 @@ func (player *Player) WriteNbt() *nbt.Compound {
 			"AttackTime":   &nbt.Short{player.attackTime},
 			"DeathTime":    &nbt.Short{player.deathTime},
 			"Motion": &nbt.List{nbt.TagDouble, []nbt.ITag{
-				&nbt.Double{player.motion.x},
-				&nbt.Double{player.motion.y},
-				&nbt.Double{player.motion.z},
+				&nbt.Double{float64(player.motion.X)},
+				&nbt.Double{float64(player.motion.Y)},
+				&nbt.Double{float64(player.motion.Z)},
 			}},
 			"HurtTime":  &nbt.Short{player.hurtTime},
 			"Inventory": player.inventory.WriteNbt(),
