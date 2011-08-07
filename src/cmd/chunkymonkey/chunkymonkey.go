@@ -11,6 +11,7 @@ import (
 
 	"chunkymonkey"
 	"chunkymonkey/gamerules"
+	"chunkymonkey/worldstore"
 )
 
 var addr = flag.String(
@@ -83,10 +84,17 @@ func main() {
 	worldPath := flag.Arg(0)
 	fi, err := os.Stat(worldPath)
 	if err != nil {
-		log.Printf("Error loading world from directory %v: %v", worldPath, err)
-		os.Exit(1)
+		log.Printf("Could not load world from directory %v: %v", worldPath, err)
+		log.Printf("Creating a new world in directory %v", worldPath)
+		err = worldstore.CreateWorld(worldPath)
 	}
-	if !fi.IsDirectory() {
+	if err != nil {
+		log.Printf("Error creating new world: %v", err)
+	} else {
+		fi, err = os.Stat(worldPath)
+	}
+
+	if fi == nil || !fi.IsDirectory() {
 		log.Printf("Error loading world %v: Not a directory", worldPath)
 		os.Exit(1)
 	}

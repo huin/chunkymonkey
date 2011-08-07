@@ -95,7 +95,8 @@ func LoadWorldStore(worldPath string) (world *WorldStore, err os.Error) {
 }
 
 func loadLevelData(worldPath string) (levelData nbt.ITag, err os.Error) {
-	file, err := os.Open(path.Join(worldPath, "level.dat"))
+	filename := path.Join(worldPath, "level.dat")
+	file, err := os.Open(filename)
 	if err != nil {
 		return
 	}
@@ -163,13 +164,18 @@ func (world *WorldStore) PlayerData(user string) (playerData nbt.ITag, err os.Er
 }
 
 func (world *WorldStore) WritePlayerData(user string, data *nbt.Compound) (err os.Error) {
+	playerDir := path.Join(world.WorldPath, "players")
+	if err = os.MkdirAll(playerDir, 0777); err != nil {
+		return
+	}
+
 	filename := path.Join(world.WorldPath, "players", user+".dat")
 	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0666)
+	defer file.Close()
 
 	if err != nil {
 		return err
 	}
-	defer file.Close()
 
 	gzipWriter, err := gzip.NewWriter(file)
 	if err != nil {
@@ -181,6 +187,56 @@ func (world *WorldStore) WritePlayerData(user string, data *nbt.Compound) (err o
 
 	return
 }
+
+// Creates a new world at 'worldPath'
+func CreateWorld(worldPath string) (err os.Error) {
+	source := rand.NewSource(time.Nanoseconds())
+	seed := source.Int63()
+
+	data := &nbt.Compound{
+		map[string]nbt.ITag{
+			"Data": &nbt.Compound{
+				map[string]nbt.ITag{
+					"Time":        &nbt.Long{0},
+					"rainTime":    &nbt.Int{0},
+					"thunderTime": &nbt.Int{0},
+					"version":     &nbt.Int{19132}, // TODO: What should this be?
+					"thundering":  &nbt.Byte{0},
+					"raining":     &nbt.Byte{0},
+					"LevelName":   &nbt.String{"world"}, // TODO: Should be specifyable
+					"SpawnX":      &nbt.Int{0},          // TODO: Figure this out from chunk generator?
+					"SpawnY":      &nbt.Int{75},         // TODO: Figure this out from chunk generator?
+					"SpawnZ":      &nbt.Int{0},          // TODO: Figure this out from chunk generator?
+					"LastPlayed":  &nbt.Long{0},
+					"SizeOnDisk":  &nbt.Long{0}, // Needs to be accurate?
+					"RandomSeed":  &nbt.Long{seed},
+				},
+			},
+		},
+	}
+
+	if err = os.MkdirAll(worldPath, 0777); err != nil {
+		return
+	}
+
+	filename := path.Join(worldPath, "level.dat")
+	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		return err
+	}
+
+	gzipWriter, err := gzip.NewWriter(file)
+	if err != nil {
+		return err
+	}
+
+	err = nbt.Write(gzipWriter, data)
+	gzipWriter.Close()
+	file.Close()
+
+	return nil
+}
+
 
 func absXyzFromNbt(tag nbt.ITag, path string) (pos AbsXyz, err os.Error) {
 	posList, posOk := tag.Lookup(path).(*nbt.List)
