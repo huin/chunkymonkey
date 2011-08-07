@@ -35,6 +35,10 @@ func LoadWorldStore(worldPath string) (world *WorldStore, err os.Error) {
 		return
 	}
 
+	if err = makeSubdirs(worldPath); err != nil {
+		return
+	}
+
 	// In both single-player and SMP maps, the 'spawn position' is stored in
 	// the level data.
 	x, xok := levelData.Lookup("Data/SpawnX").(*nbt.Int)
@@ -107,6 +111,21 @@ func loadLevelData(worldPath string) (levelData nbt.ITag, err os.Error) {
 
 	return
 }
+
+func makeSubdirs(worldPath string) (err os.Error) {
+	// Worlds created by the minecraft client don't have the players directory.
+	directory := path.Join(worldPath, "players")
+	stat, err := os.Stat(directory)
+	if err == nil && stat.IsDirectory() {
+		return nil
+	}
+	if err = os.MkdirAll(directory, 0755); err != nil {
+		err = os.NewError("Could not create worldstore directory: " + err.String())
+		return err
+	}
+	return
+}
+
 
 // NOTE: ChunkStoreForDimension shouldn't really be used in the server just
 // yet.
