@@ -191,6 +191,7 @@ func init() {
 	aspectMakers = map[string]aspectMakerFn{
 		"Chest":     makeChestAspect,
 		"Furnace":   makeFurnaceAspect,
+		"Sapling":   makeSaplingAspect,
 		"Standard":  makeStandardAspect,
 		"Todo":      makeTodoAspect,
 		"Void":      makeVoidAspect,

@@ -125,8 +125,15 @@
       "Replaceable": false,
       "Attachable": false
     },
-    "Aspect": "Todo",
+    "Aspect": "Sapling",
     "AspectArgs": {
+      "DroppedItems": [
+        {
+          "DroppedItem": 6,
+          "Probability": 100,
+          "Count": 1
+        }
+      ],
       "Comment": "These should grow over time"
     }
   },

@@ -8,7 +8,7 @@ import (
 
 type request struct {
 	chunkLoc     ChunkXz
-	responseChan chan<- ChunkResult
+	responseChan chan<- ChunkReadResult
 }
 
 type IChunkStoreForeground interface {
@@ -33,12 +33,12 @@ func (s *ChunkService) Serve() {
 	for {
 		request := <-s.requests
 		reader, err := s.store.LoadChunk(request.chunkLoc)
-		request.responseChan <- ChunkResult{reader, err}
+		request.responseChan <- ChunkReadResult{reader, err}
 	}
 }
 
-func (s *ChunkService) LoadChunk(chunkLoc ChunkXz) <-chan ChunkResult {
-	responseChan := make(chan ChunkResult)
+func (s *ChunkService) LoadChunk(chunkLoc ChunkXz) <-chan ChunkReadResult {
+	responseChan := make(chan ChunkReadResult)
 
 	s.requests <- request{
 		chunkLoc:     chunkLoc,

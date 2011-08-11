@@ -32,6 +32,7 @@ type Chunk struct {
 
 	activeBlocks    map[BlockIndex]bool // Blocks that need to "tick".
 	newActiveBlocks map[BlockIndex]bool // Blocks added as active for next "tick".
+	tickAll         bool                // Whether or not all blocks should be allowed to "tick" once
 }
 
 func newChunkFromReader(reader chunkstore.IChunkReader, shard *ChunkShard) (chunk *Chunk) {
@@ -52,6 +53,7 @@ func newChunkFromReader(reader chunkstore.IChunkReader, shard *ChunkShard) (chun
 
 		activeBlocks:    make(map[BlockIndex]bool),
 		newActiveBlocks: make(map[BlockIndex]bool),
+		tickAll:         true,
 	}
 
 	chunk.addEntities(reader.Entities())
@@ -282,6 +284,8 @@ func (chunk *Chunk) reqPlaceItem(player gamerules.IPlayerClient, target *BlockXy
 
 	// Safe to replace block.
 	chunk.setBlock(target, subLoc, index, heldBlockType, byte(slot.Data))
+	// Allow this block to tick once
+	chunk.AddActiveBlockIndex(index)
 
 	slot.Decrement()
 }
@@ -381,8 +385,12 @@ func (chunk *Chunk) BlockQuery(blockLoc BlockXyz) (isSolid bool, isWithinChunk b
 
 func (chunk *Chunk) tick() {
 	chunk.spawnTick()
-
-	chunk.blockTick()
+	if chunk.tickAll {
+		chunk.tickAll = false
+		chunk.blockTickAll()
+	} else {
+		chunk.blockTick()
+	}
 }
 
 // spawnTick runs all spawns for a tick.
@@ -454,6 +462,33 @@ func (chunk *Chunk) blockTick() {
 		if !blockInstance.BlockType.Aspect.Tick(&blockInstance) {
 			// Block now inactive. Remove this block from the active list.
 			chunk.activeBlocks[blockIndex] = false, false
+		}
+	}
+}
+
+// blockTickAll runs a "Tick" for all blocks within the chunk
+func (chunk *Chunk) blockTickAll() {
+	var ok bool
+	var blockInstance gamerules.BlockInstance
+	blockInstance.Chunk = chunk
+
+	var blockIndex BlockIndex
+	max := BlockIndex(len(chunk.blocks))
+
+	for blockIndex = 0; blockIndex < max; blockIndex++ {
+		blockInstance.BlockType, blockInstance.Data, ok = chunk.blockTypeAndData(blockIndex)
+		if ok {
+			blockInstance.SubLoc = blockIndex.ToSubChunkXyz()
+			blockInstance.Index = blockIndex
+			blockInstance.BlockLoc = *chunk.loc.ToBlockXyz(&blockInstance.SubLoc)
+
+			if blockInstance.BlockType.Aspect.Tick(&blockInstance) {
+				// Block now active, so re-queue this
+				chunk.activeBlocks[blockIndex] = true, true
+			} else {
+				// Block now inactive. Remove this block from the active list.
+				chunk.activeBlocks[blockIndex] = false, false
+			}
 		}
 	}
 }

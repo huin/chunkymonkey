@@ -9,8 +9,13 @@ import (
 	"nbt"
 )
 
-type ChunkResult struct {
+type ChunkReadResult struct {
 	Reader IChunkReader
+	Err    os.Error
+}
+
+type ChunkWriteResult struct {
+	Writer IChunkWriter
 	Err    os.Error
 }
 
@@ -18,7 +23,13 @@ type IChunkStore interface {
 	// Serve() serves LoadChunk() requests in the foreground.
 	Serve()
 
-	LoadChunk(chunkLoc ChunkXz) (result <-chan ChunkResult)
+	LoadChunk(chunkLoc ChunkXz) (result <-chan ChunkReadResult)
+}
+
+type IChunkWriteableStore interface {
+	IChunkStore
+
+	Writer() IChunkWriter
 }
 
 type IChunkReader interface {
@@ -46,6 +57,32 @@ type IChunkReader interface {
 	// For low-level NBT access. Not for regular use. It's possible that this
 	// might return nil if the underlying system doesn't use NBT.
 	RootTag() nbt.ITag
+}
+
+type IChunkWriter interface {
+	// Sets the chunk location.
+	SetChunkLoc(loc ChunkXz)
+
+	// Sets the block IDs in the chunk.
+	SetBlocks(blocks []byte)
+
+	// Sets the block data in the chunk.
+	SetBlockData(blockData []byte)
+
+	// Sets the block light data in the chunk.
+	BlockLight(blockLight []byte)
+
+	// Sets the sky light data in the chunk.
+	SkyLight(skyLight []byte)
+
+	// Sets the height map data in the chunk.
+	HeightMap(heightMap []byte)
+
+	// Sets a list of the entities (items, mobs) within the chunk.
+	Entities(entities []gamerules.INonPlayerEntity)
+
+	// Submits the set chunk data for writing.
+	Commit(result chan<- ChunkWriteResult)
 }
 
 // Given the NamedTag for a level.dat, returns an appropriate
