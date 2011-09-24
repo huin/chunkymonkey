@@ -10,3 +10,4 @@ mock_*.go
 deps.dot*
 diagrams/*.png
 diagrams/deps.dot
+.DS_Store
