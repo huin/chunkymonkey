@@ -19,6 +19,9 @@ type StandardAspect struct {
 	// Items, up to one of which will potentially spawn when block destroyed.
 	DroppedItems []blockDropItem
 	BreakOn      DigStatus
+	ToolType     int8
+	ToolRequired bool
+	ToolDamage   int8
 }
 
 func (aspect *StandardAspect) setAttrs(blockAttrs *BlockAttrs) {

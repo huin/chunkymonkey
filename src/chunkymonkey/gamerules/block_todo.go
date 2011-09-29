@@ -9,7 +9,7 @@ func makeTodoAspect() (aspect IBlockAspect) {
 // whose behaviour is still to be implemented. A comment allows for
 // notes to be made, but provides no functional change.
 type TodoAspect struct {
-	VoidAspect
+	StandardAspect
 	Comment string
 }
 

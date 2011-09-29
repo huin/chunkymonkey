@@ -5,14 +5,16 @@ import (
 )
 
 type BlockAttrs struct {
-	id           BlockId
-	Name         string
-	Opacity      int8
-	defined      bool
-	Destructable bool
-	Solid        bool
-	Replaceable  bool
-	Attachable   bool
+	id              BlockId
+	Name            string
+	Opacity         int8
+	defined         bool
+	Destructable    bool
+	Solid           bool
+	Replaceable     bool
+	Attachable      bool
+	BlastResistance float32
+	Luminance       int8
 }
 
 // The core information about any block type.
