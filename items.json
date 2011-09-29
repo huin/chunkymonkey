@@ -495,8 +495,64 @@
     "Name": "cookie",
     "MaxStack": 8
   },
+  "358": {
+    "Name": "map",
+    "MaxStack": 1
+  },
+  "358": {
+    "Name": "shears",
+    "MaxStack": 1
+  },
   "360": {
     "Name": "melon slice",
+    "MaxStack": 64
+  },
+  "361": {
+    "Name": "pumpkin seeds",
+    "MaxStack": 64
+  },
+  "362": {
+    "Name": "melon seeds",
+    "MaxStack": 64
+  },
+  "363": {
+    "Name": "raw beef",
+    "MaxStack": 64
+  },
+  "364": {
+    "Name": "steak",
+    "MaxStack": 64
+  },
+  "365": {
+    "Name": "raw chicken",
+    "MaxStack": 64
+  },
+  "366": {
+    "Name": "cooked chicken",
+    "MaxStack": 64
+  },
+  "367": {
+    "Name": "rotten flesh",
+    "MaxStack": 64
+  },
+  "368": {
+    "Name": "ender pearl",
+    "MaxStack": 64
+  },
+  "369": {
+    "Name": "blaze rod",
+    "MaxStack": 64
+  },
+  "370": {
+    "Name": "ghast tear",
+    "MaxStack": 64
+  },
+  "371": {
+    "Name": "gold nugget",
+    "MaxStack": 64
+  },
+  "372": {
+    "Name": "nether wart",
     "MaxStack": 64
   },
   "2256": {
