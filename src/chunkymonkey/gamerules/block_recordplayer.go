@@ -1,7 +1,7 @@
 package gamerules
 
 import (
-	"os"
+	"errors"
 
 	"nbt"
 )
@@ -19,13 +19,13 @@ func NewRecordPlayerTileEntity() ITileEntity {
 	return &recordPlayerTileEntity{}
 }
 
-func (recordPlayer *recordPlayerTileEntity) UnmarshalNbt(tag nbt.Compound) (err os.Error) {
+func (recordPlayer *recordPlayerTileEntity) UnmarshalNbt(tag nbt.Compound) (err error) {
 	if err = recordPlayer.tileEntity.UnmarshalNbt(tag); err != nil {
 		return
 	}
 
 	if recordTag, ok := tag.Lookup("Record").(*nbt.Int); !ok {
-		return os.NewError("missing or incorrect type for RecordPlayer Record")
+		return errors.New("missing or incorrect type for RecordPlayer Record")
 	} else {
 		recordPlayer.record = recordTag.Value
 	}
@@ -33,7 +33,7 @@ func (recordPlayer *recordPlayerTileEntity) UnmarshalNbt(tag nbt.Compound) (err 
 	return nil
 }
 
-func (recordPlayer *recordPlayerTileEntity) MarshalNbt(tag nbt.Compound) (err os.Error) {
+func (recordPlayer *recordPlayerTileEntity) MarshalNbt(tag nbt.Compound) (err error) {
 	if err = recordPlayer.tileEntity.MarshalNbt(tag); err != nil {
 		return
 	}

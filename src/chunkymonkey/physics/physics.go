@@ -2,7 +2,6 @@ package physics
 
 import (
 	"math"
-	"os"
 
 	"chunkymonkey/nbtutil"
 	"chunkymonkey/proto"
@@ -61,7 +60,7 @@ func (obj *PointObject) Init(position AbsXyz, velocity AbsVelocity) {
 	obj.onGround = false
 }
 
-func (obj *PointObject) UnmarshalNbt(tag nbt.Compound) (err os.Error) {
+func (obj *PointObject) UnmarshalNbt(tag nbt.Compound) (err error) {
 	// Position within the chunk
 	if obj.position, err = nbtutil.ReadAbsXyz(tag, "Pos"); err != nil {
 		return
@@ -81,7 +80,7 @@ func (obj *PointObject) UnmarshalNbt(tag nbt.Compound) (err os.Error) {
 	return nil
 }
 
-func (obj *PointObject) MarshalNbt(tag nbt.Compound) (err os.Error) {
+func (obj *PointObject) MarshalNbt(tag nbt.Compound) (err error) {
 	var onGround int8
 	if obj.onGround {
 		onGround = 1

@@ -2,12 +2,9 @@
 
 package gamerules
 
-import (
-	"os"
-	"testing"
-)
+import "testing"
 
-func loadRecipesAndItems() (recipes *RecipeSet, itemTypes ItemTypeMap, err os.Error) {
+func loadRecipesAndItems() (recipes *RecipeSet, itemTypes ItemTypeMap, err error) {
 	blockTypes, err := LoadBlocksFromFile("blocks.json")
 	if err != nil {
 		return

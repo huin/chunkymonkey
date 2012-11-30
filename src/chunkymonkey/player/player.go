@@ -1,13 +1,13 @@
 package player
 
 import (
+	"errors"
 	"expvar"
 	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
-	"os"
-	"rand"
 	"strings"
 	"time"
 
@@ -23,7 +23,7 @@ import (
 var (
 	expVarPlayerConnectionCount    *expvar.Int
 	expVarPlayerDisconnectionCount *expvar.Int
-	errUnknownItemID               os.Error
+	errUnknownItemID               error
 
 	playerPingNoCheck = flag.Bool(
 		"player_ping_no_check", false,
@@ -36,14 +36,14 @@ const (
 	MaxHealth    = Health(20)
 	MaxFoodUnits = FoodUnits(20)
 
-	PingTimeoutNs  = 1e9 * 60 // Player connection times out after 60 seconds.
-	PingIntervalNs = 1e9 * 20 // Time between receiving keep alive response from client and sending new request.
+	PingTimeout  = 60*time.Second // Player connection times out after 60 seconds.
+	PingInterval = 20*time.Second // Time between receiving keep alive response from client and sending new request.
 )
 
 func init() {
 	expVarPlayerConnectionCount = expvar.NewInt("player-connection-count")
 	expVarPlayerDisconnectionCount = expvar.NewInt("player-disconnection-count")
-	errUnknownItemID = os.NewError("Unknown item ID")
+	errUnknownItemID = errors.New("Unknown item ID")
 }
 
 type Player struct {
@@ -67,7 +67,7 @@ type Player struct {
 	ping struct {
 		running     bool
 		id          int32       // Last ID sent in keep-alive, or 0 if no current ping.
-		timestampNs int64       // Nanoseconds since epoch since last keep-alive sent.
+		timestamp time.Time   // Time when the last keep-alive was sent.
 		timer       *time.Timer // Time until next ping, or timeout of current.
 	}
 
@@ -75,7 +75,7 @@ type Player struct {
 	mainQueue    chan func(*Player)
 	rxQueue      chan interface{}
 	txQueue      chan []byte
-	txErrChan    chan os.Error
+	txErrChan    chan error
 	stopPlayer   chan struct{}
 
 	// The following attributes are game-logic related.
@@ -132,7 +132,7 @@ func NewPlayer(entityId EntityId, shardConnecter gamerules.IShardConnecter, conn
 
 		mainQueue:  make(chan func(*Player), 128),
 		txQueue:    make(chan []byte, 128),
-		txErrChan:  make(chan os.Error, 1),
+		txErrChan:  make(chan error, 1),
 		stopPlayer: make(chan struct{}, 1),
 
 		game: game,
@@ -173,7 +173,7 @@ func (player *Player) Look() LookDegrees {
 
 // UnmarshalNbt unpacks the player data from their persistantly stored NBT
 // data. It must only be called before Player.Run().
-func (player *Player) UnmarshalNbt(tag nbt.Compound) (err os.Error) {
+func (player *Player) UnmarshalNbt(tag nbt.Compound) (err error) {
 	if player.position, err = nbtutil.ReadAbsXyz(tag, "Pos"); err != nil {
 		return
 	}
@@ -241,7 +241,7 @@ func (player *Player) UnmarshalNbt(tag nbt.Compound) (err os.Error) {
 
 // MarshalNbt packs the player data into a nbt.Compound so it can be written to
 // persistant storage.
-func (player *Player) MarshalNbt(tag nbt.Compound) (err os.Error) {
+func (player *Player) MarshalNbt(tag nbt.Compound) (err error) {
 	if err = player.inventory.MarshalNbt(tag); err != nil {
 		return
 	}
@@ -650,13 +650,13 @@ func (player *Player) pingNew() {
 			// avoid misreading keep alive IDs.
 			player.ping.id = 1
 		}
-		player.ping.timestampNs = time.Nanoseconds()
+		player.ping.timestamp = time.Now()
 
 		data := player.txPktSerial.SerializePackets(
 			&proto.PacketKeepAlive{player.ping.id})
 		player.TransmitPacket(data)
 
-		player.ping.timer = time.NewTimer(PingTimeoutNs)
+		player.ping.timer = time.NewTimer(PingTimeout)
 	}
 }
 
@@ -695,22 +695,23 @@ func (player *Player) pingReceived(id int32) {
 	}
 
 	// Received valid keep-alive.
-	now := time.Nanoseconds()
+	now := time.Now()
 
 	if player.ping.timer != nil {
 		player.ping.timer.Stop()
 	}
 
-	latencyNs := now - player.ping.timestampNs
+	latency := now.Sub(player.ping.timestamp)
 	// Check that there wasn't an apparent time-shift on this before broadcasting
 	// this latency value.
-	if latencyNs >= 0 && latencyNs < PingTimeoutNs {
-		player.game.BroadcastPacket(&proto.PacketPlayerListItem{player.name, true, int16(latencyNs / 1e6)})
+	if latency >= 0 && latency < PingTimeout {
+		ping := int16(latency.Nanoseconds()/1e6) // Converts to milliseconds.
+		player.game.BroadcastPacket(&proto.PacketPlayerListItem{player.name, true, ping})
 	}
 
 	player.ping.running = false
 	player.ping.id = 0
-	player.ping.timer = time.NewTimer(PingIntervalNs)
+	player.ping.timer = time.NewTimer(PingInterval)
 }
 
 func (player *Player) mainLoop() {

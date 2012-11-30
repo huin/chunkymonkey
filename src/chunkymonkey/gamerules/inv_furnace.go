@@ -1,7 +1,7 @@
 package gamerules
 
 import (
-	"os"
+	"errors"
 
 	. "chunkymonkey/types"
 	"nbt"
@@ -39,13 +39,13 @@ func NewFurnaceInventory() (inv *FurnaceInventory) {
 	return
 }
 
-func (inv *FurnaceInventory) UnmarshalNbt(tag nbt.Compound) (err os.Error) {
+func (inv *FurnaceInventory) UnmarshalNbt(tag nbt.Compound) (err error) {
 	if err = inv.Inventory.UnmarshalNbt(tag); err != nil {
 		return
 	}
 
 	if burnTimeTag, ok := tag.Lookup("BurnTime").(*nbt.Short); !ok {
-		return os.NewError("Bad or missing BurnTime tag in Furnace NBT")
+		return errors.New("Bad or missing BurnTime tag in Furnace NBT")
 	} else {
 		inv.burnTime = Ticks(burnTimeTag.Value)
 
@@ -55,7 +55,7 @@ func (inv *FurnaceInventory) UnmarshalNbt(tag nbt.Compound) (err os.Error) {
 	}
 
 	if cookTimeTag, ok := tag.Lookup("CookTime").(*nbt.Short); !ok {
-		return os.NewError("Bad or missing CookTime tag in Furnace NBT")
+		return errors.New("Bad or missing CookTime tag in Furnace NBT")
 	} else {
 		inv.cookTime = Ticks(cookTimeTag.Value)
 	}
@@ -63,7 +63,7 @@ func (inv *FurnaceInventory) UnmarshalNbt(tag nbt.Compound) (err os.Error) {
 	return nil
 }
 
-func (inv *FurnaceInventory) MarshalNbt(tag nbt.Compound) (err os.Error) {
+func (inv *FurnaceInventory) MarshalNbt(tag nbt.Compound) (err error) {
 	tag.Set("id", &nbt.String{"Furnace"})
 	tag.Set("BurnTime", &nbt.Short{int16(inv.burnTime)})
 	tag.Set("CookTime", &nbt.Short{int16(inv.cookTime)})

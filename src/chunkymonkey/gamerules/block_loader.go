@@ -1,9 +1,10 @@
 package gamerules
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
-	"json"
 	"os"
 	"strconv"
 
@@ -21,7 +22,7 @@ type blockDef struct {
 	AspectArgs *aspectArgs
 }
 
-func newBlockDefFromBlockType(block *BlockType) (bd *blockDef, err os.Error) {
+func newBlockDefFromBlockType(block *BlockType) (bd *blockDef, err error) {
 	var aspectArgs *aspectArgs
 	aspectArgs, err = newAspectArgs(block.Aspect)
 	if err != nil {
@@ -35,7 +36,7 @@ func newBlockDefFromBlockType(block *BlockType) (bd *blockDef, err os.Error) {
 	return
 }
 
-func (bd *blockDef) LoadBlockType() (block *BlockType, err os.Error) {
+func (bd *blockDef) LoadBlockType() (block *BlockType, err error) {
 	// Create the Aspect attribute of the block.
 	aspect, err := bd.loadAspect()
 	if err != nil {
@@ -49,7 +50,7 @@ func (bd *blockDef) LoadBlockType() (block *BlockType, err os.Error) {
 	return
 }
 
-func (bd *blockDef) loadAspect() (aspect IBlockAspect, err os.Error) {
+func (bd *blockDef) loadAspect() (aspect IBlockAspect, err error) {
 	if bd.AspectArgs == nil {
 		err = fmt.Errorf("missing AspectArgs for type %q", bd.Aspect)
 		return
@@ -69,7 +70,7 @@ type aspectArgs struct {
 	Raw []byte
 }
 
-func newAspectArgs(block IBlockAspect) (a *aspectArgs, err os.Error) {
+func newAspectArgs(block IBlockAspect) (a *aspectArgs, err error) {
 	var raw []byte
 	raw, err = json.Marshal(block)
 	if err != nil {
@@ -81,7 +82,7 @@ func newAspectArgs(block IBlockAspect) (a *aspectArgs, err os.Error) {
 	return
 }
 
-func (a *aspectArgs) UnmarshalJSON(raw []byte) (err os.Error) {
+func (a *aspectArgs) UnmarshalJSON(raw []byte) (err error) {
 	// Copy raw into a.Raw - the JSON library will destroy the content of the
 	// argument after this function returns.
 	a.Raw = make([]byte, len(raw))
@@ -89,12 +90,12 @@ func (a *aspectArgs) UnmarshalJSON(raw []byte) (err os.Error) {
 	return
 }
 
-func (a *aspectArgs) MarshalJSON() (raw []byte, err os.Error) {
+func (a *aspectArgs) MarshalJSON() (raw []byte, err error) {
 	raw = a.Raw
 	return
 }
 
-func LoadBlockDefs(reader io.Reader) (blocks BlockTypeList, err os.Error) {
+func LoadBlockDefs(reader io.Reader) (blocks BlockTypeList, err error) {
 	blocksStr := make(map[string]blockDef)
 	decoder := json.NewDecoder(reader)
 	err = decoder.Decode(&blocksStr)
@@ -109,7 +110,7 @@ func LoadBlockDefs(reader io.Reader) (blocks BlockTypeList, err os.Error) {
 			return
 		}
 		if id < BlockIdMin || id > BlockIdMax {
-			err = os.NewError(fmt.Sprintf(
+			err = errors.New(fmt.Sprintf(
 				"Encountered block type with ID %d which is outside the range"+
 					"%d <= N <= %d", id, BlockIdMin, BlockIdMax))
 			return
@@ -126,7 +127,7 @@ func LoadBlockDefs(reader io.Reader) (blocks BlockTypeList, err os.Error) {
 		id, _ = strconv.Atoi(idStr)
 
 		if blocks[id].defined {
-			err = os.NewError(fmt.Sprintf(
+			err = errors.New(fmt.Sprintf(
 				"Block ID %d defined more than once.", id))
 		}
 
@@ -155,7 +156,7 @@ func LoadBlockDefs(reader io.Reader) (blocks BlockTypeList, err os.Error) {
 	return
 }
 
-func SaveBlockDefs(writer io.Writer, blocks BlockTypeList) (err os.Error) {
+func SaveBlockDefs(writer io.Writer, blocks BlockTypeList) (err error) {
 	blockDefs := make(map[string]blockDef)
 	for id := range blocks {
 		block := &blocks[id]
@@ -181,7 +182,7 @@ func SaveBlockDefs(writer io.Writer, blocks BlockTypeList) (err os.Error) {
 	return
 }
 
-func LoadBlocksFromFile(filename string) (blockTypes BlockTypeList, err os.Error) {
+func LoadBlocksFromFile(filename string) (blockTypes BlockTypeList, err error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return

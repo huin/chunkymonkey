@@ -1,10 +1,6 @@
 package gamerules
 
-import (
-	"os"
-
-	. "chunkymonkey/types"
-)
+import . "chunkymonkey/types"
 
 func makeVoidAspect() (aspect IBlockAspect) {
 	return &VoidAspect{}
@@ -20,7 +16,7 @@ func (aspect *VoidAspect) Name() string {
 	return "Void"
 }
 
-func (aspect *VoidAspect) Check() os.Error {
+func (aspect *VoidAspect) Check() error {
 	return nil
 }
 

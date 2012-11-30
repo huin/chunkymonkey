@@ -2,7 +2,6 @@ package player
 
 import (
 	"io"
-	"os"
 
 	"chunkymonkey/proto"
 )
@@ -17,8 +16,8 @@ type playerRx struct {
 	recvPkt chan<- interface{}
 	RecvPkt <-chan interface{}
 
-	recvErr chan<- os.Error
-	RecvErr <-chan os.Error
+	recvErr chan<- error
+	RecvErr <-chan error
 }
 
 func (p *playerRx) init(conn io.Reader) {
@@ -32,7 +31,7 @@ func (p *playerRx) init(conn io.Reader) {
 
 	// Error channel can hold one so that we can exit the goroutine without
 	// blocking.
-	recvErr := make(chan os.Error, 1)
+	recvErr := make(chan error, 1)
 	p.recvErr = recvErr
 	p.RecvErr = recvErr
 }

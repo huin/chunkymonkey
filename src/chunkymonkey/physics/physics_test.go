@@ -4,13 +4,13 @@ import (
 	"math"
 	"testing"
 
-	gomock "gomock.googlecode.com/hg/gomock"
+	gomock "code.google.com/p/gomock/gomock"
 
 	. "chunkymonkey/types"
 )
 
 func almostEqual(v1, v2 float64) bool {
-	return math.Fabs(v1-v2) < 1e-10
+	return math.Abs(v1-v2) < 1e-10
 }
 
 func Test_calcNextBlockDt(t *testing.T) {

@@ -2,11 +2,11 @@ package server_auth
 
 import (
 	"bufio"
+	"errors"
 	"expvar"
-	"http"
-	"os"
+	"net/http"
+	"net/url"
 	"time"
-	"url"
 )
 
 var (
@@ -16,15 +16,15 @@ var (
 )
 
 var (
-	HttpResponseError     = os.NewError("HTTP response error")
-	ResponseTooLargeError = os.NewError("HTTP response too large")
+	HttpResponseError     = errors.New("HTTP response error")
+	ResponseTooLargeError = errors.New("HTTP response too large")
 )
 
 // An IAuthenticator takes a sessionId and a username string and attempts to
 // authenticate against a server. This interface allows for the use of a dummy
 // authentication server for testing purposes.
 type IAuthenticator interface {
-	Authenticate(sessionId, username string) (ok bool, err os.Error)
+	Authenticate(sessionId, username string) (ok bool, err error)
 }
 
 // DummyAuth is a no-op authentication server, always returning the value of
@@ -34,7 +34,7 @@ type DummyAuth struct {
 }
 
 // Authenticate implements the IAuthenticator.Authenticate method
-func (d *DummyAuth) Authenticate(sessionId, username string) (authenticated bool, err os.Error) {
+func (d *DummyAuth) Authenticate(sessionId, username string) (authenticated bool, err error) {
 	return d.Result, nil
 }
 
@@ -44,7 +44,7 @@ type ServerAuth struct {
 	baseUrl url.URL
 }
 
-func NewServerAuth(baseUrlStr string) (s *ServerAuth, err os.Error) {
+func NewServerAuth(baseUrlStr string) (s *ServerAuth, err error) {
 	baseUrl, err := url.Parse(baseUrlStr)
 	if err != nil {
 		return
@@ -72,11 +72,11 @@ func (s *ServerAuth) buildQuery(sessionId, username string) (query string) {
 }
 
 // Authenticate implements the IAuthenticator.Authenticate method
-func (s *ServerAuth) Authenticate(sessionId, username string) (authenticated bool, err os.Error) {
-	before := time.Nanoseconds()
+func (s *ServerAuth) Authenticate(sessionId, username string) (authenticated bool, err error) {
+	before := time.Now()
 	defer func() {
-		after := time.Nanoseconds()
-		expVarServerAuthTimeNs.Add(after - before)
+		after := time.Now()
+		expVarServerAuthTimeNs.Add(after.Sub(before).Nanoseconds())
 		if authenticated {
 			expVarServerAuthSuccessCount.Add(1)
 		} else {

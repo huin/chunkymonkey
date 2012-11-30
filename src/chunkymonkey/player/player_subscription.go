@@ -82,7 +82,7 @@ func (sub *chunkSubscriptions) Close() {
 
 	for key, ref := range sub.shardClients {
 		ref.shard.Disconnect()
-		sub.shardClients[key] = nil, false
+		delete(sub.shardClients, key)
 	}
 }
 
@@ -168,7 +168,7 @@ func (sub *chunkSubscriptions) unsubscribeFromChunks(chunkLocs []ChunkXz) {
 			ref.count--
 			if ref.count <= 0 {
 				ref.shard.Disconnect()
-				sub.shardClients[shardKey] = nil, false
+				delete(sub.shardClients, shardKey)
 			}
 		} else {
 			// Odd - we don't have a shard connection for that chunk.

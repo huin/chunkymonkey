@@ -55,5 +55,5 @@ func (mgr *EntityManager) RemoveEntityById(entityId EntityId) {
 	mgr.lock.Lock()
 	defer mgr.lock.Unlock()
 
-	mgr.entities[entityId] = false, false
+	delete(mgr.entities, entityId)
 }

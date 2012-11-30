@@ -1,8 +1,8 @@
 package gamerules
 
 import (
+	"errors"
 	"expvar"
-	"os"
 
 	"chunkymonkey/nbtutil"
 	"chunkymonkey/physics"
@@ -41,7 +41,7 @@ func (mob *Mob) Init(id EntityMobType) {
 	expVarMobSpawnCount.Add(1)
 }
 
-func (mob *Mob) UnmarshalNbt(tag nbt.Compound) (err os.Error) {
+func (mob *Mob) UnmarshalNbt(tag nbt.Compound) (err error) {
 	if err = mob.PointObject.UnmarshalNbt(tag); err != nil {
 		return
 	}
@@ -62,10 +62,10 @@ func (mob *Mob) UnmarshalNbt(tag nbt.Compound) (err os.Error) {
 	return nil
 }
 
-func (mob *Mob) MarshalNbt(tag nbt.Compound) (err os.Error) {
+func (mob *Mob) MarshalNbt(tag nbt.Compound) (err error) {
 	mobTypeName, ok := MobNameByType[mob.mobType]
 	if !ok {
-		return os.NewError("unknown mob type")
+		return errors.New("unknown mob type")
 	}
 	if err = mob.PointObject.MarshalNbt(tag); err != nil {
 		return

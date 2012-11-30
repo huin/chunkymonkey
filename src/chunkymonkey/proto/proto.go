@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"math"
-	"os"
 	"reflect"
 
 	. "chunkymonkey/types"
@@ -580,7 +579,7 @@ type PacketPluginMessage struct {
 
 func (*PacketPluginMessage) IsPacket() {}
 
-func (pkt *PacketPluginMessage) MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) (err os.Error) {
+func (pkt *PacketPluginMessage) MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) (err error) {
 	pkt.Channel, err = ps.readString16(reader)
 	if err != nil {
 		return
@@ -601,7 +600,7 @@ func (pkt *PacketPluginMessage) MinecraftUnmarshal(reader io.Reader, ps *PacketS
 	return
 }
 
-func (pkt *PacketPluginMessage) MinecraftMarshal(writer io.Writer, ps *PacketSerializer) (err os.Error) {
+func (pkt *PacketPluginMessage) MinecraftMarshal(writer io.Writer, ps *PacketSerializer) (err error) {
 	err = ps.writeString16(writer, pkt.Channel)
 	if err != nil {
 		return
@@ -640,12 +639,12 @@ func (*PacketDisconnect) IsPacket() {}
 // EntityMetadataTable implements IMarshaler.
 type EntityMetadataTable []EntityMetadata
 
-func (emt *EntityMetadataTable) MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) (err os.Error) {
+func (emt *EntityMetadataTable) MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) (err error) {
 	*emt, err = readEntityMetadataField(reader, ps)
 	return
 }
 
-func (emt *EntityMetadataTable) MinecraftMarshal(writer io.Writer, ps *PacketSerializer) (err os.Error) {
+func (emt *EntityMetadataTable) MinecraftMarshal(writer io.Writer, ps *PacketSerializer) (err error) {
 	return writeEntityMetadataField(writer, ps, *emt)
 }
 
@@ -658,7 +657,7 @@ type ItemSlot struct {
 	Nbt nbt.Compound
 }
 
-func (is *ItemSlot) MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) os.Error {
+func (is *ItemSlot) MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) error {
 	typeIdUint16, err := ps.readUint16(reader)
 	if err != nil {
 		return err
@@ -711,7 +710,7 @@ func (is *ItemSlot) MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) o
 	return nil
 }
 
-func (is *ItemSlot) MinecraftMarshal(writer io.Writer, ps *PacketSerializer) os.Error {
+func (is *ItemSlot) MinecraftMarshal(writer io.Writer, ps *PacketSerializer) error {
 	err := ps.writeUint16(writer, uint16(is.ItemTypeId))
 	if err != nil {
 		return err
@@ -739,10 +738,7 @@ func (is *ItemSlot) MinecraftMarshal(writer io.Writer, ps *PacketSerializer) os.
 				// Have tags.
 				var buf bytes.Buffer
 
-				zWriter, err := gzip.NewWriter(&buf)
-				if err != nil {
-					return err
-				}
+				zWriter := gzip.NewWriter(&buf)
 
 				err = nbt.Write(zWriter, is.Nbt)
 				if err != nil {
@@ -775,7 +771,7 @@ func (is *ItemSlot) MinecraftMarshal(writer io.Writer, ps *PacketSerializer) os.
 // ItemSlotSlice implements IMarshaler.
 type ItemSlotSlice []ItemSlot
 
-func (slots *ItemSlotSlice) MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) (err os.Error) {
+func (slots *ItemSlotSlice) MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) (err error) {
 	var numSlots int16
 	if err = binary.Read(reader, binary.BigEndian, &numSlots); err != nil {
 		return
@@ -794,7 +790,7 @@ func (slots *ItemSlotSlice) MinecraftUnmarshal(reader io.Reader, ps *PacketSeria
 	return
 }
 
-func (slots *ItemSlotSlice) MinecraftMarshal(writer io.Writer, ps *PacketSerializer) (err os.Error) {
+func (slots *ItemSlotSlice) MinecraftMarshal(writer io.Writer, ps *PacketSerializer) (err error) {
 	numSlots := int16(len(*slots))
 	if err = binary.Write(writer, binary.BigEndian, numSlots); err != nil {
 		return
@@ -817,7 +813,7 @@ type FireballData struct {
 	X, Y, Z   int16
 }
 
-func (fd *FireballData) MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) os.Error {
+func (fd *FireballData) MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) error {
 	throwerId, err := ps.readUint32(reader)
 	if err != nil {
 		return err
@@ -846,7 +842,7 @@ func (fd *FireballData) MinecraftUnmarshal(reader io.Reader, ps *PacketSerialize
 	return nil
 }
 
-func (fd *FireballData) MinecraftMarshal(writer io.Writer, ps *PacketSerializer) os.Error {
+func (fd *FireballData) MinecraftMarshal(writer io.Writer, ps *PacketSerializer) error {
 	err := ps.writeUint32(writer, uint32(fd.ThrowerId))
 	if err != nil {
 		return err
@@ -884,7 +880,7 @@ type ChunkDataSize struct {
 	X, Y, Z byte
 }
 
-func (cd *ChunkData) MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) (err os.Error) {
+func (cd *ChunkData) MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) (err error) {
 	if err = ps.readData(reader, reflect.Indirect(reflect.ValueOf(&cd.Size))); err != nil {
 		return
 	}
@@ -921,7 +917,7 @@ func (cd *ChunkData) MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) 
 	// Check that we're at the end of the compressed data to be sure of being in
 	// sync with packet stream.
 	n, err := io.ReadFull(zReader, dump[:])
-	if err == os.EOF {
+	if err == io.EOF {
 		err = nil
 		if n > 0 {
 			log.Printf("Unexpected extra chunk data byte of %d bytes", n)
@@ -937,7 +933,7 @@ func (cd *ChunkData) MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) 
 	return nil
 }
 
-func (cd *ChunkData) MinecraftMarshal(writer io.Writer, ps *PacketSerializer) (err os.Error) {
+func (cd *ChunkData) MinecraftMarshal(writer io.Writer, ps *PacketSerializer) (err error) {
 	if err = ps.writeData(writer, reflect.Indirect(reflect.ValueOf(&cd.Size))); err != nil {
 		return
 	}
@@ -950,11 +946,7 @@ func (cd *ChunkData) MinecraftMarshal(writer io.Writer, ps *PacketSerializer) (e
 
 	// Most compressed chunks will fit in 8K.
 	buf := bytes.NewBuffer(make([]byte, 0, 8192))
-	zWriter, err := zlib.NewWriter(buf)
-	if err != nil {
-		// The zWriter should not fail, as the underlying writer does not.
-		panic(err)
-	}
+	zWriter := zlib.NewWriter(buf)
 	dataParts := [][]byte{
 		cd.Blocks,
 		cd.BlockData,
@@ -991,7 +983,7 @@ type MultiBlockChanges struct {
 	BlockData []byte
 }
 
-func (mbc *MultiBlockChanges) MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) (err os.Error) {
+func (mbc *MultiBlockChanges) MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) (err error) {
 	numBlocksUint16, err := ps.readUint16(reader)
 	if err != nil {
 		return
@@ -1021,7 +1013,7 @@ func (mbc *MultiBlockChanges) MinecraftUnmarshal(reader io.Reader, ps *PacketSer
 	return
 }
 
-func (mbc *MultiBlockChanges) MinecraftMarshal(writer io.Writer, ps *PacketSerializer) (err os.Error) {
+func (mbc *MultiBlockChanges) MinecraftMarshal(writer io.Writer, ps *PacketSerializer) (err error) {
 	numBlocks := len(mbc.Coords)
 	if numBlocks != len(mbc.TypeIds) || numBlocks != len(mbc.BlockData) {
 		return ErrorMismatchingValues
@@ -1047,7 +1039,7 @@ func (mbc *MultiBlockChanges) MinecraftMarshal(writer io.Writer, ps *PacketSeria
 // the first, [3:6] the second, etc.
 type BlocksDxyz []byte
 
-func (b *BlocksDxyz) MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) (err os.Error) {
+func (b *BlocksDxyz) MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) (err error) {
 	numBlocksUint32, err := ps.readUint32(reader)
 	if err != nil {
 		return
@@ -1064,7 +1056,7 @@ func (b *BlocksDxyz) MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) 
 	return
 }
 
-func (b *BlocksDxyz) MinecraftMarshal(writer io.Writer, ps *PacketSerializer) (err os.Error) {
+func (b *BlocksDxyz) MinecraftMarshal(writer io.Writer, ps *PacketSerializer) (err error) {
 	if err = ps.writeUint32(writer, uint32(len(*b))/3); err != nil {
 		return
 	}
@@ -1077,7 +1069,7 @@ func (b *BlocksDxyz) MinecraftMarshal(writer io.Writer, ps *PacketSerializer) (e
 // MapData implements IMarshaler.
 type MapData []byte
 
-func (md *MapData) MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) (err os.Error) {
+func (md *MapData) MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) (err error) {
 	length, err := ps.readUint8(reader)
 	if err != nil {
 		return
@@ -1088,7 +1080,7 @@ func (md *MapData) MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) (e
 	return
 }
 
-func (md *MapData) MinecraftMarshal(writer io.Writer, ps *PacketSerializer) (err os.Error) {
+func (md *MapData) MinecraftMarshal(writer io.Writer, ps *PacketSerializer) (err error) {
 	if err = ps.writeUint8(writer, byte(len(*md))); err != nil {
 		return
 	}
@@ -1103,7 +1095,7 @@ type EntityMetadata struct {
 	Field3 interface{}
 }
 
-func writeEntityMetadataField(writer io.Writer, ps *PacketSerializer, data []EntityMetadata) (err os.Error) {
+func writeEntityMetadataField(writer io.Writer, ps *PacketSerializer, data []EntityMetadata) (err error) {
 	// NOTE that no checking is done upon the form of the data, so it's
 	// possible to form bad data packets with this.
 	var entryType byte
@@ -1146,7 +1138,7 @@ func writeEntityMetadataField(writer io.Writer, ps *PacketSerializer, data []Ent
 // Reads entity metadata from the end of certain packets. Most of the meaning
 // of the packets isn't yet known.
 // TODO update to pull useful data out as it becomes understood
-func readEntityMetadataField(reader io.Reader, ps *PacketSerializer) (data []EntityMetadata, err os.Error) {
+func readEntityMetadataField(reader io.Reader, ps *PacketSerializer) (data []EntityMetadata, err error) {
 	var entryType byte
 
 	var field1, field2 byte

@@ -1,13 +1,13 @@
 package command
 
 import (
+	"errors"
 	"strings"
-	"os"
 
 	"chunkymonkey/gamerules"
 )
 
-var ErrCmdExists = os.NewError("The command already exists.")
+var ErrCmdExists = errors.New("The command already exists.")
 
 // The CommandFramework handles all message based commands.
 // It uses channels to safly handle multiple calls.

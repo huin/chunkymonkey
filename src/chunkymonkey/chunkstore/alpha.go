@@ -2,6 +2,7 @@ package chunkstore
 
 import (
 	"compress/gzip"
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -16,7 +17,7 @@ type chunkStoreAlpha struct {
 }
 
 // Creates an IChunkStore that reads the Minecraft Alpha world format.
-func newChunkStoreAlpha(worldPath string, dimension DimensionId) (s *chunkStoreAlpha, err os.Error) {
+func newChunkStoreAlpha(worldPath string, dimension DimensionId) (s *chunkStoreAlpha, err error) {
 	// Don't know the dimension directory structure for alpha, but it's likely
 	// not worth writing support for.
 
@@ -34,10 +35,10 @@ func (s *chunkStoreAlpha) chunkPath(chunkLoc ChunkXz) string {
 		"c."+base36Encode(int32(chunkLoc.X))+"."+base36Encode(int32(chunkLoc.Z))+".dat")
 }
 
-func (s *chunkStoreAlpha) ReadChunk(chunkLoc ChunkXz) (reader IChunkReader, err os.Error) {
+func (s *chunkStoreAlpha) ReadChunk(chunkLoc ChunkXz) (reader IChunkReader, err error) {
 	file, err := os.Open(s.chunkPath(chunkLoc))
 	if err != nil {
-		if errno, ok := util.Errno(err); ok && errno == os.ENOENT {
+		if os.IsNotExist(err) {
 			err = NoSuchChunkError(false)
 		}
 		return
@@ -56,7 +57,7 @@ func (s *chunkStoreAlpha) ReadChunk(chunkLoc ChunkXz) (reader IChunkReader, err 
 
 	loadedLoc := reader.ChunkLoc()
 	if loadedLoc.X != chunkLoc.X || loadedLoc.Z != chunkLoc.Z {
-		err = os.NewError(fmt.Sprintf(
+		err = errors.New(fmt.Sprintf(
 			"Attempted to load chunk for %+v, but got chunk identified as %+v",
 			chunkLoc,
 			loadedLoc,
@@ -74,7 +75,7 @@ func (s *chunkStoreAlpha) Writer() IChunkWriter {
 	return newNbtChunkWriter()
 }
 
-func (s *chunkStoreAlpha) WriteChunk(writer IChunkWriter) (err os.Error) {
+func (s *chunkStoreAlpha) WriteChunk(writer IChunkWriter) (err error) {
 	nbtWriter, ok := writer.(*nbtChunkWriter)
 	if !ok {
 		return fmt.Errorf("%T is incorrect IChunkWriter implementation for %T", writer, s)
@@ -93,10 +94,7 @@ func (s *chunkStoreAlpha) WriteChunk(writer IChunkWriter) (err os.Error) {
 	}
 	defer file.Close()
 
-	gzipWriter, err := gzip.NewWriter(file)
-	if err != nil {
-		return
-	}
+	gzipWriter := gzip.NewWriter(file)
 	defer gzipWriter.Close()
 
 	if err = nbt.Write(gzipWriter, nbtWriter.RootTag()); err != nil {

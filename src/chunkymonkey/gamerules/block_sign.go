@@ -1,7 +1,7 @@
 package gamerules
 
 import (
-	"os"
+	"errors"
 
 	"nbt"
 )
@@ -19,7 +19,7 @@ func NewSignTileEntity() ITileEntity {
 	return &signTileEntity{}
 }
 
-func (sign *signTileEntity) UnmarshalNbt(tag nbt.Compound) (err os.Error) {
+func (sign *signTileEntity) UnmarshalNbt(tag nbt.Compound) (err error) {
 	if err = sign.tileEntity.UnmarshalNbt(tag); err != nil {
 		return
 	}
@@ -28,16 +28,16 @@ func (sign *signTileEntity) UnmarshalNbt(tag nbt.Compound) (err os.Error) {
 	var ok bool
 
 	if textTags[0], ok = tag.Lookup("Text1").(*nbt.String); !ok {
-		return os.NewError("tile entity sign missing or bad type Text1")
+		return errors.New("tile entity sign missing or bad type Text1")
 	}
 	if textTags[1], ok = tag.Lookup("Text2").(*nbt.String); !ok {
-		return os.NewError("tile entity sign missing or bad type Text2")
+		return errors.New("tile entity sign missing or bad type Text2")
 	}
 	if textTags[2], ok = tag.Lookup("Text3").(*nbt.String); !ok {
-		return os.NewError("tile entity sign missing or bad type Text3")
+		return errors.New("tile entity sign missing or bad type Text3")
 	}
 	if textTags[3], ok = tag.Lookup("Text4").(*nbt.String); !ok {
-		return os.NewError("tile entity sign missing or bad type Text4")
+		return errors.New("tile entity sign missing or bad type Text4")
 	}
 
 	for i, textTag := range textTags {
@@ -47,7 +47,7 @@ func (sign *signTileEntity) UnmarshalNbt(tag nbt.Compound) (err os.Error) {
 	return nil
 }
 
-func (sign *signTileEntity) MarshalNbt(tag nbt.Compound) (err os.Error) {
+func (sign *signTileEntity) MarshalNbt(tag nbt.Compound) (err error) {
 	if err = sign.tileEntity.MarshalNbt(tag); err != nil {
 		return
 	}

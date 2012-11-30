@@ -2,7 +2,6 @@ package chunkstore
 
 import (
 	"fmt"
-	"os"
 
 	"chunkymonkey/gamerules"
 	. "chunkymonkey/types"
@@ -11,7 +10,7 @@ import (
 
 type ChunkReadResult struct {
 	Reader IChunkReader
-	Err    os.Error
+	Err    error
 }
 
 type IChunkStore interface {
@@ -95,7 +94,7 @@ type IChunkWriter interface {
 
 // Given the NamedTag for a level.dat, returns an appropriate
 // IChunkStoreForeground.
-func ChunkStoreForLevel(worldPath string, levelData nbt.ITag, dimension DimensionId) (store IChunkStoreForeground, err os.Error) {
+func ChunkStoreForLevel(worldPath string, levelData nbt.ITag, dimension DimensionId) (store IChunkStoreForeground, err error) {
 	versionTag, ok := levelData.Lookup("Data/version").(*nbt.Int)
 
 	if !ok {
@@ -114,12 +113,12 @@ func ChunkStoreForLevel(worldPath string, levelData nbt.ITag, dimension Dimensio
 
 type UnknownLevelVersion int32
 
-func (err UnknownLevelVersion) String() string {
+func (err UnknownLevelVersion) Error() string {
 	return fmt.Sprintf("Unknown level version %d", err)
 }
 
 type NoSuchChunkError bool
 
-func (err NoSuchChunkError) String() string {
+func (err NoSuchChunkError) Error() string {
 	return "Chunk does not exist."
 }
