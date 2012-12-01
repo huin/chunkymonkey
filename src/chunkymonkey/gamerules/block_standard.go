@@ -2,7 +2,6 @@ package gamerules
 
 import (
 	"fmt"
-	"os"
 
 	. "chunkymonkey/types"
 )
@@ -32,7 +31,7 @@ func (aspect *StandardAspect) Name() string {
 	return "Standard"
 }
 
-func (aspect *StandardAspect) Check() os.Error {
+func (aspect *StandardAspect) Check() error {
 	for i := range aspect.DroppedItems {
 		if err := aspect.DroppedItems[i].check(); err != nil {
 			return fmt.Errorf("block %q: %v", aspect.blockAttrs.Name, err)

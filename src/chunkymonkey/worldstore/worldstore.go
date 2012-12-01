@@ -4,17 +4,17 @@ package worldstore
 
 import (
 	"compress/gzip"
+	"errors"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"path"
-	"rand"
 	"time"
 
 	"chunkymonkey/chunkstore"
 	"chunkymonkey/generation"
 	. "chunkymonkey/types"
-	"chunkymonkey/util"
 	"nbt"
 )
 
@@ -29,7 +29,7 @@ type WorldStore struct {
 	SpawnPosition BlockXyz
 }
 
-func LoadWorldStore(worldPath string) (world *WorldStore, err os.Error) {
+func LoadWorldStore(worldPath string) (world *WorldStore, err error) {
 	levelData, err := loadLevelData(worldPath)
 	if err != nil {
 		return
@@ -41,7 +41,7 @@ func LoadWorldStore(worldPath string) (world *WorldStore, err os.Error) {
 	y, yok := levelData.Lookup("Data/SpawnY").(*nbt.Int)
 	z, zok := levelData.Lookup("Data/SpawnZ").(*nbt.Int)
 	if !xok || !yok || !zok {
-		err = os.NewError("Invalid map level data: does not contain Spawn{X,Y,Z}")
+		err = errors.New("Invalid map level data: does not contain Spawn{X,Y,Z}")
 		log.Printf("%#v", levelData)
 		return
 	}
@@ -69,7 +69,8 @@ func LoadWorldStore(worldPath string) (world *WorldStore, err os.Error) {
 	if seedNbt, ok := levelData.Lookup("Data/RandomSeed").(*nbt.Long); ok {
 		seed = seedNbt.Value
 	} else {
-		seed = rand.NewSource(time.Seconds()).Int63()
+		t := time.Now().UnixNano()
+		seed = rand.New(rand.NewSource(t)).Int63()
 	}
 
 	chunkStores = append(chunkStores, chunkstore.NewChunkService(generation.NewTestGenerator(seed)))
@@ -92,7 +93,7 @@ func LoadWorldStore(worldPath string) (world *WorldStore, err os.Error) {
 	return
 }
 
-func loadLevelData(worldPath string) (levelData nbt.ITag, err os.Error) {
+func loadLevelData(worldPath string) (levelData nbt.ITag, err error) {
 	filename := path.Join(worldPath, "level.dat")
 	file, err := os.Open(filename)
 	if err != nil {
@@ -113,7 +114,7 @@ func loadLevelData(worldPath string) (levelData nbt.ITag, err os.Error) {
 
 // NOTE: ChunkStoreForDimension shouldn't really be used in the server just
 // yet.
-func (world *WorldStore) ChunkStoreForDimension(dimension DimensionId) (store chunkstore.IChunkStore, err os.Error) {
+func (world *WorldStore) ChunkStoreForDimension(dimension DimensionId) (store chunkstore.IChunkStore, err error) {
 	fgStore, err := chunkstore.ChunkStoreForLevel(world.WorldPath, world.LevelData, dimension)
 	if err != nil {
 		return
@@ -123,10 +124,10 @@ func (world *WorldStore) ChunkStoreForDimension(dimension DimensionId) (store ch
 	return
 }
 
-func (world *WorldStore) PlayerData(user string) (playerData nbt.Compound, err os.Error) {
+func (world *WorldStore) PlayerData(user string) (playerData nbt.Compound, err error) {
 	file, err := os.Open(path.Join(world.WorldPath, "players", user+".dat"))
 	if err != nil {
-		if errno, ok := util.Errno(err); ok && errno == os.ENOENT {
+		if os.IsNotExist(err) {
 			// Player data simply doesn't exist. Not an error, playerData = nil is
 			// the result.
 			return nil, nil
@@ -146,7 +147,7 @@ func (world *WorldStore) PlayerData(user string) (playerData nbt.Compound, err o
 	return
 }
 
-func (world *WorldStore) WritePlayerData(user string, data nbt.Compound) (err os.Error) {
+func (world *WorldStore) WritePlayerData(user string, data nbt.Compound) (err error) {
 	playerDir := path.Join(world.WorldPath, "players")
 	if err = os.MkdirAll(playerDir, 0777); err != nil {
 		return
@@ -159,11 +160,7 @@ func (world *WorldStore) WritePlayerData(user string, data nbt.Compound) (err os
 	}
 	defer file.Close()
 
-	gzipWriter, err := gzip.NewWriter(file)
-	if err != nil {
-		return
-	}
-
+	gzipWriter := gzip.NewWriter(file)
 	err = nbt.Write(gzipWriter, data)
 	gzipWriter.Close()
 
@@ -171,9 +168,9 @@ func (world *WorldStore) WritePlayerData(user string, data nbt.Compound) (err os
 }
 
 // Creates a new world at 'worldPath'
-func CreateWorld(worldPath string) (err os.Error) {
-	source := rand.NewSource(time.Nanoseconds())
-	seed := source.Int63()
+func CreateWorld(worldPath string) (err error) {
+	t := time.Now().UnixNano()
+	seed := rand.New(rand.NewSource(t)).Int63()
 
 	data := nbt.Compound{
 		"Data": nbt.Compound{
@@ -203,10 +200,7 @@ func CreateWorld(worldPath string) (err os.Error) {
 		return err
 	}
 
-	gzipWriter, err := gzip.NewWriter(file)
-	if err != nil {
-		return err
-	}
+	gzipWriter := gzip.NewWriter(file)
 
 	err = nbt.Write(gzipWriter, data)
 	gzipWriter.Close()
@@ -215,7 +209,7 @@ func CreateWorld(worldPath string) (err os.Error) {
 	return nil
 }
 
-func absXyzFromNbt(tag nbt.ITag, path string) (pos AbsXyz, err os.Error) {
+func absXyzFromNbt(tag nbt.ITag, path string) (pos AbsXyz, err error) {
 	posList, posOk := tag.Lookup(path).(*nbt.List)
 	if !posOk {
 		err = BadType(path)
@@ -239,6 +233,6 @@ func absXyzFromNbt(tag nbt.ITag, path string) (pos AbsXyz, err os.Error) {
 
 type BadType string
 
-func (err BadType) String() string {
+func (err BadType) Error() string {
 	return fmt.Sprintf("Bad type in level.dat for %s", string(err))
 }

@@ -1,7 +1,7 @@
 package gamerules
 
 import (
-	"os"
+	"errors"
 
 	. "chunkymonkey/types"
 	"nbt"
@@ -21,19 +21,19 @@ func NewMobSpawnerTileEntity() ITileEntity {
 	return &mobSpawnerTileEntity{}
 }
 
-func (mobSpawner *mobSpawnerTileEntity) UnmarshalNbt(tag nbt.Compound) (err os.Error) {
+func (mobSpawner *mobSpawnerTileEntity) UnmarshalNbt(tag nbt.Compound) (err error) {
 	if err = mobSpawner.tileEntity.UnmarshalNbt(tag); err != nil {
 		return
 	}
 
 	if entityIdTag, ok := tag.Lookup("EntityId").(*nbt.String); !ok {
-		return os.NewError("missing or incorrect type for MobSpawner EntityId")
+		return errors.New("missing or incorrect type for MobSpawner EntityId")
 	} else {
 		mobSpawner.entityMobType = entityIdTag.Value
 	}
 
 	if delayTag, ok := tag.Lookup("Delay").(*nbt.Short); !ok {
-		return os.NewError("missing or incorrect type for MobSpawner Delay")
+		return errors.New("missing or incorrect type for MobSpawner Delay")
 	} else {
 		mobSpawner.delay = Ticks(delayTag.Value)
 	}
@@ -41,7 +41,7 @@ func (mobSpawner *mobSpawnerTileEntity) UnmarshalNbt(tag nbt.Compound) (err os.E
 	return nil
 }
 
-func (mobSpawner *mobSpawnerTileEntity) MarshalNbt(tag nbt.Compound) (err os.Error) {
+func (mobSpawner *mobSpawnerTileEntity) MarshalNbt(tag nbt.Compound) (err error) {
 	if err = mobSpawner.tileEntity.MarshalNbt(tag); err != nil {
 		return
 	}

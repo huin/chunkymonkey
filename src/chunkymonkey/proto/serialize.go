@@ -3,37 +3,37 @@ package proto
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"log"
-	"os"
 	"math"
 	"reflect"
-	"utf8"
+	"unicode/utf8"
 )
 
 // Possible error values for reading and writing packets.
 var (
-	ErrorPacketNotPtr      = os.NewError("packet not passed as a pointer")
-	ErrorUnknownPacketType = os.NewError("unknown packet type")
-	ErrorPacketNil         = os.NewError("packet was passed by a nil pointer")
-	ErrorLengthNegative    = os.NewError("length was negative")
-	ErrorStrTooLong        = os.NewError("string was too long")
-	ErrorBadPacketData     = os.NewError("packet data well-formed but contains out of range values")
-	ErrorBadChunkDataSize  = os.NewError("map chunk data length mismatches with size")
-	ErrorMismatchingValues = os.NewError("packet data contains mismatching values")
-	ErrorInternal          = os.NewError("implementation problem with packetization")
+	ErrorPacketNotPtr      = errors.New("packet not passed as a pointer")
+	ErrorUnknownPacketType = errors.New("unknown packet type")
+	ErrorPacketNil         = errors.New("packet was passed by a nil pointer")
+	ErrorLengthNegative    = errors.New("length was negative")
+	ErrorStrTooLong        = errors.New("string was too long")
+	ErrorBadPacketData     = errors.New("packet data well-formed but contains out of range values")
+	ErrorBadChunkDataSize  = errors.New("map chunk data length mismatches with size")
+	ErrorMismatchingValues = errors.New("packet data contains mismatching values")
+	ErrorInternal          = errors.New("implementation problem with packetization")
 )
 
 type ErrorUnexpectedPacketId byte
 
-func (err ErrorUnexpectedPacketId) String() string {
+func (err ErrorUnexpectedPacketId) Error() string {
 	return fmt.Sprintf("unexpected packet ID 0x%02x", byte(err))
 }
 
 type ErrorUnknownPacketId byte
 
-func (err ErrorUnknownPacketId) String() string {
+func (err ErrorUnknownPacketId) Error() string {
 	return fmt.Sprintf("unknown packet ID 0x%02x", byte(err))
 }
 
@@ -48,8 +48,8 @@ var (
 // struct and slice-based types currently, as a hacky method of optimizing
 // which packet fields are checked for this property.
 type IMarshaler interface {
-	MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) os.Error
-	MinecraftMarshal(writer io.Writer, ps *PacketSerializer) os.Error
+	MinecraftUnmarshal(reader io.Reader, ps *PacketSerializer) error
+	MinecraftMarshal(writer io.Writer, ps *PacketSerializer) error
 }
 
 // PacketSerializer reads and writes packets. It is not safe to use one
@@ -67,7 +67,7 @@ type PacketSerializer struct {
 	scratch [32]byte
 }
 
-func (ps *PacketSerializer) ReadPacketExpect(reader io.Reader, fromClient bool, pktIds ...byte) (packet IPacket, err os.Error) {
+func (ps *PacketSerializer) ReadPacketExpect(reader io.Reader, fromClient bool, pktIds ...byte) (packet IPacket, err error) {
 	// Read packet ID.
 	if _, err = io.ReadFull(reader, ps.scratch[0:1]); err != nil {
 		return
@@ -84,7 +84,7 @@ func (ps *PacketSerializer) ReadPacketExpect(reader io.Reader, fromClient bool, 
 	return nil, ErrorUnexpectedPacketId(pktId)
 }
 
-func (ps *PacketSerializer) ReadPacket(reader io.Reader, fromClient bool) (packet IPacket, err os.Error) {
+func (ps *PacketSerializer) ReadPacket(reader io.Reader, fromClient bool) (packet IPacket, err error) {
 	// Read packet ID.
 	if _, err = io.ReadFull(reader, ps.scratch[0:1]); err != nil {
 		return
@@ -93,7 +93,7 @@ func (ps *PacketSerializer) ReadPacket(reader io.Reader, fromClient bool) (packe
 	return ps.readPacketCommon(reader, fromClient, ps.scratch[0])
 }
 
-func (ps *PacketSerializer) readPacketCommon(reader io.Reader, fromClient bool, id byte) (packet IPacket, err os.Error) {
+func (ps *PacketSerializer) readPacketCommon(reader io.Reader, fromClient bool, id byte) (packet IPacket, err error) {
 	pktInfo := &pktIdInfo[ps.scratch[0]]
 	if !pktInfo.validPacket {
 		return nil, ErrorUnknownPacketType
@@ -117,7 +117,7 @@ func (ps *PacketSerializer) readPacketCommon(reader io.Reader, fromClient bool, 
 	return value.Interface().(IPacket), nil
 }
 
-func (ps *PacketSerializer) readData(reader io.Reader, value reflect.Value) (err os.Error) {
+func (ps *PacketSerializer) readData(reader io.Reader, value reflect.Value) (err error) {
 	kind := value.Kind()
 
 	switch kind {
@@ -222,7 +222,7 @@ func (ps *PacketSerializer) readData(reader io.Reader, value reflect.Value) (err
 		// TODO Maybe the tag field could/should suggest a max length.
 		str, err := ps.readString16(reader)
 		if err != nil {
-			return
+			return err
 		}
 		value.SetString(str)
 
@@ -234,7 +234,7 @@ func (ps *PacketSerializer) readData(reader io.Reader, value reflect.Value) (err
 	return
 }
 
-func (ps *PacketSerializer) WritePacket(writer io.Writer, packet IPacket) (err os.Error) {
+func (ps *PacketSerializer) WritePacket(writer io.Writer, packet IPacket) (err error) {
 	value := reflect.Indirect(reflect.ValueOf(packet))
 	pktType := value.Type()
 
@@ -266,7 +266,7 @@ func (ps *PacketSerializer) SerializePackets(packets ...IPacket) []byte {
 	return buf.Bytes()
 }
 
-func (ps *PacketSerializer) writeData(writer io.Writer, value reflect.Value) (err os.Error) {
+func (ps *PacketSerializer) writeData(writer io.Writer, value reflect.Value) (err error) {
 	kind := value.Kind()
 
 	switch kind {
@@ -336,11 +336,11 @@ func (ps *PacketSerializer) writeData(writer io.Writer, value reflect.Value) (er
 }
 
 // read/write bool.
-func (ps *PacketSerializer) readBool(reader io.Reader) (v bool, err os.Error) {
+func (ps *PacketSerializer) readBool(reader io.Reader) (v bool, err error) {
 	vUint8, err := ps.readUint8(reader)
 	return vUint8 != 0, err
 }
-func (ps *PacketSerializer) writeBool(writer io.Writer, v bool) (err os.Error) {
+func (ps *PacketSerializer) writeBool(writer io.Writer, v bool) (err error) {
 	if v {
 		return ps.writeUint8(writer, 1)
 	}
@@ -348,83 +348,83 @@ func (ps *PacketSerializer) writeBool(writer io.Writer, v bool) (err os.Error) {
 }
 
 // read/write uint8.
-func (ps *PacketSerializer) readUint8(reader io.Reader) (v uint8, err os.Error) {
+func (ps *PacketSerializer) readUint8(reader io.Reader) (v uint8, err error) {
 	if _, err = io.ReadFull(reader, ps.scratch[0:1]); err != nil {
 		return
 	}
 	return ps.scratch[0], nil
 }
-func (ps *PacketSerializer) writeUint8(writer io.Writer, v uint8) (err os.Error) {
+func (ps *PacketSerializer) writeUint8(writer io.Writer, v uint8) (err error) {
 	ps.scratch[0] = v
 	_, err = writer.Write(ps.scratch[0:1])
 	return
 }
 
 // read/write uint16.
-func (ps *PacketSerializer) readUint16(reader io.Reader) (v uint16, err os.Error) {
+func (ps *PacketSerializer) readUint16(reader io.Reader) (v uint16, err error) {
 	if _, err = io.ReadFull(reader, ps.scratch[0:2]); err != nil {
 		return
 	}
 	return binary.BigEndian.Uint16(ps.scratch[0:2]), nil
 }
-func (ps *PacketSerializer) writeUint16(writer io.Writer, v uint16) (err os.Error) {
+func (ps *PacketSerializer) writeUint16(writer io.Writer, v uint16) (err error) {
 	binary.BigEndian.PutUint16(ps.scratch[0:2], v)
 	_, err = writer.Write(ps.scratch[0:2])
 	return
 }
 
 // read/write uint32.
-func (ps *PacketSerializer) readUint32(reader io.Reader) (v uint32, err os.Error) {
+func (ps *PacketSerializer) readUint32(reader io.Reader) (v uint32, err error) {
 	if _, err = io.ReadFull(reader, ps.scratch[0:4]); err != nil {
 		return
 	}
 	return binary.BigEndian.Uint32(ps.scratch[0:4]), nil
 }
-func (ps *PacketSerializer) writeUint32(writer io.Writer, v uint32) (err os.Error) {
+func (ps *PacketSerializer) writeUint32(writer io.Writer, v uint32) (err error) {
 	binary.BigEndian.PutUint32(ps.scratch[0:4], v)
 	_, err = writer.Write(ps.scratch[0:4])
 	return
 }
 
 // read/write uint64.
-func (ps *PacketSerializer) readUint64(reader io.Reader) (v uint64, err os.Error) {
+func (ps *PacketSerializer) readUint64(reader io.Reader) (v uint64, err error) {
 	if _, err = io.ReadFull(reader, ps.scratch[0:8]); err != nil {
 		return
 	}
 	return binary.BigEndian.Uint64(ps.scratch[0:8]), nil
 }
-func (ps *PacketSerializer) writeUint64(writer io.Writer, v uint64) (err os.Error) {
+func (ps *PacketSerializer) writeUint64(writer io.Writer, v uint64) (err error) {
 	binary.BigEndian.PutUint64(ps.scratch[0:8], v)
 	_, err = writer.Write(ps.scratch[0:8])
 	return
 }
 
 // read/write float32.
-func (ps *PacketSerializer) readFloat32(reader io.Reader) (v float32, err os.Error) {
+func (ps *PacketSerializer) readFloat32(reader io.Reader) (v float32, err error) {
 	var vUint32 uint32
 	if vUint32, err = ps.readUint32(reader); err != nil {
 		return
 	}
 	return math.Float32frombits(vUint32), nil
 }
-func (ps *PacketSerializer) writeFloat32(writer io.Writer, v float32) (err os.Error) {
+func (ps *PacketSerializer) writeFloat32(writer io.Writer, v float32) (err error) {
 	return ps.writeUint32(writer, math.Float32bits(v))
 }
 
 // read/write float64.
-func (ps *PacketSerializer) readFloat64(reader io.Reader) (v float64, err os.Error) {
+func (ps *PacketSerializer) readFloat64(reader io.Reader) (v float64, err error) {
 	var vUint64 uint64
 	if vUint64, err = ps.readUint64(reader); err != nil {
 		return
 	}
 	return math.Float64frombits(vUint64), nil
 }
-func (ps *PacketSerializer) writeFloat64(writer io.Writer, v float64) (err os.Error) {
+func (ps *PacketSerializer) writeFloat64(writer io.Writer, v float64) (err error) {
 	return ps.writeUint64(writer, math.Float64bits(v))
 }
 
 // read/write string16
-func (ps *PacketSerializer) readString16(reader io.Reader) (v string, err os.Error) {
+func (ps *PacketSerializer) readString16(reader io.Reader) (v string, err error) {
 	lengthUint16, err := ps.readUint16(reader)
 	if err != nil {
 		return
@@ -454,7 +454,7 @@ func (ps *PacketSerializer) readString16(reader io.Reader) (v string, err os.Err
 
 		// Extract codepoints.
 		for i := 0; i < bytesToRead; i += 2 {
-			codepoint := (int(ps.scratch[i]) << 8) | int(ps.scratch[i+1])
+			codepoint := (rune(ps.scratch[i]) << 8) | rune(ps.scratch[i+1])
 
 			nBytes := utf8.EncodeRune(encChar[:], codepoint)
 			for j := 0; j < nBytes; j++ {
@@ -465,7 +465,7 @@ func (ps *PacketSerializer) readString16(reader io.Reader) (v string, err os.Err
 
 	return string(output), nil
 }
-func (ps *PacketSerializer) writeString16(writer io.Writer, v string) (err os.Error) {
+func (ps *PacketSerializer) writeString16(writer io.Writer, v string) (err error) {
 	if err = ps.writeUint16(writer, uint16(utf8.RuneCountInString(v))); err != nil {
 		return
 	}

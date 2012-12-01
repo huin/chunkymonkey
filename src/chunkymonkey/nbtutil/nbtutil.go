@@ -3,13 +3,12 @@ package nbtutil
 
 import (
 	"fmt"
-	"os"
 
 	. "chunkymonkey/types"
 	"nbt"
 )
 
-func ReadFloat2(tag nbt.ITag, path string) (x, y float32, err os.Error) {
+func ReadFloat2(tag nbt.ITag, path string) (x, y float32, err error) {
 	list, ok := tag.Lookup(path).(*nbt.List)
 	if !ok || len(list.Value) != 2 {
 		err = fmt.Errorf("ReadFloat2 %q: not a list of 2", path)
@@ -28,7 +27,7 @@ func ReadFloat2(tag nbt.ITag, path string) (x, y float32, err os.Error) {
 	return
 }
 
-func ReadDouble3(tag nbt.ITag, path string) (x, y, z float64, err os.Error) {
+func ReadDouble3(tag nbt.ITag, path string) (x, y, z float64, err error) {
 	list, ok := tag.Lookup(path).(*nbt.List)
 	if !ok || len(list.Value) != 3 {
 		err = fmt.Errorf("ReadDouble3 %q: not a list of 3", path)
@@ -48,7 +47,7 @@ func ReadDouble3(tag nbt.ITag, path string) (x, y, z float64, err os.Error) {
 	return
 }
 
-func ReadShort(tag nbt.ITag, path string) (v int16, err os.Error) {
+func ReadShort(tag nbt.ITag, path string) (v int16, err error) {
 	vTag, ok := tag.Lookup(path).(*nbt.Short)
 	if !ok {
 		err = fmt.Errorf("ReadShort %q: was not a Short", path)
@@ -58,7 +57,7 @@ func ReadShort(tag nbt.ITag, path string) (v int16, err os.Error) {
 	return vTag.Value, nil
 }
 
-func ReadByte(tag nbt.ITag, path string) (v int8, err os.Error) {
+func ReadByte(tag nbt.ITag, path string) (v int8, err error) {
 	vTag, ok := tag.Lookup(path).(*nbt.Byte)
 	if !ok {
 		err = fmt.Errorf("ReadByte %q: was not a Byte", path)
@@ -68,7 +67,7 @@ func ReadByte(tag nbt.ITag, path string) (v int8, err os.Error) {
 	return vTag.Value, nil
 }
 
-func ReadInt(tag nbt.ITag, path string) (v int32, err os.Error) {
+func ReadInt(tag nbt.ITag, path string) (v int32, err error) {
 	vTag, ok := tag.Lookup(path).(*nbt.Int)
 	if !ok {
 		err = fmt.Errorf("ReadInt %q: was not a Int", path)
@@ -78,7 +77,7 @@ func ReadInt(tag nbt.ITag, path string) (v int32, err os.Error) {
 	return vTag.Value, nil
 }
 
-func ReadFloat(tag nbt.ITag, path string) (v float32, err os.Error) {
+func ReadFloat(tag nbt.ITag, path string) (v float32, err error) {
 	vTag, ok := tag.Lookup(path).(*nbt.Float)
 	if !ok {
 		err = fmt.Errorf("ReadFloat %q: was not a Float", path)
@@ -88,7 +87,7 @@ func ReadFloat(tag nbt.ITag, path string) (v float32, err os.Error) {
 	return vTag.Value, nil
 }
 
-func ReadAbsXyz(tag nbt.ITag, path string) (pos AbsXyz, err os.Error) {
+func ReadAbsXyz(tag nbt.ITag, path string) (pos AbsXyz, err error) {
 	x, y, z, err := ReadDouble3(tag, path)
 	if err != nil {
 		return
@@ -97,7 +96,7 @@ func ReadAbsXyz(tag nbt.ITag, path string) (pos AbsXyz, err os.Error) {
 	return AbsXyz{AbsCoord(x), AbsCoord(y), AbsCoord(z)}, nil
 }
 
-func ReadAbsVelocity(tag nbt.ITag, path string) (pos AbsVelocity, err os.Error) {
+func ReadAbsVelocity(tag nbt.ITag, path string) (pos AbsVelocity, err error) {
 	// TODO Check if the units of velocity in NBT files are the same that we use
 	// internally.
 	x, y, z, err := ReadDouble3(tag, path)
@@ -108,7 +107,7 @@ func ReadAbsVelocity(tag nbt.ITag, path string) (pos AbsVelocity, err os.Error) 
 	return AbsVelocity{AbsVelocityCoord(x), AbsVelocityCoord(y), AbsVelocityCoord(z)}, nil
 }
 
-func ReadLookDegrees(tag nbt.ITag, path string) (pos LookDegrees, err os.Error) {
+func ReadLookDegrees(tag nbt.ITag, path string) (pos LookDegrees, err error) {
 	x, y, err := ReadFloat2(tag, path)
 	if err != nil {
 		return
@@ -117,7 +116,7 @@ func ReadLookDegrees(tag nbt.ITag, path string) (pos LookDegrees, err os.Error) 
 	return LookDegrees{AngleDegrees(x), AngleDegrees(y)}, nil
 }
 
-func ReadBlockXyzCompound(tag nbt.ITag) (loc BlockXyz, err os.Error) {
+func ReadBlockXyzCompound(tag nbt.ITag) (loc BlockXyz, err error) {
 	x, xOk := tag.Lookup("x").(*nbt.Int)
 	y, yOk := tag.Lookup("y").(*nbt.Int)
 	z, zOk := tag.Lookup("z").(*nbt.Int)

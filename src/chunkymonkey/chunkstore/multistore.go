@@ -1,7 +1,7 @@
 package chunkstore
 
 import (
-	"os"
+	"errors"
 
 	. "chunkymonkey/types"
 )
@@ -24,7 +24,7 @@ func NewMultiStore(readStores []IChunkStore, writeStore IChunkStore) *MultiStore
 	return s
 }
 
-func (s *MultiStore) ReadChunk(chunkLoc ChunkXz) (reader IChunkReader, err os.Error) {
+func (s *MultiStore) ReadChunk(chunkLoc ChunkXz) (reader IChunkReader, err error) {
 	for _, store := range s.readStores {
 		result := <-store.ReadChunk(chunkLoc)
 
@@ -53,9 +53,9 @@ func (s *MultiStore) Writer() IChunkWriter {
 	return nil
 }
 
-func (s *MultiStore) WriteChunk(writer IChunkWriter) os.Error {
+func (s *MultiStore) WriteChunk(writer IChunkWriter) error {
 	if s.writeStore == nil {
-		return os.NewError("writes not supported")
+		return errors.New("writes not supported")
 	}
 	s.writeStore.WriteChunk(writer)
 	return nil

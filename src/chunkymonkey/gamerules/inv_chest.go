@@ -1,10 +1,6 @@
 package gamerules
 
-import (
-	"os"
-
-	"nbt"
-)
+import "nbt"
 
 const (
 	chestInvWidth  = 9
@@ -22,7 +18,7 @@ func NewChestInventory() (inv *ChestInventory) {
 	return inv
 }
 
-func (inv *ChestInventory) MarshalNbt(tag nbt.Compound) (err os.Error) {
+func (inv *ChestInventory) MarshalNbt(tag nbt.Compound) (err error) {
 	tag.Set("id", &nbt.String{"Chest"})
 	return inv.Inventory.MarshalNbt(tag)
 }

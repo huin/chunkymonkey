@@ -5,7 +5,6 @@ package record
 import (
 	"encoding/binary"
 	"io"
-	"os"
 	"time"
 )
 
@@ -25,16 +24,16 @@ func NewReaderRecorder(log io.WriteCloser, reader io.Reader) *ReaderRecorder {
 	return &ReaderRecorder{
 		reader:        reader,
 		log:           log,
-		lastTimestamp: time.Nanoseconds(),
+		lastTimestamp: time.Now(),
 	}
 }
 
-func (recorder *ReaderRecorder) Read(b []byte) (n int, err os.Error) {
+func (recorder *ReaderRecorder) Read(b []byte) (n int, err error) {
 	n, err = recorder.reader.Read(b)
 	if err == nil {
-		now := time.Nanoseconds()
+		now := time.Now()
 		binary.Write(recorder.log, binary.BigEndian, &header{
-			now - recorder.lastTimestamp,
+			now.Sub(recorder.lastTimestamp),
 			int32(n),
 		})
 		binary.Write(recorder.log, binary.BigEndian, b[:n])
@@ -44,7 +43,7 @@ func (recorder *ReaderRecorder) Read(b []byte) (n int, err os.Error) {
 	return
 }
 
-func (recorder *ReaderRecorder) Close() os.Error {
+func (recorder *ReaderRecorder) Close() error {
 	return recorder.log.Close()
 }
 
@@ -58,13 +57,13 @@ func NewReaderReplayer(log io.Reader, writer io.Writer) *ReaderReplayer {
 	return &ReaderReplayer{
 		writer:        writer,
 		log:           log,
-		lastTimestamp: time.Nanoseconds(),
+		lastTimestamp: time.Now(),
 	}
 }
 
 func (replayer *ReaderReplayer) Replay() {
 	var header header
-	var err os.Error
+	var err error
 	buf := make([]byte, 4096)
 
 	for {
@@ -79,8 +78,8 @@ func (replayer *ReaderReplayer) Replay() {
 		}
 
 		// Wait until recorded time has passed
-		now := time.Nanoseconds()
-		delta := now - replayer.lastTimestamp
+		now := time.Now()
+		delta := now.Sub(replayer.lastTimestamp)
 		if delta < header.Timestamp {
 			time.Sleep(header.Timestamp - delta)
 		}

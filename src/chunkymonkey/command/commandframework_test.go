@@ -3,7 +3,7 @@ package command
 import (
 	"testing"
 
-	"gomock.googlecode.com/hg/gomock"
+	"code.google.com/p/gomock/gomock"
 
 	"chunkymonkey/gamerules"
 	"testmatcher"

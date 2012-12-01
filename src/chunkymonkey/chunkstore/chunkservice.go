@@ -2,7 +2,6 @@ package chunkstore
 
 import (
 	"log"
-	"os"
 
 	. "chunkymonkey/types"
 )
@@ -13,10 +12,10 @@ type readRequest struct {
 }
 
 type IChunkStoreForeground interface {
-	ReadChunk(chunkLoc ChunkXz) (reader IChunkReader, err os.Error)
+	ReadChunk(chunkLoc ChunkXz) (reader IChunkReader, err error)
 	SupportsWrite() bool
 	Writer() IChunkWriter
-	WriteChunk(writer IChunkWriter) os.Error
+	WriteChunk(writer IChunkWriter) error
 }
 
 // ChunkService adapts an IChunkStoreForeground (which can only be accessed

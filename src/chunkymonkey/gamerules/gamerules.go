@@ -1,10 +1,6 @@
 package gamerules
 
-import (
-	"os"
-
-	"chunkymonkey/permission"
-)
+import "chunkymonkey/permission"
 
 // GameRules is a container type for block, item and recipe definitions.
 var (
@@ -17,7 +13,7 @@ var (
 	Permissions      permission.IPermissions
 )
 
-func LoadGameRules(blocksDefFile, itemsDefFile, recipesDefFile, furnaceDefFile, userDefFile, groupDefFile string) (err os.Error) {
+func LoadGameRules(blocksDefFile, itemsDefFile, recipesDefFile, furnaceDefFile, userDefFile, groupDefFile string) (err error) {
 	Blocks, err = LoadBlocksFromFile(blocksDefFile)
 	if err != nil {
 		return

@@ -1,8 +1,6 @@
 package gamerules
 
 import (
-	"os"
-
 	. "chunkymonkey/types"
 	"nbt"
 )
@@ -47,7 +45,7 @@ func NewWorkbenchInventory() *CraftingInventory {
 	return inv
 }
 
-func (inv *CraftingInventory) MarshalNbt(tag nbt.Compound) (err os.Error) {
+func (inv *CraftingInventory) MarshalNbt(tag nbt.Compound) (err error) {
 	tag.Set("id", &nbt.String{"Workbench"})
 	return inv.Inventory.MarshalNbt(tag)
 }

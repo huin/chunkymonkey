@@ -1,7 +1,7 @@
 package gamerules
 
 import (
-	"os"
+	"errors"
 
 	"chunkymonkey/proto"
 	. "chunkymonkey/types"
@@ -277,19 +277,19 @@ func (s *Slot) Decrement() (changed bool) {
 	return
 }
 
-func (s *Slot) UnmarshalNbt(tag nbt.Compound) (err os.Error) {
+func (s *Slot) UnmarshalNbt(tag nbt.Compound) (err error) {
 	var ok bool
 	var idTag, damageTag *nbt.Short
 	var countTag *nbt.Byte
 
 	if idTag, ok = tag.Lookup("id").(*nbt.Short); !ok {
-		return os.NewError("id tag not Short")
+		return errors.New("id tag not Short")
 	}
 	if countTag, ok = tag.Lookup("Count").(*nbt.Byte); !ok {
-		return os.NewError("Count tag not Byte")
+		return errors.New("Count tag not Byte")
 	}
 	if damageTag, ok = tag.Lookup("Damage").(*nbt.Short); !ok {
-		return os.NewError("Damage tag not Short")
+		return errors.New("Damage tag not Short")
 	}
 
 	s.ItemTypeId = ItemTypeId(idTag.Value)
@@ -299,7 +299,7 @@ func (s *Slot) UnmarshalNbt(tag nbt.Compound) (err os.Error) {
 	return
 }
 
-func (s *Slot) MarshalNbt(tag nbt.Compound) (err os.Error) {
+func (s *Slot) MarshalNbt(tag nbt.Compound) (err error) {
 	tag.Set("id", &nbt.Short{int16(s.ItemTypeId)})
 	tag.Set("Count", &nbt.Byte{int8(s.Count)})
 	tag.Set("Damage", &nbt.Short{int16(s.Data)})

@@ -1,14 +1,14 @@
 package generation
 
 import (
-	"os"
+	"errors"
 
 	"chunkymonkey/chunkstore"
 	"chunkymonkey/gamerules"
 	. "chunkymonkey/types"
+	"math/rand"
 	"nbt"
 	"perlin"
-	"rand"
 	"time"
 )
 
@@ -81,7 +81,7 @@ type TestGenerator struct {
 func NewTestGenerator(seed int64) *TestGenerator {
 	perlin := perlin.NewPerlinNoise(seed)
 
-	randSource := rand.NewSource(time.Nanoseconds())
+	randSource := rand.NewSource(time.Now().UnixNano())
 	randGen := rand.New(randSource)
 
 	return &TestGenerator{
@@ -135,11 +135,11 @@ func (s *TestGenerator) Writer() chunkstore.IChunkWriter {
 	return nil
 }
 
-func (s *TestGenerator) WriteChunk(writer chunkstore.IChunkWriter) os.Error {
-	return os.NewError("writes not supported by TestGenerator")
+func (s *TestGenerator) WriteChunk(writer chunkstore.IChunkWriter) error {
+	return errors.New("writes not supported by TestGenerator")
 }
 
-func (gen *TestGenerator) ReadChunk(chunkLoc ChunkXz) (reader chunkstore.IChunkReader, err os.Error) {
+func (gen *TestGenerator) ReadChunk(chunkLoc ChunkXz) (reader chunkstore.IChunkReader, err error) {
 	baseBlockXyz := chunkLoc.ChunkCornerBlockXY()
 
 	baseX, baseZ := baseBlockXyz.X, baseBlockXyz.Z

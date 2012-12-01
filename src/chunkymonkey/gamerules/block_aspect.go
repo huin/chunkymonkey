@@ -1,8 +1,7 @@
 package gamerules
 
 import (
-	"os"
-	"rand"
+	"math/rand"
 
 	. "chunkymonkey/types"
 )
@@ -60,7 +59,7 @@ type IBlockAspect interface {
 
 	// Check tests that the block aspect has been configured correctly,
 	// returning nil if it is correct.
-	Check() os.Error
+	Check() error
 
 	// Hit is called when the player hits a block.
 	Hit(instance *BlockInstance, player IPlayerClient, digStatus DigStatus) (destroyed bool)
