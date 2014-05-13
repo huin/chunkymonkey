@@ -3,8 +3,8 @@ package chunkymonkey
 import (
 	"fmt"
 	"log"
-	"os"
 	"net"
+	"os"
 
 	. "chunkymonkey/entity"
 	"chunkymonkey/gamerules"

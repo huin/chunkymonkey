@@ -360,7 +360,6 @@ func getBlockAxisMove(xDt, yDt, zDt TickTime) (move blockAxisMove, dt TickTime) 
 			return blockAxisMoveZ, zDt
 		}
 	}
-	return
 }
 
 func applyCollision(p *AbsCoord, v *AbsVelocityCoord) {

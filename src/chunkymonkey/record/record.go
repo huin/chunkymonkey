@@ -69,13 +69,13 @@ func (replayer *ReaderReplayer) Replay() {
 
 	for {
 		if err = binary.Read(replayer.log, binary.BigEndian, &header); err != nil {
-			return
+			break
 		}
 		if header.Length > int32(len(buf)) {
 			buf = make([]byte, header.Length)
 		}
 		if _, err = replayer.log.Read(buf[:header.Length]); err != nil {
-			return
+			break
 		}
 
 		// Wait until recorded time has passed
@@ -88,7 +88,7 @@ func (replayer *ReaderReplayer) Replay() {
 
 		_, err = replayer.writer.Write(buf[:header.Length])
 		if err != nil {
-			return
+			break
 		}
 	}
 

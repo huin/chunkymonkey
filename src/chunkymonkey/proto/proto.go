@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"utf8"
 	"regexp"
+	"utf8"
 
 	. "chunkymonkey/types"
 )
@@ -3085,7 +3085,6 @@ func readDisconnect(reader io.Reader, handler IPacketHandler) (err os.Error) {
 }
 
 // End of packet reader/writer functions
-
 
 type commonPacketHandler func(io.Reader, IPacketHandler) os.Error
 type serverPacketHandler func(io.Reader, IServerPacketHandler) os.Error

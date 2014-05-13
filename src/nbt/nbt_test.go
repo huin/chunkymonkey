@@ -28,7 +28,7 @@ func (test *Test) testRead(t *testing.T) {
 	var result ITag
 	var err os.Error
 	if result, err = test.Value.Type().NewTag(); err != nil {
-		t.Errorf("  Fail: failed to create tag to read into: :v", err)
+		t.Errorf("  Fail: failed to create tag to read into: %v", err)
 		return
 	}
 

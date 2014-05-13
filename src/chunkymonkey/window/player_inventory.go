@@ -1,8 +1,8 @@
 package window
 
 import (
-	"io"
 	"fmt"
+	"io"
 	"os"
 
 	"chunkymonkey/gamerules"

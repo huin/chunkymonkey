@@ -1,8 +1,8 @@
 package command
 
 import (
-	"strings"
 	"os"
+	"strings"
 
 	"chunkymonkey/gamerules"
 )

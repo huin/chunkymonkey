@@ -1,8 +1,8 @@
 package proto
 
 import (
-	"testing"
 	"os"
+	"testing"
 )
 
 type NullWriter struct{}

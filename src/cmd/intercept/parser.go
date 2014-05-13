@@ -166,7 +166,7 @@ func (p *MessageParser) PacketEntitySpawn(entityId EntityId, mobType EntityMobTy
 
 func (p *MessageParser) PacketPaintingSpawn(entityId EntityId, title string, position *BlockXyz, paintingType PaintingTypeId) {
 	p.printf("PacketPaintingSpawn(entityId=%d, title=%q, position=%v, paintingType=%d)",
-		entityId, title, position, position, paintingType)
+		entityId, title, position, paintingType)
 }
 
 func (p *MessageParser) PacketExperienceOrb(entityId EntityId, position AbsIntXyz, count int16) {

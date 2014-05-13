@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"compress/gzip"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"

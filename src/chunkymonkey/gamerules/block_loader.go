@@ -81,7 +81,7 @@ func newAspectArgs(block IBlockAspect) (a *aspectArgs, err os.Error) {
 	return
 }
 
-func (a *aspectArgs) UnmarshalJSON(raw []byte) (err os.Error) {
+func (a *aspectArgs) UnmarshalJSON(raw []byte) error {
 	// Copy raw into a.Raw - the JSON library will destroy the content of the
 	// argument after this function returns.
 	a.Raw = make([]byte, len(raw))
@@ -89,7 +89,7 @@ func (a *aspectArgs) UnmarshalJSON(raw []byte) (err os.Error) {
 	return
 }
 
-func (a *aspectArgs) MarshalJSON() (raw []byte, err os.Error) {
+func (a *aspectArgs) MarshalJSON() (raw []byte, err error) {
 	raw = a.Raw
 	return
 }

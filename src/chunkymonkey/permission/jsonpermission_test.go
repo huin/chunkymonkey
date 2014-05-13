@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	testUsersJson  = `{
+	testUsersJson = `{
 		"agon": {
 			"groups": ["admin"],
 			"permissions": [
