@@ -7,7 +7,7 @@ import (
 
 type NullWriter struct{}
 
-func (w *NullWriter) Write(p []byte) (n int, err os.Error) { return }
+func (w *NullWriter) Write(p []byte) (n int, err error) { return }
 
 func TestWriteChatMessage(t *testing.T) {
 	nullWriter := &NullWriter{}
@@ -17,7 +17,7 @@ func TestWriteChatMessage(t *testing.T) {
 	correctChars := "This is a proper chat message"
 	correctColorTagMsg := "§1 This is a correct color usage in a message!"
 
-	var err os.Error
+	var err error
 
 	err = WriteChatMessage(nullWriter, illegalChars)
 	if err != nil {

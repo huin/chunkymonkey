@@ -21,7 +21,7 @@ func NewMobSpawnerTileEntity() ITileEntity {
 	return &mobSpawnerTileEntity{}
 }
 
-func (mobSpawner *mobSpawnerTileEntity) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (mobSpawner *mobSpawnerTileEntity) UnmarshalNbt(tag *nbt.Compound) (err error) {
 	if err = mobSpawner.tileEntity.UnmarshalNbt(tag); err != nil {
 		return
 	}
@@ -41,7 +41,7 @@ func (mobSpawner *mobSpawnerTileEntity) UnmarshalNbt(tag *nbt.Compound) (err os.
 	return nil
 }
 
-func (mobSpawner *mobSpawnerTileEntity) MarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (mobSpawner *mobSpawnerTileEntity) MarshalNbt(tag *nbt.Compound) (err error) {
 	if err = mobSpawner.tileEntity.MarshalNbt(tag); err != nil {
 		return
 	}

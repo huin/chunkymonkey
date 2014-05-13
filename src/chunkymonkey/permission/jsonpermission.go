@@ -2,7 +2,7 @@ package permission
 
 import (
 	"io"
-	"json"
+	"encoding/json"
 	"os"
 	"strings"
 )
@@ -14,7 +14,7 @@ type JsonPermission struct {
 	defaultUser *CachedUser
 }
 
-func LoadJsonPermissionFromFiles(userDefFile, groupDefFile string) (jPermission *JsonPermission, err os.Error) {
+func LoadJsonPermissionFromFiles(userDefFile, groupDefFile string) (jPermission *JsonPermission, err error) {
 	// Load users
 	usersFile, err := os.Open(userDefFile)
 	if err != nil {
@@ -32,7 +32,7 @@ func LoadJsonPermissionFromFiles(userDefFile, groupDefFile string) (jPermission 
 	return LoadJsonPermission(usersFile, groupsFile)
 }
 
-func LoadJsonPermission(userReader io.Reader, groupReader io.Reader) (jPermission *JsonPermission, err os.Error) {
+func LoadJsonPermission(userReader io.Reader, groupReader io.Reader) (jPermission *JsonPermission, err error) {
 	// Load users
 	usersDecoder := json.NewDecoder(userReader)
 	var users Users

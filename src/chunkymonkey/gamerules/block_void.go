@@ -20,7 +20,7 @@ func (aspect *VoidAspect) Name() string {
 	return "Void"
 }
 
-func (aspect *VoidAspect) Check() os.Error {
+func (aspect *VoidAspect) Check() error {
 	return nil
 }
 

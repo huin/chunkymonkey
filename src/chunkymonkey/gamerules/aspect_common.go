@@ -43,7 +43,7 @@ func (bdi *blockDropItem) drop(chunk IChunkBlock, blockLoc BlockXyz, blockData b
 	spawnItemInBlock(chunk, blockLoc, bdi.DroppedItem, bdi.Count, itemData)
 }
 
-func (bdi *blockDropItem) check() os.Error {
+func (bdi *blockDropItem) check() error {
 	if _, ok := Items[bdi.DroppedItem]; !ok {
 		return fmt.Errorf("dropped item type %d does not exist", bdi.DroppedItem)
 	}

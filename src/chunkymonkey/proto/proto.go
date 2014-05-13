@@ -8,7 +8,7 @@ import (
 	"io"
 	"os"
 	"regexp"
-	"utf8"
+	"unicode/utf8"
 
 	. "chunkymonkey/types"
 )
@@ -233,7 +233,7 @@ func decodeUtf8(s string) []uint16 {
 
 // 16-bit encoded strings. (UCS-2)
 
-func readString16(reader io.Reader) (s string, err os.Error) {
+func readString16(reader io.Reader) (s string, err error) {
 	var length uint16
 	err = binary.Read(reader, binary.BigEndian, &length)
 	if err != nil {
@@ -249,7 +249,7 @@ func readString16(reader io.Reader) (s string, err os.Error) {
 	return encodeUtf8(bs), err
 }
 
-func writeString16(writer io.Writer, s string) (err os.Error) {
+func writeString16(writer io.Writer, s string) (err error) {
 	bs := decodeUtf8(s)
 
 	err = binary.Write(writer, binary.BigEndian, int16(len(bs)))
@@ -273,7 +273,7 @@ type EntityMetadata struct {
 	Field3 interface{}
 }
 
-func writeEntityMetadataField(writer io.Writer, data []EntityMetadata) (err os.Error) {
+func writeEntityMetadataField(writer io.Writer, data []EntityMetadata) (err error) {
 	// NOTE that no checking is done upon the form of the data, so it's
 	// possible to form bad data packets with this.
 	var entryType byte
@@ -316,7 +316,7 @@ func writeEntityMetadataField(writer io.Writer, data []EntityMetadata) (err os.E
 // Reads entity metadata from the end of certain packets. Most of the meaning
 // of the packets isn't yet known.
 // TODO update to pull useful data out as it becomes understood
-func readEntityMetadataField(reader io.Reader) (data []EntityMetadata, err os.Error) {
+func readEntityMetadataField(reader io.Reader) (data []EntityMetadata, err error) {
 	var entryType byte
 
 	var field1, field2 byte
@@ -381,7 +381,7 @@ type ObjectData struct {
 
 // PacketIdKeepAlive
 
-func WriteKeepAlive(writer io.Writer, id int32) os.Error {
+func WriteKeepAlive(writer io.Writer, id int32) error {
 	var packet = struct {
 		PacketId byte
 		Id       int32
@@ -392,7 +392,7 @@ func WriteKeepAlive(writer io.Writer, id int32) os.Error {
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readKeepAlive(reader io.Reader, handler IPacketHandler) (err os.Error) {
+func readKeepAlive(reader io.Reader, handler IPacketHandler) (err error) {
 	var id int32
 	if err = binary.Read(reader, binary.BigEndian, &id); err != nil {
 		return
@@ -403,7 +403,7 @@ func readKeepAlive(reader io.Reader, handler IPacketHandler) (err os.Error) {
 
 // PacketIdLogin
 
-func commonWriteLogin(writer io.Writer, versionOrEntityId int32, str string, mapSeed RandomSeed, serverMode int32, dimension DimensionId, difficulty GameDifficulty, worldHeight, maxPlayers byte) (err os.Error) {
+func commonWriteLogin(writer io.Writer, versionOrEntityId int32, str string, mapSeed RandomSeed, serverMode int32, dimension DimensionId, difficulty GameDifficulty, worldHeight, maxPlayers byte) (err error) {
 	if err = binary.Write(writer, binary.BigEndian, versionOrEntityId); err != nil {
 		return
 	}
@@ -430,7 +430,7 @@ func commonWriteLogin(writer io.Writer, versionOrEntityId int32, str string, map
 	return binary.Write(writer, binary.BigEndian, &packetEnd)
 }
 
-func ServerWriteLogin(writer io.Writer, entityId EntityId, mapSeed RandomSeed, serverMode int32, dimension DimensionId, difficulty GameDifficulty, worldHeight, maxPlayers byte) (err os.Error) {
+func ServerWriteLogin(writer io.Writer, entityId EntityId, mapSeed RandomSeed, serverMode int32, dimension DimensionId, difficulty GameDifficulty, worldHeight, maxPlayers byte) (err error) {
 	if err = binary.Write(writer, binary.BigEndian, byte(PacketIdLogin)); err != nil {
 		return
 	}
@@ -438,7 +438,7 @@ func ServerWriteLogin(writer io.Writer, entityId EntityId, mapSeed RandomSeed, s
 	return commonWriteLogin(writer, int32(entityId), "", mapSeed, serverMode, dimension, difficulty, worldHeight, maxPlayers)
 }
 
-func ClientWriteLogin(writer io.Writer, username, password string) (err os.Error) {
+func ClientWriteLogin(writer io.Writer, username, password string) (err error) {
 	if err = binary.Write(writer, binary.BigEndian, byte(PacketIdLogin)); err != nil {
 		return
 	}
@@ -446,7 +446,7 @@ func ClientWriteLogin(writer io.Writer, username, password string) (err os.Error
 	return commonWriteLogin(writer, protocolVersion, username, 0, 0, 0, 0, 0, 0)
 }
 
-func commonReadLogin(reader io.Reader) (versionOrEntityId int32, str string, mapSeed RandomSeed, serverMode int32, dimension DimensionId, unknown int8, worldHeight, maxPlayers byte, err os.Error) {
+func commonReadLogin(reader io.Reader) (versionOrEntityId int32, str string, mapSeed RandomSeed, serverMode int32, dimension DimensionId, unknown int8, worldHeight, maxPlayers byte, err error) {
 	if err = binary.Read(reader, binary.BigEndian, &versionOrEntityId); err != nil {
 		return
 	}
@@ -476,7 +476,7 @@ func commonReadLogin(reader io.Reader) (versionOrEntityId int32, str string, map
 	return
 }
 
-func serverReadLogin(reader io.Reader, handler IServerPacketHandler) (err os.Error) {
+func serverReadLogin(reader io.Reader, handler IServerPacketHandler) (err error) {
 	version, username, _, _, _, _, _, _, err := commonReadLogin(reader)
 	if err != nil {
 		return
@@ -492,7 +492,7 @@ func serverReadLogin(reader io.Reader, handler IServerPacketHandler) (err os.Err
 	return
 }
 
-func clientReadLogin(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func clientReadLogin(reader io.Reader, handler IClientPacketHandler) (err error) {
 	entityId, _, mapSeed, serverMode, dimension, unknown, worldHeight, maxPlayers, err := commonReadLogin(reader)
 	if err != nil {
 		return
@@ -505,7 +505,7 @@ func clientReadLogin(reader io.Reader, handler IClientPacketHandler) (err os.Err
 
 // PacketIdHandshake
 
-func ServerWriteHandshake(writer io.Writer, reply string) (err os.Error) {
+func ServerWriteHandshake(writer io.Writer, reply string) (err error) {
 	if err = binary.Write(writer, binary.BigEndian, byte(PacketIdHandshake)); err != nil {
 		return
 	}
@@ -513,7 +513,7 @@ func ServerWriteHandshake(writer io.Writer, reply string) (err os.Error) {
 	return writeString16(writer, reply)
 }
 
-func serverReadHandshake(reader io.Reader, handler IServerPacketHandler) (err os.Error) {
+func serverReadHandshake(reader io.Reader, handler IServerPacketHandler) (err error) {
 	var username string
 	if username, err = readString16(reader); err != nil {
 		return
@@ -524,7 +524,7 @@ func serverReadHandshake(reader io.Reader, handler IServerPacketHandler) (err os
 	return
 }
 
-func clientReadHandshake(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func clientReadHandshake(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var serverId string
 	if serverId, err = readString16(reader); err != nil {
 		return
@@ -537,7 +537,7 @@ func clientReadHandshake(reader io.Reader, handler IClientPacketHandler) (err os
 
 // PacketIdChatMessage
 
-func WriteChatMessage(writer io.Writer, message string) (err os.Error) {
+func WriteChatMessage(writer io.Writer, message string) (err error) {
 	// Check chat message against illegal chars
 	if checkChatMessageRegexp.MatchString(message) {
 		// Check suffix against color tags eg. "This is a message §0"
@@ -556,7 +556,7 @@ func WriteChatMessage(writer io.Writer, message string) (err os.Error) {
 	return illegalCharErr
 }
 
-func readChatMessage(reader io.Reader, handler IPacketHandler) (err os.Error) {
+func readChatMessage(reader io.Reader, handler IPacketHandler) (err error) {
 	message, err := readString16(reader)
 	if err != nil {
 		return
@@ -576,7 +576,7 @@ func readChatMessage(reader io.Reader, handler IPacketHandler) (err os.Error) {
 
 // PacketIdTimeUpdate
 
-func ServerWriteTimeUpdate(writer io.Writer, time Ticks) os.Error {
+func ServerWriteTimeUpdate(writer io.Writer, time Ticks) error {
 	var packet = struct {
 		PacketId byte
 		Time     Ticks
@@ -587,7 +587,7 @@ func ServerWriteTimeUpdate(writer io.Writer, time Ticks) os.Error {
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readTimeUpdate(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readTimeUpdate(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var time Ticks
 
 	err = binary.Read(reader, binary.BigEndian, &time)
@@ -601,7 +601,7 @@ func readTimeUpdate(reader io.Reader, handler IClientPacketHandler) (err os.Erro
 
 // PacketIdEntityEquipment
 
-func WriteEntityEquipment(writer io.Writer, entityId EntityId, slot SlotId, itemTypeId ItemTypeId, data ItemData) (err os.Error) {
+func WriteEntityEquipment(writer io.Writer, entityId EntityId, slot SlotId, itemTypeId ItemTypeId, data ItemData) (err error) {
 	var packet = struct {
 		PacketId   byte
 		EntityId   EntityId
@@ -619,7 +619,7 @@ func WriteEntityEquipment(writer io.Writer, entityId EntityId, slot SlotId, item
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readEntityEquipment(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readEntityEquipment(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		EntityId   EntityId
 		Slot       SlotId
@@ -640,7 +640,7 @@ func readEntityEquipment(reader io.Reader, handler IClientPacketHandler) (err os
 
 // PacketIdSpawnPosition
 
-func WriteSpawnPosition(writer io.Writer, position *BlockXyz) os.Error {
+func WriteSpawnPosition(writer io.Writer, position *BlockXyz) error {
 	var packet = struct {
 		PacketId byte
 		X        BlockCoord
@@ -655,7 +655,7 @@ func WriteSpawnPosition(writer io.Writer, position *BlockXyz) os.Error {
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readSpawnPosition(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readSpawnPosition(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		X BlockCoord
 		Y int32
@@ -677,7 +677,7 @@ func readSpawnPosition(reader io.Reader, handler IClientPacketHandler) (err os.E
 
 // PacketIdUseEntity
 
-func WriteUseEntity(writer io.Writer, user EntityId, target EntityId, leftClick bool) (err os.Error) {
+func WriteUseEntity(writer io.Writer, user EntityId, target EntityId, leftClick bool) (err error) {
 	var packet = struct {
 		PacketId  byte
 		User      EntityId
@@ -693,7 +693,7 @@ func WriteUseEntity(writer io.Writer, user EntityId, target EntityId, leftClick 
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readUseEntity(reader io.Reader, handler IPacketHandler) (err os.Error) {
+func readUseEntity(reader io.Reader, handler IPacketHandler) (err error) {
 	var packet struct {
 		User      EntityId
 		Target    EntityId
@@ -712,7 +712,7 @@ func readUseEntity(reader io.Reader, handler IPacketHandler) (err os.Error) {
 
 // PacketIdUpdateHealth
 
-func WriteUpdateHealth(writer io.Writer, health Health, food FoodUnits, foodSaturation float32) (err os.Error) {
+func WriteUpdateHealth(writer io.Writer, health Health, food FoodUnits, foodSaturation float32) (err error) {
 	var packet = struct {
 		PacketId       byte
 		Health         Health
@@ -728,7 +728,7 @@ func WriteUpdateHealth(writer io.Writer, health Health, food FoodUnits, foodSatu
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readUpdateHealth(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readUpdateHealth(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		Health         Health
 		Food           FoodUnits
@@ -746,7 +746,7 @@ func readUpdateHealth(reader io.Reader, handler IClientPacketHandler) (err os.Er
 
 // PacketIdRespawn
 
-func WriteRespawn(writer io.Writer, dimension DimensionId, unknown int8, gameType GameType, worldHeight int16, mapSeed RandomSeed) os.Error {
+func WriteRespawn(writer io.Writer, dimension DimensionId, unknown int8, gameType GameType, worldHeight int16, mapSeed RandomSeed) error {
 	var packet = struct {
 		PacketId    byte
 		Dimension   DimensionId
@@ -766,7 +766,7 @@ func WriteRespawn(writer io.Writer, dimension DimensionId, unknown int8, gameTyp
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readRespawn(reader io.Reader, handler IPacketHandler) (err os.Error) {
+func readRespawn(reader io.Reader, handler IPacketHandler) (err error) {
 	var packet struct {
 		Dimension   DimensionId
 		Unknown     int8
@@ -787,7 +787,7 @@ func readRespawn(reader io.Reader, handler IPacketHandler) (err os.Error) {
 
 // PacketIdPlayer
 
-func WritePlayer(writer io.Writer, onGround bool) (err os.Error) {
+func WritePlayer(writer io.Writer, onGround bool) (err error) {
 	var packet = struct {
 		PacketId byte
 		OnGround byte
@@ -799,7 +799,7 @@ func WritePlayer(writer io.Writer, onGround bool) (err os.Error) {
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readPlayer(reader io.Reader, handler IServerPacketHandler) (err os.Error) {
+func readPlayer(reader io.Reader, handler IServerPacketHandler) (err error) {
 	var onGround byte
 
 	if err = binary.Read(reader, binary.BigEndian, &onGround); err != nil {
@@ -813,7 +813,7 @@ func readPlayer(reader io.Reader, handler IServerPacketHandler) (err os.Error) {
 
 // PacketIdPlayerPosition
 
-func WritePlayerPosition(writer io.Writer, position *AbsXyz, stance AbsCoord, onGround bool) os.Error {
+func WritePlayerPosition(writer io.Writer, position *AbsXyz, stance AbsCoord, onGround bool) error {
 	var packet = struct {
 		PacketId byte
 		X        AbsCoord
@@ -832,7 +832,7 @@ func WritePlayerPosition(writer io.Writer, position *AbsXyz, stance AbsCoord, on
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readPlayerPosition(reader io.Reader, handler IPacketHandler) (err os.Error) {
+func readPlayerPosition(reader io.Reader, handler IPacketHandler) (err error) {
 	var packet struct {
 		X        AbsCoord
 		Y        AbsCoord
@@ -858,7 +858,7 @@ func readPlayerPosition(reader io.Reader, handler IPacketHandler) (err os.Error)
 
 // PacketIdPlayerLook
 
-func WritePlayerLook(writer io.Writer, look *LookDegrees, onGround bool) (err os.Error) {
+func WritePlayerLook(writer io.Writer, look *LookDegrees, onGround bool) (err error) {
 	var packet = struct {
 		PacketId byte
 		Yaw      AngleDegrees
@@ -873,7 +873,7 @@ func WritePlayerLook(writer io.Writer, look *LookDegrees, onGround bool) (err os
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readPlayerLook(reader io.Reader, handler IPacketHandler) (err os.Error) {
+func readPlayerLook(reader io.Reader, handler IPacketHandler) (err error) {
 	var packet struct {
 		Yaw      AngleDegrees
 		Pitch    AngleDegrees
@@ -895,7 +895,7 @@ func readPlayerLook(reader io.Reader, handler IPacketHandler) (err os.Error) {
 
 // PacketIdPlayerPositionLook
 
-func writePlayerPositionLookCommon(writer io.Writer, x, y1, y2, z AbsCoord, look *LookDegrees, onGround bool) (err os.Error) {
+func writePlayerPositionLookCommon(writer io.Writer, x, y1, y2, z AbsCoord, look *LookDegrees, onGround bool) (err error) {
 	var packet = struct {
 		PacketId byte
 		X        AbsCoord
@@ -915,7 +915,7 @@ func writePlayerPositionLookCommon(writer io.Writer, x, y1, y2, z AbsCoord, look
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func ClientWritePlayerPositionLook(writer io.Writer, position *AbsXyz, stance AbsCoord, look *LookDegrees, onGround bool) (err os.Error) {
+func ClientWritePlayerPositionLook(writer io.Writer, position *AbsXyz, stance AbsCoord, look *LookDegrees, onGround bool) (err error) {
 	return writePlayerPositionLookCommon(
 		writer,
 		position.X, position.Y, stance, position.Z,
@@ -923,7 +923,7 @@ func ClientWritePlayerPositionLook(writer io.Writer, position *AbsXyz, stance Ab
 		onGround)
 }
 
-func ServerWritePlayerPositionLook(writer io.Writer, position *AbsXyz, stance AbsCoord, look *LookDegrees, onGround bool) (err os.Error) {
+func ServerWritePlayerPositionLook(writer io.Writer, position *AbsXyz, stance AbsCoord, look *LookDegrees, onGround bool) (err error) {
 	return writePlayerPositionLookCommon(
 		writer,
 		position.X, stance, position.Y, position.Z,
@@ -931,7 +931,7 @@ func ServerWritePlayerPositionLook(writer io.Writer, position *AbsXyz, stance Ab
 		onGround)
 }
 
-func commonReadPlayerPositionLook(reader io.Reader) (x, y1, y2, z AbsCoord, look *LookDegrees, onGround bool, err os.Error) {
+func commonReadPlayerPositionLook(reader io.Reader) (x, y1, y2, z AbsCoord, look *LookDegrees, onGround bool, err error) {
 	var packet struct {
 		X        AbsCoord
 		Y1       AbsCoord
@@ -949,7 +949,7 @@ func commonReadPlayerPositionLook(reader io.Reader) (x, y1, y2, z AbsCoord, look
 	return packet.X, packet.Y1, packet.Y2, packet.Z, &LookDegrees{packet.Yaw, packet.Pitch}, byteToBool(packet.OnGround), nil
 }
 
-func clientReadPlayerPositionLook(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func clientReadPlayerPositionLook(reader io.Reader, handler IClientPacketHandler) (err error) {
 	x, y1, y2, z, look, onGround, err := commonReadPlayerPositionLook(reader)
 	if err != nil {
 		return
@@ -961,7 +961,7 @@ func clientReadPlayerPositionLook(reader io.Reader, handler IClientPacketHandler
 	return
 }
 
-func serverReadPlayerPositionLook(reader io.Reader, handler IServerPacketHandler) (err os.Error) {
+func serverReadPlayerPositionLook(reader io.Reader, handler IServerPacketHandler) (err error) {
 	x, y1, y2, z, look, onGround, err := commonReadPlayerPositionLook(reader)
 	if err != nil {
 		return
@@ -975,7 +975,7 @@ func serverReadPlayerPositionLook(reader io.Reader, handler IServerPacketHandler
 
 // PacketIdPlayerBlockHit
 
-func WritePlayerBlockHit(writer io.Writer, status DigStatus, blockLoc *BlockXyz, face Face) (err os.Error) {
+func WritePlayerBlockHit(writer io.Writer, status DigStatus, blockLoc *BlockXyz, face Face) (err error) {
 	var packet = struct {
 		PacketId byte
 		Status   DigStatus
@@ -993,7 +993,7 @@ func WritePlayerBlockHit(writer io.Writer, status DigStatus, blockLoc *BlockXyz,
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readPlayerBlockHit(reader io.Reader, handler IPacketHandler) (err os.Error) {
+func readPlayerBlockHit(reader io.Reader, handler IPacketHandler) (err error) {
 	var packet struct {
 		Status DigStatus
 		X      BlockCoord
@@ -1016,7 +1016,7 @@ func readPlayerBlockHit(reader io.Reader, handler IPacketHandler) (err os.Error)
 
 // PacketIdPlayerBlockInteract
 
-func WritePlayerBlockInteract(writer io.Writer, itemTypeId ItemTypeId, blockLoc *BlockXyz, face Face, amount ItemCount, data ItemData) (err os.Error) {
+func WritePlayerBlockInteract(writer io.Writer, itemTypeId ItemTypeId, blockLoc *BlockXyz, face Face, amount ItemCount, data ItemData) (err error) {
 	var packet = struct {
 		PacketId   byte
 		X          BlockCoord
@@ -1049,7 +1049,7 @@ func WritePlayerBlockInteract(writer io.Writer, itemTypeId ItemTypeId, blockLoc 
 	return
 }
 
-func readPlayerBlockInteract(reader io.Reader, handler IPacketHandler) (err os.Error) {
+func readPlayerBlockInteract(reader io.Reader, handler IPacketHandler) (err error) {
 	var packet struct {
 		X          BlockCoord
 		Y          BlockYCoord
@@ -1089,7 +1089,7 @@ func readPlayerBlockInteract(reader io.Reader, handler IPacketHandler) (err os.E
 
 // PacketIdHoldingChange
 
-func WriteHoldingChange(writer io.Writer, slotId SlotId) (err os.Error) {
+func WriteHoldingChange(writer io.Writer, slotId SlotId) (err error) {
 	var packet = struct {
 		PacketId byte
 		SlotId   SlotId
@@ -1101,7 +1101,7 @@ func WriteHoldingChange(writer io.Writer, slotId SlotId) (err os.Error) {
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readHoldingChange(reader io.Reader, handler IServerPacketHandler) (err os.Error) {
+func readHoldingChange(reader io.Reader, handler IServerPacketHandler) (err error) {
 	var slotId SlotId
 
 	if err = binary.Read(reader, binary.BigEndian, &slotId); err != nil {
@@ -1115,7 +1115,7 @@ func readHoldingChange(reader io.Reader, handler IServerPacketHandler) (err os.E
 
 // PacketIdBedUse
 
-func WriteBedUse(writer io.Writer, flag bool, bedLoc *BlockXyz) (err os.Error) {
+func WriteBedUse(writer io.Writer, flag bool, bedLoc *BlockXyz) (err error) {
 	var packet = struct {
 		PacketId byte
 		Flag     byte
@@ -1133,7 +1133,7 @@ func WriteBedUse(writer io.Writer, flag bool, bedLoc *BlockXyz) (err os.Error) {
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readBedUse(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readBedUse(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		Flag byte
 		X    BlockCoord
@@ -1152,7 +1152,7 @@ func readBedUse(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
 
 // PacketIdEntityAnimation
 
-func WriteEntityAnimation(writer io.Writer, entityId EntityId, animation EntityAnimation) (err os.Error) {
+func WriteEntityAnimation(writer io.Writer, entityId EntityId, animation EntityAnimation) (err error) {
 	var packet = struct {
 		PacketId  byte
 		EntityId  EntityId
@@ -1166,7 +1166,7 @@ func WriteEntityAnimation(writer io.Writer, entityId EntityId, animation EntityA
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readEntityAnimation(reader io.Reader, handler IPacketHandler) (err os.Error) {
+func readEntityAnimation(reader io.Reader, handler IPacketHandler) (err error) {
 	var packet struct {
 		EntityId  EntityId
 		Animation EntityAnimation
@@ -1183,7 +1183,7 @@ func readEntityAnimation(reader io.Reader, handler IPacketHandler) (err os.Error
 
 // PacketIdEntityAction
 
-func WriteEntityAction(writer io.Writer, entityId EntityId, action EntityAction) (err os.Error) {
+func WriteEntityAction(writer io.Writer, entityId EntityId, action EntityAction) (err error) {
 	var packet = struct {
 		PacketId byte
 		EntityId EntityId
@@ -1197,7 +1197,7 @@ func WriteEntityAction(writer io.Writer, entityId EntityId, action EntityAction)
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readEntityAction(reader io.Reader, handler IPacketHandler) (err os.Error) {
+func readEntityAction(reader io.Reader, handler IPacketHandler) (err error) {
 	var packet struct {
 		EntityId EntityId
 		Action   EntityAction
@@ -1214,7 +1214,7 @@ func readEntityAction(reader io.Reader, handler IPacketHandler) (err os.Error) {
 
 // PacketIdNamedEntitySpawn
 
-func WriteNamedEntitySpawn(writer io.Writer, entityId EntityId, name string, position *AbsIntXyz, look *LookBytes, currentItem ItemTypeId) (err os.Error) {
+func WriteNamedEntitySpawn(writer io.Writer, entityId EntityId, name string, position *AbsIntXyz, look *LookBytes, currentItem ItemTypeId) (err error) {
 	var packetStart = struct {
 		PacketId byte
 		EntityId EntityId
@@ -1253,7 +1253,7 @@ func WriteNamedEntitySpawn(writer io.Writer, entityId EntityId, name string, pos
 	return
 }
 
-func readNamedEntitySpawn(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readNamedEntitySpawn(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var entityId EntityId
 
 	if err = binary.Read(reader, binary.BigEndian, &entityId); err != nil {
@@ -1286,7 +1286,7 @@ func readNamedEntitySpawn(reader io.Reader, handler IClientPacketHandler) (err o
 
 // PacketIdItemSpawn
 
-func WriteItemSpawn(writer io.Writer, entityId EntityId, itemTypeId ItemTypeId, amount ItemCount, data ItemData, position *AbsIntXyz, orientation *OrientationBytes) os.Error {
+func WriteItemSpawn(writer io.Writer, entityId EntityId, itemTypeId ItemTypeId, amount ItemCount, data ItemData, position *AbsIntXyz, orientation *OrientationBytes) error {
 	var packet = struct {
 		PacketId   byte
 		EntityId   EntityId
@@ -1316,7 +1316,7 @@ func WriteItemSpawn(writer io.Writer, entityId EntityId, itemTypeId ItemTypeId, 
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readItemSpawn(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readItemSpawn(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		EntityId   EntityId
 		ItemTypeId ItemTypeId
@@ -1348,7 +1348,7 @@ func readItemSpawn(reader io.Reader, handler IClientPacketHandler) (err os.Error
 
 // PacketIdItemCollect
 
-func WriteItemCollect(writer io.Writer, collectedItem EntityId, collector EntityId) (err os.Error) {
+func WriteItemCollect(writer io.Writer, collectedItem EntityId, collector EntityId) (err error) {
 	var packet = struct {
 		PacketId      byte
 		CollectedItem EntityId
@@ -1362,7 +1362,7 @@ func WriteItemCollect(writer io.Writer, collectedItem EntityId, collector Entity
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readItemCollect(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readItemCollect(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		CollectedItem EntityId
 		Collector     EntityId
@@ -1380,7 +1380,7 @@ func readItemCollect(reader io.Reader, handler IClientPacketHandler) (err os.Err
 
 // PacketIdObjectSpawn
 
-func WriteObjectSpawn(writer io.Writer, entityId EntityId, objType ObjTypeId, position *AbsIntXyz, objectData *ObjectData) (err os.Error) {
+func WriteObjectSpawn(writer io.Writer, entityId EntityId, objType ObjTypeId, position *AbsIntXyz, objectData *ObjectData) (err error) {
 	var packet = struct {
 		PacketId byte
 		EntityId EntityId
@@ -1410,7 +1410,7 @@ func WriteObjectSpawn(writer io.Writer, entityId EntityId, objType ObjTypeId, po
 	return
 }
 
-func readObjectSpawn(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readObjectSpawn(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		EntityId EntityId
 		ObjType  ObjTypeId
@@ -1447,7 +1447,7 @@ func readObjectSpawn(reader io.Reader, handler IClientPacketHandler) (err os.Err
 
 // PacketIdEntitySpawn
 
-func WriteEntitySpawn(writer io.Writer, entityId EntityId, mobType EntityMobType, position *AbsIntXyz, look *LookBytes, data []EntityMetadata) (err os.Error) {
+func WriteEntitySpawn(writer io.Writer, entityId EntityId, mobType EntityMobType, position *AbsIntXyz, look *LookBytes, data []EntityMetadata) (err error) {
 	var packet = struct {
 		PacketId byte
 		EntityId EntityId
@@ -1472,7 +1472,7 @@ func WriteEntitySpawn(writer io.Writer, entityId EntityId, mobType EntityMobType
 	return writeEntityMetadataField(writer, data)
 }
 
-func readEntitySpawn(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readEntitySpawn(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		EntityId EntityId
 		MobType  EntityMobType
@@ -1504,7 +1504,7 @@ func readEntitySpawn(reader io.Reader, handler IClientPacketHandler) (err os.Err
 
 // PacketIdPaintingSpawn
 
-func WritePaintingSpawn(writer io.Writer, entityId EntityId, title string, position *BlockXyz, paintingType PaintingTypeId) (err os.Error) {
+func WritePaintingSpawn(writer io.Writer, entityId EntityId, title string, position *BlockXyz, paintingType PaintingTypeId) (err error) {
 	if err = binary.Write(writer, binary.BigEndian, &entityId); err != nil {
 		return
 	}
@@ -1524,7 +1524,7 @@ func WritePaintingSpawn(writer io.Writer, entityId EntityId, title string, posit
 	return binary.Write(writer, binary.BigEndian, &packetEnd)
 }
 
-func readPaintingSpawn(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readPaintingSpawn(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var entityId EntityId
 
 	if err = binary.Read(reader, binary.BigEndian, &entityId); err != nil {
@@ -1557,7 +1557,7 @@ func readPaintingSpawn(reader io.Reader, handler IClientPacketHandler) (err os.E
 
 // PacketIdExperienceOrb
 
-func WriteExperienceOrb(writer io.Writer, entityId EntityId, position AbsIntXyz, count int16) (err os.Error) {
+func WriteExperienceOrb(writer io.Writer, entityId EntityId, position AbsIntXyz, count int16) (err error) {
 	var packet = struct {
 		PacketId byte
 		EntityId EntityId
@@ -1573,7 +1573,7 @@ func WriteExperienceOrb(writer io.Writer, entityId EntityId, position AbsIntXyz,
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readExperienceOrb(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readExperienceOrb(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		EntityId EntityId
 		X, Y, Z  AbsIntCoord
@@ -1594,7 +1594,7 @@ func readExperienceOrb(reader io.Reader, handler IClientPacketHandler) (err os.E
 
 // PacketIdEntityVelocity
 
-func WriteEntityVelocity(writer io.Writer, entityId EntityId, velocity *Velocity) (err os.Error) {
+func WriteEntityVelocity(writer io.Writer, entityId EntityId, velocity *Velocity) (err error) {
 	var packet = struct {
 		packetId byte
 		EntityId EntityId
@@ -1610,7 +1610,7 @@ func WriteEntityVelocity(writer io.Writer, entityId EntityId, velocity *Velocity
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readEntityVelocity(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readEntityVelocity(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		EntityId EntityId
 		X, Y, Z  VelocityComponent
@@ -1630,7 +1630,7 @@ func readEntityVelocity(reader io.Reader, handler IClientPacketHandler) (err os.
 
 // PacketIdEntityDestroy
 
-func WriteEntityDestroy(writer io.Writer, entityId EntityId) os.Error {
+func WriteEntityDestroy(writer io.Writer, entityId EntityId) error {
 	var packet = struct {
 		PacketId byte
 		EntityId EntityId
@@ -1641,7 +1641,7 @@ func WriteEntityDestroy(writer io.Writer, entityId EntityId) os.Error {
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readEntityDestroy(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readEntityDestroy(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var entityId EntityId
 
 	err = binary.Read(reader, binary.BigEndian, &entityId)
@@ -1656,7 +1656,7 @@ func readEntityDestroy(reader io.Reader, handler IClientPacketHandler) (err os.E
 
 // PacketIdEntity
 
-func WriteEntity(writer io.Writer, entityId EntityId) (err os.Error) {
+func WriteEntity(writer io.Writer, entityId EntityId) (err error) {
 	var packet = struct {
 		PacketId byte
 		EntityId EntityId
@@ -1668,7 +1668,7 @@ func WriteEntity(writer io.Writer, entityId EntityId) (err os.Error) {
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readEntity(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readEntity(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var entityId EntityId
 
 	err = binary.Read(reader, binary.BigEndian, &entityId)
@@ -1683,7 +1683,7 @@ func readEntity(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
 
 // PacketIdEntityRelMove
 
-func WriteEntityRelMove(writer io.Writer, entityId EntityId, movement *RelMove) (err os.Error) {
+func WriteEntityRelMove(writer io.Writer, entityId EntityId, movement *RelMove) (err error) {
 	var packet = struct {
 		PacketId byte
 		EntityId EntityId
@@ -1703,7 +1703,7 @@ func WriteEntityRelMove(writer io.Writer, entityId EntityId, movement *RelMove) 
 	return
 }
 
-func readEntityRelMove(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readEntityRelMove(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		EntityId EntityId
 		X, Y, Z  RelMoveCoord
@@ -1723,7 +1723,7 @@ func readEntityRelMove(reader io.Reader, handler IClientPacketHandler) (err os.E
 
 // PacketIdEntityLook
 
-func WriteEntityLook(writer io.Writer, entityId EntityId, look *LookBytes) os.Error {
+func WriteEntityLook(writer io.Writer, entityId EntityId, look *LookBytes) error {
 	var packet = struct {
 		PacketId byte
 		EntityId EntityId
@@ -1738,7 +1738,7 @@ func WriteEntityLook(writer io.Writer, entityId EntityId, look *LookBytes) os.Er
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readEntityLook(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readEntityLook(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		EntityId EntityId
 		Yaw      AngleBytes
@@ -1759,7 +1759,7 @@ func readEntityLook(reader io.Reader, handler IClientPacketHandler) (err os.Erro
 
 // PacketIdEntityLookAndRelMove
 
-func WriteEntityLookAndRelMove(writer io.Writer, entityId EntityId, movement *RelMove, look *LookBytes) (err os.Error) {
+func WriteEntityLookAndRelMove(writer io.Writer, entityId EntityId, movement *RelMove, look *LookBytes) (err error) {
 	var packet = struct {
 		PacketId byte
 		EntityId EntityId
@@ -1776,7 +1776,7 @@ func WriteEntityLookAndRelMove(writer io.Writer, entityId EntityId, movement *Re
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readEntityLookAndRelMove(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readEntityLookAndRelMove(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		EntityId EntityId
 		X, Y, Z  RelMoveCoord
@@ -1802,7 +1802,7 @@ func readEntityLookAndRelMove(reader io.Reader, handler IClientPacketHandler) (e
 
 // PacketIdEntityTeleport
 
-func WriteEntityTeleport(writer io.Writer, entityId EntityId, position *AbsIntXyz, look *LookBytes) os.Error {
+func WriteEntityTeleport(writer io.Writer, entityId EntityId, position *AbsIntXyz, look *LookBytes) error {
 	var packet = struct {
 		PacketId byte
 		EntityId EntityId
@@ -1823,7 +1823,7 @@ func WriteEntityTeleport(writer io.Writer, entityId EntityId, position *AbsIntXy
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readEntityTeleport(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readEntityTeleport(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		EntityId EntityId
 		X        AbsIntCoord
@@ -1854,7 +1854,7 @@ func readEntityTeleport(reader io.Reader, handler IClientPacketHandler) (err os.
 
 // PacketIdEntityStatus
 
-func WriteEntityStatus(writer io.Writer, entityId EntityId, status EntityStatus) (err os.Error) {
+func WriteEntityStatus(writer io.Writer, entityId EntityId, status EntityStatus) (err error) {
 	var packet = struct {
 		PacketId byte
 		EntityId EntityId
@@ -1868,7 +1868,7 @@ func WriteEntityStatus(writer io.Writer, entityId EntityId, status EntityStatus)
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readEntityStatus(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readEntityStatus(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		EntityId EntityId
 		Status   EntityStatus
@@ -1886,7 +1886,7 @@ func readEntityStatus(reader io.Reader, handler IClientPacketHandler) (err os.Er
 
 // PacketIdEntityMetadata
 
-func WriteEntityMetadata(writer io.Writer, entityId EntityId, data []EntityMetadata) (err os.Error) {
+func WriteEntityMetadata(writer io.Writer, entityId EntityId, data []EntityMetadata) (err error) {
 	var packet = struct {
 		PacketId byte
 		EntityId EntityId
@@ -1902,7 +1902,7 @@ func WriteEntityMetadata(writer io.Writer, entityId EntityId, data []EntityMetad
 	return writeEntityMetadataField(writer, data)
 }
 
-func readEntityMetadata(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readEntityMetadata(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var entityId EntityId
 
 	if err = binary.Read(reader, binary.BigEndian, &entityId); err != nil {
@@ -1921,7 +1921,7 @@ func readEntityMetadata(reader io.Reader, handler IClientPacketHandler) (err os.
 
 // PacketIdEntityEffect
 
-func WriteEntityEffect(writer io.Writer, entityId EntityId, effect EntityEffect, value int8, duration int16) (err os.Error) {
+func WriteEntityEffect(writer io.Writer, entityId EntityId, effect EntityEffect, value int8, duration int16) (err error) {
 	var packet = struct {
 		PacketId byte
 		EntityId EntityId
@@ -1939,7 +1939,7 @@ func WriteEntityEffect(writer io.Writer, entityId EntityId, effect EntityEffect,
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readEntityEffect(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readEntityEffect(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		EntityId EntityId
 		Effect   EntityEffect
@@ -1958,7 +1958,7 @@ func readEntityEffect(reader io.Reader, handler IClientPacketHandler) (err os.Er
 
 // PacketIdEntityRemoveEffect
 
-func WriteEntityRemoveEffect(writer io.Writer, entityId EntityId, effect EntityEffect) (err os.Error) {
+func WriteEntityRemoveEffect(writer io.Writer, entityId EntityId, effect EntityEffect) (err error) {
 	var packet = struct {
 		PacketId byte
 		EntityId EntityId
@@ -1972,7 +1972,7 @@ func WriteEntityRemoveEffect(writer io.Writer, entityId EntityId, effect EntityE
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readEntityRemoveEffect(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readEntityRemoveEffect(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		EntityId EntityId
 		Effect   EntityEffect
@@ -1989,7 +1989,7 @@ func readEntityRemoveEffect(reader io.Reader, handler IClientPacketHandler) (err
 
 // PacketIdPlayerExperience
 
-func WritePlayerExperience(writer io.Writer, experience, level int8, totalExperience int16) (err os.Error) {
+func WritePlayerExperience(writer io.Writer, experience, level int8, totalExperience int16) (err error) {
 	var packet = struct {
 		PacketId        byte
 		Experience      int8
@@ -2005,7 +2005,7 @@ func WritePlayerExperience(writer io.Writer, experience, level int8, totalExperi
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readPlayerExperience(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readPlayerExperience(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		Experience      int8
 		Level           int8
@@ -2023,7 +2023,7 @@ func readPlayerExperience(reader io.Reader, handler IClientPacketHandler) (err o
 
 // PacketIdPreChunk
 
-func WritePreChunk(writer io.Writer, chunkLoc *ChunkXz, mode ChunkLoadMode) os.Error {
+func WritePreChunk(writer io.Writer, chunkLoc *ChunkXz, mode ChunkLoadMode) error {
 	var packet = struct {
 		PacketId byte
 		X        ChunkCoord
@@ -2038,7 +2038,7 @@ func WritePreChunk(writer io.Writer, chunkLoc *ChunkXz, mode ChunkLoadMode) os.E
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readPreChunk(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readPreChunk(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		X    ChunkCoord
 		Z    ChunkCoord
@@ -2057,7 +2057,7 @@ func readPreChunk(reader io.Reader, handler IClientPacketHandler) (err os.Error)
 
 // PacketIdMapChunk
 
-func WriteMapChunk(writer io.Writer, chunkLoc *ChunkXz, blocks, blockData, blockLight, skyLight []byte) (err os.Error) {
+func WriteMapChunk(writer io.Writer, chunkLoc *ChunkXz, blocks, blockData, blockLight, skyLight []byte) (err error) {
 	buf := &bytes.Buffer{}
 	compressed, err := zlib.NewWriter(buf)
 	if err != nil {
@@ -2101,7 +2101,7 @@ func WriteMapChunk(writer io.Writer, chunkLoc *ChunkXz, blocks, blockData, block
 	return
 }
 
-func readMapChunk(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readMapChunk(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		X                BlockCoord
 		Y                int16
@@ -2133,7 +2133,7 @@ func readMapChunk(reader io.Reader, handler IClientPacketHandler) (err os.Error)
 
 // PacketIdBlockChangeMulti
 
-func WriteBlockChangeMulti(writer io.Writer, chunkLoc *ChunkXz, blockCoords []SubChunkXyz, blockTypes []BlockId, blockMetaData []byte) (err os.Error) {
+func WriteBlockChangeMulti(writer io.Writer, chunkLoc *ChunkXz, blockCoords []SubChunkXyz, blockTypes []BlockId, blockMetaData []byte) (err error) {
 	// NOTE that we don't yet check that blockCoords, blockTypes and
 	// blockMetaData are of the same length.
 
@@ -2166,7 +2166,7 @@ func WriteBlockChangeMulti(writer io.Writer, chunkLoc *ChunkXz, blockCoords []Su
 	return
 }
 
-func readBlockChangeMulti(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readBlockChangeMulti(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		ChunkX ChunkCoord
 		ChunkZ ChunkCoord
@@ -2206,7 +2206,7 @@ func readBlockChangeMulti(reader io.Reader, handler IClientPacketHandler) (err o
 
 // PacketIdBlockChange
 
-func WriteBlockChange(writer io.Writer, blockLoc *BlockXyz, blockType BlockId, blockMetaData byte) (err os.Error) {
+func WriteBlockChange(writer io.Writer, blockLoc *BlockXyz, blockType BlockId, blockMetaData byte) (err error) {
 	var packet = struct {
 		PacketId      byte
 		X             BlockCoord
@@ -2226,7 +2226,7 @@ func WriteBlockChange(writer io.Writer, blockLoc *BlockXyz, blockType BlockId, b
 	return
 }
 
-func readBlockChange(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readBlockChange(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		X             BlockCoord
 		Y             BlockYCoord
@@ -2250,7 +2250,7 @@ func readBlockChange(reader io.Reader, handler IClientPacketHandler) (err os.Err
 
 // PacketIdNoteBlockPlay
 
-func WriteNoteBlockPlay(writer io.Writer, position *BlockXyz, instrument InstrumentId, pitch NotePitch) (err os.Error) {
+func WriteNoteBlockPlay(writer io.Writer, position *BlockXyz, instrument InstrumentId, pitch NotePitch) (err error) {
 	var packet = struct {
 		PacketId   byte
 		X          BlockCoord
@@ -2268,7 +2268,7 @@ func WriteNoteBlockPlay(writer io.Writer, position *BlockXyz, instrument Instrum
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readNoteBlockPlay(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readNoteBlockPlay(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		X          BlockCoord
 		Y          BlockYCoord
@@ -2298,7 +2298,7 @@ type ExplosionOffsetXyz struct {
 	X, Y, Z int8
 }
 
-func WriteExplosion(writer io.Writer, position *AbsXyz, power float32, blockOffsets []ExplosionOffsetXyz) (err os.Error) {
+func WriteExplosion(writer io.Writer, position *AbsXyz, power float32, blockOffsets []ExplosionOffsetXyz) (err error) {
 	var packet = struct {
 		PacketId byte
 		// NOTE AbsCoord is just a guess for now
@@ -2320,7 +2320,7 @@ func WriteExplosion(writer io.Writer, position *AbsXyz, power float32, blockOffs
 	return binary.Write(writer, binary.BigEndian, blockOffsets)
 }
 
-func readExplosion(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readExplosion(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		// NOTE AbsCoord is just a guess for now
 		X, Y, Z AbsCoord
@@ -2351,7 +2351,7 @@ func readExplosion(reader io.Reader, handler IClientPacketHandler) (err os.Error
 
 // PacketIdSoundEffect
 
-func WriteSoundEffect(writer io.Writer, sound SoundEffect, position BlockXyz, data int32) (err os.Error) {
+func WriteSoundEffect(writer io.Writer, sound SoundEffect, position BlockXyz, data int32) (err error) {
 	var packet = struct {
 		PacketId byte
 		Sound    SoundEffect
@@ -2369,7 +2369,7 @@ func WriteSoundEffect(writer io.Writer, sound SoundEffect, position BlockXyz, da
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readSoundEffect(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readSoundEffect(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		Sound SoundEffect
 		X     BlockCoord
@@ -2393,7 +2393,7 @@ func readSoundEffect(reader io.Reader, handler IClientPacketHandler) (err os.Err
 
 // PacketIdState
 
-func WriteState(writer io.Writer, reason, gameMode byte) (err os.Error) {
+func WriteState(writer io.Writer, reason, gameMode byte) (err error) {
 	var packet = struct {
 		PacketId byte
 		Reason   byte
@@ -2407,7 +2407,7 @@ func WriteState(writer io.Writer, reason, gameMode byte) (err os.Error) {
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readState(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readState(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		Reason   byte
 		GameMode byte
@@ -2422,7 +2422,7 @@ func readState(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
 
 // PacketIdWeather
 
-func WriteWeather(writer io.Writer, entityId EntityId, raining bool, position *AbsIntXyz) (err os.Error) {
+func WriteWeather(writer io.Writer, entityId EntityId, raining bool, position *AbsIntXyz) (err error) {
 	var packet = struct {
 		PacketId byte
 		EntityId EntityId
@@ -2438,7 +2438,7 @@ func WriteWeather(writer io.Writer, entityId EntityId, raining bool, position *A
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readWeather(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readWeather(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		EntityId EntityId
 		Raining  byte
@@ -2461,7 +2461,7 @@ func readWeather(reader io.Reader, handler IClientPacketHandler) (err os.Error) 
 
 // PacketIdWindowOpen
 
-func WriteWindowOpen(writer io.Writer, windowId WindowId, invTypeId InvTypeId, windowTitle string, numSlots byte) (err os.Error) {
+func WriteWindowOpen(writer io.Writer, windowId WindowId, invTypeId InvTypeId, windowTitle string, numSlots byte) (err error) {
 	var packet = struct {
 		PacketId  byte
 		WindowId  WindowId
@@ -2483,7 +2483,7 @@ func WriteWindowOpen(writer io.Writer, windowId WindowId, invTypeId InvTypeId, w
 	return binary.Write(writer, binary.BigEndian, numSlots)
 }
 
-func readWindowOpen(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readWindowOpen(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		WindowId  WindowId
 		InvTypeId InvTypeId
@@ -2510,7 +2510,7 @@ func readWindowOpen(reader io.Reader, handler IClientPacketHandler) (err os.Erro
 
 // PacketIdWindowClose
 
-func WriteWindowClose(writer io.Writer, windowId WindowId) (err os.Error) {
+func WriteWindowClose(writer io.Writer, windowId WindowId) (err error) {
 	var packet = struct {
 		PacketId byte
 		WindowId WindowId
@@ -2526,7 +2526,7 @@ func WriteWindowClose(writer io.Writer, windowId WindowId) (err os.Error) {
 	return
 }
 
-func readWindowClose(reader io.Reader, handler IServerPacketHandler) (err os.Error) {
+func readWindowClose(reader io.Reader, handler IServerPacketHandler) (err error) {
 	var windowId WindowId
 
 	if err = binary.Read(reader, binary.BigEndian, &windowId); err != nil {
@@ -2540,7 +2540,7 @@ func readWindowClose(reader io.Reader, handler IServerPacketHandler) (err os.Err
 
 // PacketIdWindowClick
 
-func WriteWindowClick(writer io.Writer, windowId WindowId, slot SlotId, rightClick bool, txId TxId, shiftClick bool, expectedSlot WindowSlot) (err os.Error) {
+func WriteWindowClick(writer io.Writer, windowId WindowId, slot SlotId, rightClick bool, txId TxId, shiftClick bool, expectedSlot WindowSlot) (err error) {
 	var packet = struct {
 		PacketId   byte
 		WindowId   WindowId
@@ -2577,7 +2577,7 @@ func WriteWindowClick(writer io.Writer, windowId WindowId, slot SlotId, rightCli
 	return
 }
 
-func readWindowClick(reader io.Reader, handler IServerPacketHandler) (err os.Error) {
+func readWindowClick(reader io.Reader, handler IServerPacketHandler) (err error) {
 	var packetStart struct {
 		WindowId   WindowId
 		Slot       SlotId
@@ -2623,7 +2623,7 @@ func readWindowClick(reader io.Reader, handler IServerPacketHandler) (err os.Err
 
 // PacketIdWindowSetSlot
 
-func WriteWindowSetSlot(writer io.Writer, windowId WindowId, slot SlotId, itemTypeId ItemTypeId, amount ItemCount, data ItemData) (err os.Error) {
+func WriteWindowSetSlot(writer io.Writer, windowId WindowId, slot SlotId, itemTypeId ItemTypeId, amount ItemCount, data ItemData) (err error) {
 	var packet = struct {
 		PacketId byte
 		WindowId WindowId
@@ -2656,7 +2656,7 @@ func WriteWindowSetSlot(writer io.Writer, windowId WindowId, slot SlotId, itemTy
 	return err
 }
 
-func readWindowSetSlot(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readWindowSetSlot(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packetStart struct {
 		WindowId   WindowId
 		Slot       SlotId
@@ -2695,7 +2695,7 @@ func readWindowSetSlot(reader io.Reader, handler IClientPacketHandler) (err os.E
 
 // PacketIdWindowItems
 
-func WriteWindowItems(writer io.Writer, windowId WindowId, items []WindowSlot) (err os.Error) {
+func WriteWindowItems(writer io.Writer, windowId WindowId, items []WindowSlot) (err error) {
 	var packet = struct {
 		PacketId byte
 		WindowId WindowId
@@ -2726,7 +2726,7 @@ func WriteWindowItems(writer io.Writer, windowId WindowId, items []WindowSlot) (
 	return
 }
 
-func readWindowItems(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readWindowItems(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packetStart struct {
 		WindowId WindowId
 		Count    int16
@@ -2781,7 +2781,7 @@ func readWindowItems(reader io.Reader, handler IClientPacketHandler) (err os.Err
 
 // PacketIdWindowProgressBar
 
-func WriteWindowProgressBar(writer io.Writer, windowId WindowId, prgBarId PrgBarId, value PrgBarValue) os.Error {
+func WriteWindowProgressBar(writer io.Writer, windowId WindowId, prgBarId PrgBarId, value PrgBarValue) error {
 	var packet = struct {
 		PacketId byte
 		WindowId WindowId
@@ -2797,7 +2797,7 @@ func WriteWindowProgressBar(writer io.Writer, windowId WindowId, prgBarId PrgBar
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readWindowProgressBar(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readWindowProgressBar(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		WindowId WindowId
 		PrgBarId PrgBarId
@@ -2815,7 +2815,7 @@ func readWindowProgressBar(reader io.Reader, handler IClientPacketHandler) (err 
 
 // PacketIdWindowTransaction
 
-func WriteWindowTransaction(writer io.Writer, windowId WindowId, txId TxId, accepted bool) (err os.Error) {
+func WriteWindowTransaction(writer io.Writer, windowId WindowId, txId TxId, accepted bool) (err error) {
 	var packet = struct {
 		PacketId byte
 		WindowId WindowId
@@ -2831,7 +2831,7 @@ func WriteWindowTransaction(writer io.Writer, windowId WindowId, txId TxId, acce
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readWindowTransaction(reader io.Reader, handler IPacketHandler) (err os.Error) {
+func readWindowTransaction(reader io.Reader, handler IPacketHandler) (err error) {
 	var packet struct {
 		WindowId WindowId
 		TxId     TxId
@@ -2849,7 +2849,7 @@ func readWindowTransaction(reader io.Reader, handler IPacketHandler) (err os.Err
 
 // PacketIdQuickbarSlotUpdate
 
-func WriteQuickbarSlotUpdate(writer io.Writer, slot SlotId, itemId ItemTypeId, count ItemCount, data ItemData) (err os.Error) {
+func WriteQuickbarSlotUpdate(writer io.Writer, slot SlotId, itemId ItemTypeId, count ItemCount, data ItemData) (err error) {
 	var packet = struct {
 		PacketId byte
 		Slot     SlotId
@@ -2867,7 +2867,7 @@ func WriteQuickbarSlotUpdate(writer io.Writer, slot SlotId, itemId ItemTypeId, c
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readQuickbarSlotUpdate(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readQuickbarSlotUpdate(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		Slot   SlotId
 		ItemId ItemTypeId
@@ -2886,7 +2886,7 @@ func readQuickbarSlotUpdate(reader io.Reader, handler IClientPacketHandler) (err
 
 // PacketIdSignUpdate
 
-func WriteSignUpdate(writer io.Writer, position *BlockXyz, lines [4]string) (err os.Error) {
+func WriteSignUpdate(writer io.Writer, position *BlockXyz, lines [4]string) (err error) {
 	var packet = struct {
 		PacketId byte
 		X        BlockCoord
@@ -2910,7 +2910,7 @@ func WriteSignUpdate(writer io.Writer, position *BlockXyz, lines [4]string) (err
 	return
 }
 
-func readSignUpdate(reader io.Reader, handler IPacketHandler) (err os.Error) {
+func readSignUpdate(reader io.Reader, handler IPacketHandler) (err error) {
 	var packet struct {
 		X BlockCoord
 		Y BlockYCoord
@@ -2938,7 +2938,7 @@ func readSignUpdate(reader io.Reader, handler IPacketHandler) (err os.Error) {
 
 // PacketIdItemData
 
-func WriteItemData(writer io.Writer, itemTypeId ItemTypeId, itemDataId ItemData, data []byte) (err os.Error) {
+func WriteItemData(writer io.Writer, itemTypeId ItemTypeId, itemDataId ItemData, data []byte) (err error) {
 	var packet = struct {
 		PacketId   byte
 		ItemTypeId ItemTypeId
@@ -2960,7 +2960,7 @@ func WriteItemData(writer io.Writer, itemTypeId ItemTypeId, itemDataId ItemData,
 	return
 }
 
-func readItemData(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readItemData(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		ItemTypeId ItemTypeId
 		ItemDataId ItemData
@@ -2983,7 +2983,7 @@ func readItemData(reader io.Reader, handler IClientPacketHandler) (err os.Error)
 
 // PacketIdIncrementStatistic
 
-func WriteIncrementStatistic(writer io.Writer, statisticId StatisticId, delta int8) (err os.Error) {
+func WriteIncrementStatistic(writer io.Writer, statisticId StatisticId, delta int8) (err error) {
 	var packet = struct {
 		PacketId    byte
 		StatisticId StatisticId
@@ -2996,7 +2996,7 @@ func WriteIncrementStatistic(writer io.Writer, statisticId StatisticId, delta in
 	return binary.Write(writer, binary.BigEndian, &packet)
 }
 
-func readIncrementStatistic(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readIncrementStatistic(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packet struct {
 		StatisticId StatisticId
 		Delta       int8
@@ -3014,7 +3014,7 @@ func readIncrementStatistic(reader io.Reader, handler IClientPacketHandler) (err
 
 // PacketIdUserListItem
 
-func WriteUserListItem(writer io.Writer, username string, online bool, pingMs int16) (err os.Error) {
+func WriteUserListItem(writer io.Writer, username string, online bool, pingMs int16) (err error) {
 	if err = binary.Write(writer, binary.BigEndian, byte(PacketIdUserListItem)); err != nil {
 		return
 	}
@@ -3034,7 +3034,7 @@ func WriteUserListItem(writer io.Writer, username string, online bool, pingMs in
 	return binary.Write(writer, binary.BigEndian, &packetEnd)
 }
 
-func readUserListItem(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func readUserListItem(reader io.Reader, handler IClientPacketHandler) (err error) {
 	username, err := readString16(reader)
 	if err != nil {
 		return
@@ -3055,18 +3055,18 @@ func readUserListItem(reader io.Reader, handler IClientPacketHandler) (err os.Er
 
 // PacketIdServerListPing
 
-func WriteServerListPing(writer io.Writer) (err os.Error) {
+func WriteServerListPing(writer io.Writer) (err error) {
 	return binary.Write(writer, binary.BigEndian, byte(PacketIdServerListPing))
 }
 
-func readServerListPing(reader io.Reader, handler IServerPacketHandler) (err os.Error) {
+func readServerListPing(reader io.Reader, handler IServerPacketHandler) (err error) {
 	handler.PacketServerListPing()
 	return
 }
 
 // PacketIdDisconnect
 
-func WriteDisconnect(writer io.Writer, reason string) (err os.Error) {
+func WriteDisconnect(writer io.Writer, reason string) (err error) {
 	buf := &bytes.Buffer{}
 	binary.Write(buf, binary.BigEndian, byte(PacketIdDisconnect))
 	writeString16(buf, reason)
@@ -3074,7 +3074,7 @@ func WriteDisconnect(writer io.Writer, reason string) (err os.Error) {
 	return
 }
 
-func readDisconnect(reader io.Reader, handler IPacketHandler) (err os.Error) {
+func readDisconnect(reader io.Reader, handler IPacketHandler) (err error) {
 	reason, err := readString16(reader)
 	if err != nil {
 		return
@@ -3086,9 +3086,9 @@ func readDisconnect(reader io.Reader, handler IPacketHandler) (err os.Error) {
 
 // End of packet reader/writer functions
 
-type commonPacketHandler func(io.Reader, IPacketHandler) os.Error
-type serverPacketHandler func(io.Reader, IServerPacketHandler) os.Error
-type clientPacketHandler func(io.Reader, IClientPacketHandler) os.Error
+type commonPacketHandler func(io.Reader, IPacketHandler) error
+type serverPacketHandler func(io.Reader, IServerPacketHandler) error
+type clientPacketHandler func(io.Reader, IClientPacketHandler) error
 
 type commonPacketReaderMap map[byte]commonPacketHandler
 type serverPacketReaderMap map[byte]serverPacketHandler
@@ -3170,12 +3170,12 @@ var clientReadFns = clientPacketReaderMap{
 	PacketIdIncrementStatistic:   readIncrementStatistic,
 }
 
-func readPacketId(reader io.Reader) (packetId byte, err os.Error) {
+func readPacketId(reader io.Reader) (packetId byte, err error) {
 	err = binary.Read(reader, binary.BigEndian, &packetId)
 	return
 }
 
-func serverHandlePacket(reader io.Reader, handler IServerPacketHandler, packetId byte) os.Error {
+func serverHandlePacket(reader io.Reader, handler IServerPacketHandler, packetId byte) error {
 	if commonFn, ok := commonReadFns[packetId]; ok {
 		return commonFn(reader, handler)
 	}
@@ -3187,7 +3187,7 @@ func serverHandlePacket(reader io.Reader, handler IServerPacketHandler, packetId
 	return UnknownPacketIdError(packetId)
 }
 
-func ServerReadPacketExpect(reader io.Reader, handler IServerPacketHandler, expectedIds []byte) (err os.Error) {
+func ServerReadPacketExpect(reader io.Reader, handler IServerPacketHandler, expectedIds []byte) (err error) {
 	var packetId byte
 	if packetId, err = readPacketId(reader); err != nil {
 		return
@@ -3204,7 +3204,7 @@ func ServerReadPacketExpect(reader io.Reader, handler IServerPacketHandler, expe
 
 // A server should call this to receive a single packet from a client. It will
 // block until a packet was successfully handled, or there was an error.
-func ServerReadPacket(reader io.Reader, handler IServerPacketHandler) (err os.Error) {
+func ServerReadPacket(reader io.Reader, handler IServerPacketHandler) (err error) {
 	var packetId byte
 	if packetId, err = readPacketId(reader); err != nil {
 		return
@@ -3213,7 +3213,7 @@ func ServerReadPacket(reader io.Reader, handler IServerPacketHandler) (err os.Er
 	return serverHandlePacket(reader, handler, packetId)
 }
 
-func clientHandlePacket(reader io.Reader, handler IClientPacketHandler, packetId byte) os.Error {
+func clientHandlePacket(reader io.Reader, handler IClientPacketHandler, packetId byte) error {
 	if commonFn, ok := commonReadFns[packetId]; ok {
 		return commonFn(reader, handler)
 	}
@@ -3227,7 +3227,7 @@ func clientHandlePacket(reader io.Reader, handler IClientPacketHandler, packetId
 
 // A client should call this to receive a single packet from a client. It will
 // block until a packet was successfully handled, or there was an error.
-func ClientReadPacket(reader io.Reader, handler IClientPacketHandler) (err os.Error) {
+func ClientReadPacket(reader io.Reader, handler IClientPacketHandler) (err error) {
 	var packetId byte
 	if packetId, err = readPacketId(reader); err != nil {
 		return
@@ -3236,7 +3236,7 @@ func ClientReadPacket(reader io.Reader, handler IClientPacketHandler) (err os.Er
 	return clientHandlePacket(reader, handler, packetId)
 }
 
-func ClientReadPacketExpect(reader io.Reader, handler IClientPacketHandler, expectedIds []byte) (err os.Error) {
+func ClientReadPacketExpect(reader io.Reader, handler IClientPacketHandler, expectedIds []byte) (err error) {
 	var packetId byte
 	if packetId, err = readPacketId(reader); err != nil {
 		return

@@ -34,15 +34,15 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"os"
 	"strings"
+	"errors"
 )
 
 // ITag is the interface for all tags that can be represented in an NBT tree.
 type ITag interface {
 	Type() TagType
-	Read(io.Reader) os.Error
-	Write(io.Writer) os.Error
+	Read(io.Reader) error
+	Write(io.Writer) error
 	Lookup(path string) ITag
 }
 
@@ -67,7 +67,7 @@ const (
 
 // NewTag creates a new tag of the given TagType. TagEnd is not a valid value
 // here.
-func (tt TagType) NewTag() (tag ITag, err os.Error) {
+func (tt TagType) NewTag() (tag ITag, err error) {
 	switch tt {
 	case TagByte:
 		tag = new(Byte)
@@ -95,11 +95,11 @@ func (tt TagType) NewTag() (tag ITag, err os.Error) {
 	return
 }
 
-func (tt *TagType) read(reader io.Reader) os.Error {
+func (tt *TagType) read(reader io.Reader) error {
 	return binary.Read(reader, binary.BigEndian, tt)
 }
 
-func (tt TagType) write(writer io.Writer) os.Error {
+func (tt TagType) write(writer io.Writer) error {
 	return binary.Write(writer, binary.BigEndian, tt)
 }
 
@@ -115,11 +115,11 @@ func (*Byte) Lookup(path string) ITag {
 	return nil
 }
 
-func (b *Byte) Read(reader io.Reader) (err os.Error) {
+func (b *Byte) Read(reader io.Reader) (err error) {
 	return binary.Read(reader, binary.BigEndian, &b.Value)
 }
 
-func (b *Byte) Write(writer io.Writer) (err os.Error) {
+func (b *Byte) Write(writer io.Writer) (err error) {
 	return binary.Write(writer, binary.BigEndian, &b.Value)
 }
 
@@ -131,11 +131,11 @@ func (*Short) Type() TagType {
 	return TagShort
 }
 
-func (s *Short) Read(reader io.Reader) (err os.Error) {
+func (s *Short) Read(reader io.Reader) (err error) {
 	return binary.Read(reader, binary.BigEndian, &s.Value)
 }
 
-func (s *Short) Write(writer io.Writer) (err os.Error) {
+func (s *Short) Write(writer io.Writer) (err error) {
 	return binary.Write(writer, binary.BigEndian, &s.Value)
 }
 
@@ -151,11 +151,11 @@ func (*Int) Type() TagType {
 	return TagInt
 }
 
-func (i *Int) Read(reader io.Reader) (err os.Error) {
+func (i *Int) Read(reader io.Reader) (err error) {
 	return binary.Read(reader, binary.BigEndian, &i.Value)
 }
 
-func (i *Int) Write(writer io.Writer) (err os.Error) {
+func (i *Int) Write(writer io.Writer) (err error) {
 	return binary.Write(writer, binary.BigEndian, &i.Value)
 }
 
@@ -171,11 +171,11 @@ func (*Long) Type() TagType {
 	return TagLong
 }
 
-func (l *Long) Read(reader io.Reader) (err os.Error) {
+func (l *Long) Read(reader io.Reader) (err error) {
 	return binary.Read(reader, binary.BigEndian, &l.Value)
 }
 
-func (l *Long) Write(writer io.Writer) (err os.Error) {
+func (l *Long) Write(writer io.Writer) (err error) {
 	return binary.Write(writer, binary.BigEndian, &l.Value)
 }
 
@@ -191,11 +191,11 @@ func (*Float) Type() TagType {
 	return TagFloat
 }
 
-func (f *Float) Read(reader io.Reader) (err os.Error) {
+func (f *Float) Read(reader io.Reader) (err error) {
 	return binary.Read(reader, binary.BigEndian, &f.Value)
 }
 
-func (f *Float) Write(writer io.Writer) (err os.Error) {
+func (f *Float) Write(writer io.Writer) (err error) {
 	return binary.Write(writer, binary.BigEndian, &f.Value)
 }
 
@@ -211,11 +211,11 @@ func (*Double) Type() TagType {
 	return TagDouble
 }
 
-func (d *Double) Read(reader io.Reader) (err os.Error) {
+func (d *Double) Read(reader io.Reader) (err error) {
 	return binary.Read(reader, binary.BigEndian, &d.Value)
 }
 
-func (d *Double) Write(writer io.Writer) (err os.Error) {
+func (d *Double) Write(writer io.Writer) (err error) {
 	return binary.Write(writer, binary.BigEndian, &d.Value)
 }
 
@@ -231,7 +231,7 @@ func (*ByteArray) Type() TagType {
 	return TagByteArray
 }
 
-func (b *ByteArray) Read(reader io.Reader) (err os.Error) {
+func (b *ByteArray) Read(reader io.Reader) (err error) {
 	var length Int
 
 	err = length.Read(reader)
@@ -249,7 +249,7 @@ func (b *ByteArray) Read(reader io.Reader) (err os.Error) {
 	return
 }
 
-func (b *ByteArray) Write(writer io.Writer) (err os.Error) {
+func (b *ByteArray) Write(writer io.Writer) (err error) {
 	length := Int{int32(len(b.Value))}
 
 	if err = length.Write(writer); err != nil {
@@ -272,7 +272,7 @@ func (*String) Type() TagType {
 	return TagString
 }
 
-func (s *String) Read(reader io.Reader) (err os.Error) {
+func (s *String) Read(reader io.Reader) (err error) {
 	var length Short
 
 	err = length.Read(reader)
@@ -290,7 +290,7 @@ func (s *String) Read(reader io.Reader) (err os.Error) {
 	return
 }
 
-func (s *String) Write(writer io.Writer) (err os.Error) {
+func (s *String) Write(writer io.Writer) (err error) {
 	length := Short{int16(len(s.Value))}
 
 	if err = length.Write(writer); err != nil {
@@ -314,7 +314,7 @@ func (*List) Type() TagType {
 	return TagList
 }
 
-func (l *List) Read(reader io.Reader) (err os.Error) {
+func (l *List) Read(reader io.Reader) (err error) {
 	if err = l.TagType.read(reader); err != nil {
 		return
 	}
@@ -343,7 +343,7 @@ func (l *List) Read(reader io.Reader) (err os.Error) {
 	return
 }
 
-func (l *List) Write(writer io.Writer) (err os.Error) {
+func (l *List) Write(writer io.Writer) (err error) {
 	tagType := Byte{int8(l.TagType)}
 	if err = tagType.Write(writer); err != nil {
 		return
@@ -381,7 +381,7 @@ func (*Compound) Type() TagType {
 	return TagCompound
 }
 
-func readTagAndName(reader io.Reader) (tag ITag, name string, err os.Error) {
+func readTagAndName(reader io.Reader) (tag ITag, name string, err error) {
 	var tagType TagType
 	if tagType.read(reader); err != nil {
 		return
@@ -406,7 +406,7 @@ func readTagAndName(reader io.Reader) (tag ITag, name string, err os.Error) {
 	return
 }
 
-func (c *Compound) Read(reader io.Reader) (err os.Error) {
+func (c *Compound) Read(reader io.Reader) (err error) {
 	tags := make(map[string]ITag)
 	var tag ITag
 	var tagName string
@@ -427,7 +427,7 @@ func (c *Compound) Read(reader io.Reader) (err os.Error) {
 	return
 }
 
-func writeTagAndName(writer io.Writer, tag ITag, name string) (err os.Error) {
+func writeTagAndName(writer io.Writer, tag ITag, name string) (err error) {
 	if err = tag.Type().write(writer); err != nil {
 		return
 	}
@@ -442,7 +442,7 @@ func writeTagAndName(writer io.Writer, tag ITag, name string) (err os.Error) {
 	return
 }
 
-func (c *Compound) Write(writer io.Writer) (err os.Error) {
+func (c *Compound) Write(writer io.Writer) (err error) {
 	for name, tag := range c.Tags {
 		if err = writeTagAndName(writer, tag, name); err != nil {
 			return
@@ -473,7 +473,7 @@ func (c *Compound) Set(key string, tag ITag) {
 }
 
 // Read reads an NBT compound from the given reader.
-func Read(reader io.Reader) (tag *Compound, err os.Error) {
+func Read(reader io.Reader) (tag *Compound, err error) {
 	var itag ITag
 	var name string
 	if itag, name, err = readTagAndName(reader); err != nil {
@@ -481,20 +481,20 @@ func Read(reader io.Reader) (tag *Compound, err os.Error) {
 	}
 
 	if name != "" {
-		return nil, os.NewError("root name should be empty")
+		return nil, errors.New("root name should be empty")
 	} else if itag == nil {
-		return nil, os.NewError("end tag found at top level")
+		return nil, errors.New("end tag found at top level")
 	}
 
 	tag, ok := itag.(*Compound)
 	if !ok {
-		return nil, os.NewError("expected compound at top level")
+		return nil, errors.New("expected compound at top level")
 	}
 
 	return tag, nil
 }
 
 // Write writes an NBT compound to the given writer.
-func Write(writer io.Writer, tag *Compound) (err os.Error) {
+func Write(writer io.Writer, tag *Compound) (err error) {
 	return writeTagAndName(writer, tag, "")
 }

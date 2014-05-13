@@ -19,7 +19,7 @@ func NewRecordPlayerTileEntity() ITileEntity {
 	return &recordPlayerTileEntity{}
 }
 
-func (recordPlayer *recordPlayerTileEntity) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (recordPlayer *recordPlayerTileEntity) UnmarshalNbt(tag *nbt.Compound) (err error) {
 	if err = recordPlayer.tileEntity.UnmarshalNbt(tag); err != nil {
 		return
 	}
@@ -33,7 +33,7 @@ func (recordPlayer *recordPlayerTileEntity) UnmarshalNbt(tag *nbt.Compound) (err
 	return nil
 }
 
-func (recordPlayer *recordPlayerTileEntity) MarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (recordPlayer *recordPlayerTileEntity) MarshalNbt(tag *nbt.Compound) (err error) {
 	if err = recordPlayer.tileEntity.MarshalNbt(tag); err != nil {
 		return
 	}

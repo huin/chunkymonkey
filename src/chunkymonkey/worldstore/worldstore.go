@@ -29,7 +29,7 @@ type WorldStore struct {
 	SpawnPosition BlockXyz
 }
 
-func LoadWorldStore(worldPath string) (world *WorldStore, err os.Error) {
+func LoadWorldStore(worldPath string) (world *WorldStore, err error) {
 	levelData, err := loadLevelData(worldPath)
 	if err != nil {
 		return
@@ -92,7 +92,7 @@ func LoadWorldStore(worldPath string) (world *WorldStore, err os.Error) {
 	return
 }
 
-func loadLevelData(worldPath string) (levelData nbt.ITag, err os.Error) {
+func loadLevelData(worldPath string) (levelData nbt.ITag, err error) {
 	filename := path.Join(worldPath, "level.dat")
 	file, err := os.Open(filename)
 	if err != nil {
@@ -113,7 +113,7 @@ func loadLevelData(worldPath string) (levelData nbt.ITag, err os.Error) {
 
 // NOTE: ChunkStoreForDimension shouldn't really be used in the server just
 // yet.
-func (world *WorldStore) ChunkStoreForDimension(dimension DimensionId) (store chunkstore.IChunkStore, err os.Error) {
+func (world *WorldStore) ChunkStoreForDimension(dimension DimensionId) (store chunkstore.IChunkStore, err error) {
 	fgStore, err := chunkstore.ChunkStoreForLevel(world.WorldPath, world.LevelData, dimension)
 	if err != nil {
 		return
@@ -123,7 +123,7 @@ func (world *WorldStore) ChunkStoreForDimension(dimension DimensionId) (store ch
 	return
 }
 
-func (world *WorldStore) PlayerData(user string) (playerData *nbt.Compound, err os.Error) {
+func (world *WorldStore) PlayerData(user string) (playerData *nbt.Compound, err error) {
 	file, err := os.Open(path.Join(world.WorldPath, "players", user+".dat"))
 	if err != nil {
 		if errno, ok := util.Errno(err); ok && errno == os.ENOENT {
@@ -146,7 +146,7 @@ func (world *WorldStore) PlayerData(user string) (playerData *nbt.Compound, err 
 	return
 }
 
-func (world *WorldStore) WritePlayerData(user string, data *nbt.Compound) (err os.Error) {
+func (world *WorldStore) WritePlayerData(user string, data *nbt.Compound) (err error) {
 	playerDir := path.Join(world.WorldPath, "players")
 	if err = os.MkdirAll(playerDir, 0777); err != nil {
 		return
@@ -171,7 +171,7 @@ func (world *WorldStore) WritePlayerData(user string, data *nbt.Compound) (err o
 }
 
 // Creates a new world at 'worldPath'
-func CreateWorld(worldPath string) (err os.Error) {
+func CreateWorld(worldPath string) (err error) {
 	source := rand.NewSource(time.Nanoseconds())
 	seed := source.Int63()
 
@@ -219,7 +219,7 @@ func CreateWorld(worldPath string) (err os.Error) {
 	return nil
 }
 
-func absXyzFromNbt(tag nbt.ITag, path string) (pos AbsXyz, err os.Error) {
+func absXyzFromNbt(tag nbt.ITag, path string) (pos AbsXyz, err error) {
 	posList, posOk := tag.Lookup(path).(*nbt.List)
 	if !posOk {
 		err = BadType(path)

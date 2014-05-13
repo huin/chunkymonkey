@@ -19,7 +19,7 @@ func NewSignTileEntity() ITileEntity {
 	return &signTileEntity{}
 }
 
-func (sign *signTileEntity) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (sign *signTileEntity) UnmarshalNbt(tag *nbt.Compound) (err error) {
 	if err = sign.tileEntity.UnmarshalNbt(tag); err != nil {
 		return
 	}
@@ -47,7 +47,7 @@ func (sign *signTileEntity) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
 	return nil
 }
 
-func (sign *signTileEntity) MarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (sign *signTileEntity) MarshalNbt(tag *nbt.Compound) (err error) {
 	if err = sign.tileEntity.MarshalNbt(tag); err != nil {
 		return
 	}

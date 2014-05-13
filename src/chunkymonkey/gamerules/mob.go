@@ -42,7 +42,7 @@ func (mob *Mob) Init(id EntityMobType) {
 	expVarMobSpawnCount.Add(1)
 }
 
-func (mob *Mob) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (mob *Mob) UnmarshalNbt(tag *nbt.Compound) (err error) {
 	if err = mob.PointObject.UnmarshalNbt(tag); err != nil {
 		return
 	}
@@ -63,7 +63,7 @@ func (mob *Mob) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
 	return nil
 }
 
-func (mob *Mob) MarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (mob *Mob) MarshalNbt(tag *nbt.Compound) (err error) {
 	mobTypeName, ok := MobNameByType[mob.mobType]
 	if !ok {
 		return os.NewError("unknown mob type")
@@ -114,7 +114,7 @@ func (mob *Mob) FormatMetadata() []proto.EntityMetadata {
 	return x
 }
 
-func (mob *Mob) SendUpdate(writer io.Writer) (err os.Error) {
+func (mob *Mob) SendUpdate(writer io.Writer) (err error) {
 	if err = proto.WriteEntity(writer, mob.EntityId); err != nil {
 		return
 	}
@@ -124,7 +124,7 @@ func (mob *Mob) SendUpdate(writer io.Writer) (err os.Error) {
 	return
 }
 
-func (mob *Mob) SendSpawn(writer io.Writer) (err os.Error) {
+func (mob *Mob) SendSpawn(writer io.Writer) (err error) {
 	err = proto.WriteEntitySpawn(
 		writer,
 		mob.EntityId,

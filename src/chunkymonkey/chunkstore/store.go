@@ -11,7 +11,7 @@ import (
 
 type ChunkReadResult struct {
 	Reader IChunkReader
-	Err    os.Error
+	Err    error
 }
 
 type IChunkStore interface {
@@ -95,7 +95,7 @@ type IChunkWriter interface {
 
 // Given the NamedTag for a level.dat, returns an appropriate
 // IChunkStoreForeground.
-func ChunkStoreForLevel(worldPath string, levelData nbt.ITag, dimension DimensionId) (store IChunkStoreForeground, err os.Error) {
+func ChunkStoreForLevel(worldPath string, levelData nbt.ITag, dimension DimensionId) (store IChunkStoreForeground, err error) {
 	versionTag, ok := levelData.Lookup("Data/version").(*nbt.Int)
 
 	if !ok {

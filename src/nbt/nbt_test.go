@@ -26,7 +26,7 @@ func (test *Test) testRead(t *testing.T) {
 	test.Serialized.Write(bytesBuf)
 
 	var result ITag
-	var err os.Error
+	var err error
 	if result, err = test.Value.Type().NewTag(); err != nil {
 		t.Errorf("  Fail: failed to create tag to read into: %v", err)
 		return

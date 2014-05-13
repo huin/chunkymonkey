@@ -39,7 +39,7 @@ func NewFurnaceInventory() (inv *FurnaceInventory) {
 	return
 }
 
-func (inv *FurnaceInventory) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (inv *FurnaceInventory) UnmarshalNbt(tag *nbt.Compound) (err error) {
 	if err = inv.Inventory.UnmarshalNbt(tag); err != nil {
 		return
 	}
@@ -63,7 +63,7 @@ func (inv *FurnaceInventory) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
 	return nil
 }
 
-func (inv *FurnaceInventory) MarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (inv *FurnaceInventory) MarshalNbt(tag *nbt.Compound) (err error) {
 	tag.Set("id", &nbt.String{"Furnace"})
 	tag.Set("BurnTime", &nbt.Short{int16(inv.burnTime)})
 	tag.Set("CookTime", &nbt.Short{int16(inv.cookTime)})

@@ -7,7 +7,7 @@ package perlin
 
 import (
 	"math"
-	"rand"
+	"math/rand"
 )
 
 type PerlinNoise struct {

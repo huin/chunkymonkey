@@ -2,10 +2,10 @@ package server_auth
 
 import (
 	"expvar"
-	"http"
-	"os"
+	"net/http"
 	"time"
-	"url"
+	"net/url"
+	"io"
 )
 
 var (
@@ -24,7 +24,7 @@ func init() {
 // authenticate against a server. This interface allows for the use of a dummy
 // authentication server for testing purposes.
 type IAuthenticator interface {
-	Authenticate(string, string) (bool, os.Error)
+	Authenticate(string, string) (bool, error)
 }
 
 // DummyAuth is a no-op authentication server, always returning the value of
@@ -34,7 +34,7 @@ type DummyAuth struct {
 }
 
 // Authenticate implements the IAuthenticator.Authenticate method
-func (d *DummyAuth) Authenticate(serverId, user string) (authenticated bool, err os.Error) {
+func (d *DummyAuth) Authenticate(serverId, user string) (authenticated bool, err error) {
 	return d.Result, nil
 }
 
@@ -44,7 +44,7 @@ type ServerAuth struct {
 	baseUrl url.URL
 }
 
-func NewServerAuth(baseUrlStr string) (s *ServerAuth, err os.Error) {
+func NewServerAuth(baseUrlStr string) (s *ServerAuth, err error) {
 	baseUrl, err := url.Parse(baseUrlStr)
 	if err != nil {
 		return
@@ -70,11 +70,11 @@ func (s *ServerAuth) BuildQuery(serverId, user string) (query string) {
 }
 
 // Authenticate implements the IAuthenticator.Authenticate method
-func (s *ServerAuth) Authenticate(serverId, user string) (authenticated bool, err os.Error) {
-	before := time.Nanoseconds()
+func (s *ServerAuth) Authenticate(serverId, user string) (authenticated bool, err error) {
+	before := time.Now()
 	defer func() {
-		after := time.Nanoseconds()
-		expVarServerAuthTimeNs.Add(after - before)
+		after := time.Now()
+		expVarServerAuthTimeNs.Add(after.Unix() - before.Unix())
 		if authenticated {
 			expVarServerAuthSuccessCount.Add(1)
 		} else {
@@ -99,7 +99,7 @@ func (s *ServerAuth) Authenticate(serverId, user string) (authenticated bool, er
 
 		for err == nil && bufferPos < 3 {
 			numBytesRead, err = response.Body.Read(buf[bufferPos:])
-			if err != nil && err != os.EOF {
+			if err != nil && err != io.EOF {
 				return
 			}
 			bufferPos += numBytesRead

@@ -41,7 +41,7 @@ type furnaceDataDef struct {
 }
 
 // LoadFurnaceData reads FurnaceData from the reader.
-func LoadFurnaceData(reader io.Reader) (furnaceData FurnaceData, err os.Error) {
+func LoadFurnaceData(reader io.Reader) (furnaceData FurnaceData, err error) {
 	decoder := json.NewDecoder(reader)
 
 	var dataDef furnaceDataDef
@@ -84,7 +84,7 @@ func LoadFurnaceData(reader io.Reader) (furnaceData FurnaceData, err os.Error) {
 }
 
 // LoadFurnaceDataFromFile reads FurnaceData from the named file.
-func LoadFurnaceDataFromFile(filename string) (furnaceData FurnaceData, err os.Error) {
+func LoadFurnaceDataFromFile(filename string) (furnaceData FurnaceData, err error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return

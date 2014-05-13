@@ -24,7 +24,7 @@ type regionFile struct {
 	file      *os.File
 }
 
-func newRegionFile(filePath string) (rf *regionFile, err os.Error) {
+func newRegionFile(filePath string) (rf *regionFile, err error) {
 	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		if sysErr, ok := err.(*os.SyscallError); ok && sysErr.Errno == os.ENOENT {
@@ -76,7 +76,7 @@ func (rf *regionFile) Close() {
 	rf.file.Close()
 }
 
-func (rf *regionFile) ReadChunkData(chunkLoc ChunkXz) (r *nbtChunkReader, err os.Error) {
+func (rf *regionFile) ReadChunkData(chunkLoc ChunkXz) (r *nbtChunkReader, err error) {
 	offset := rf.offsets.Offset(chunkLoc)
 
 	if !offset.IsPresent() {
@@ -116,7 +116,7 @@ func (rf *regionFile) ReadChunkData(chunkLoc ChunkXz) (r *nbtChunkReader, err os
 	return
 }
 
-func (rf *regionFile) WriteChunkData(w *nbtChunkWriter) (err os.Error) {
+func (rf *regionFile) WriteChunkData(w *nbtChunkWriter) (err error) {
 	chunkData, err := serializeChunkData(w)
 	if err != nil {
 		return
@@ -156,7 +156,7 @@ func (rf *regionFile) WriteChunkData(w *nbtChunkWriter) (err os.Error) {
 }
 
 // serializeChunkData produces the compressed chunk NBT data.
-func serializeChunkData(w *nbtChunkWriter) (chunkData []byte, err os.Error) {
+func serializeChunkData(w *nbtChunkWriter) (chunkData []byte, err error) {
 	// Reserve room for the chunk data header at the start.
 	buffer := bytes.NewBuffer(make([]byte, chunkDataHeaderSize, chunkDataGuessSize))
 
@@ -208,14 +208,14 @@ func (o *chunkOffset) Set(sectorCount, sectorIndex uint32) {
 // Represents a chunk file header containing chunk data offsets.
 type regionFileHeader [regionFileEdge * regionFileEdge]chunkOffset
 
-func (h *regionFileHeader) Read(file *os.File) (err os.Error) {
+func (h *regionFileHeader) Read(file *os.File) (err error) {
 	if _, err = file.Seek(0, os.SEEK_SET); err != nil {
 		return
 	}
 	return binary.Read(file, binary.BigEndian, h[:])
 }
 
-func (h *regionFileHeader) Write(file *os.File) (err os.Error) {
+func (h *regionFileHeader) Write(file *os.File) (err error) {
 	if _, err = file.Seek(0, os.SEEK_SET); err != nil {
 		return
 	}
@@ -228,7 +228,7 @@ func (h *regionFileHeader) Offset(chunkLoc ChunkXz) chunkOffset {
 	return h[indexForChunkLoc(chunkLoc)]
 }
 
-func (h *regionFileHeader) SetOffset(chunkLoc ChunkXz, offset chunkOffset, file *os.File) os.Error {
+func (h *regionFileHeader) SetOffset(chunkLoc ChunkXz, offset chunkOffset, file *os.File) error {
 	index := indexForChunkLoc(chunkLoc)
 	h[index] = offset
 
@@ -255,7 +255,7 @@ type chunkDataHeader struct {
 // Returns an io.Reader to correctly decompress data from the chunk data.
 // The reader passed in must be just after the chunkDataHeader in the source
 // data stream. The caller is responsible for closing the returned ReadCloser.
-func (cdh *chunkDataHeader) DataReader(raw io.Reader) (output io.ReadCloser, err os.Error) {
+func (cdh *chunkDataHeader) DataReader(raw io.Reader) (output io.ReadCloser, err error) {
 	limitReader := io.LimitReader(raw, int64(cdh.DataSize))
 	switch cdh.Version {
 	case chunkCompressionGzip:

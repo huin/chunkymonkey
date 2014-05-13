@@ -22,7 +22,7 @@ func NewDispenserInventory() (inv *DispenserInventory) {
 	return inv
 }
 
-func (inv *DispenserInventory) MarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (inv *DispenserInventory) MarshalNbt(tag *nbt.Compound) (err error) {
 	tag.Set("id", &nbt.String{"Trap"})
 	return inv.Inventory.MarshalNbt(tag)
 }

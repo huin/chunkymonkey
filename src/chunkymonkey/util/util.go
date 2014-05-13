@@ -2,11 +2,11 @@ package util
 
 import (
 	"os"
-	"rand"
+	"math/rand"
 	"strconv"
 )
 
-func Errno(err os.Error) (errno os.Errno, ok bool) {
+func Errno(err error) (errno os.Errno, ok bool) {
 	if e, ok := err.(*os.PathError); ok {
 		err = e.Error
 	}
@@ -19,7 +19,7 @@ func Errno(err os.Error) (errno os.Errno, ok bool) {
 // flag|os.O_CREATE|os.O_EXCL; os.O_WRONLY or os.RDWR should be specified for
 // flag at minimum. It is the caller's responsibility to close (and maybe
 // delete) the file when they have finished using it.
-func OpenFileUniqueName(prefix string, flag int, perm uint32) (file *os.File, err os.Error) {
+func OpenFileUniqueName(prefix string, flag int, perm uint32) (file *os.File, err error) {
 	useFlag := flag | os.O_CREATE | os.O_EXCL
 	for i := 0; i < 1000; i++ {
 		rnd := rand.Int63()

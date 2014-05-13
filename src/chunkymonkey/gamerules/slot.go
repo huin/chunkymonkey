@@ -94,11 +94,11 @@ func (s *Slot) SetWindowSlot(windowSlot *proto.WindowSlot) {
 
 }
 
-func (s *Slot) SendUpdate(writer io.Writer, windowId WindowId, slotId SlotId) os.Error {
+func (s *Slot) SendUpdate(writer io.Writer, windowId WindowId, slotId SlotId) error {
 	return proto.WriteWindowSetSlot(writer, windowId, slotId, s.ItemTypeId, s.Count, s.Data)
 }
 
-func (s *Slot) SendEquipmentUpdate(writer io.Writer, entityId EntityId, slotId SlotId) os.Error {
+func (s *Slot) SendEquipmentUpdate(writer io.Writer, entityId EntityId, slotId SlotId) error {
 	return proto.WriteEntityEquipment(writer, entityId, slotId, s.ItemTypeId, s.Data)
 }
 
@@ -253,7 +253,7 @@ func (s *Slot) Decrement() (changed bool) {
 	return
 }
 
-func (s *Slot) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (s *Slot) UnmarshalNbt(tag *nbt.Compound) (err error) {
 	var ok bool
 	var idTag, damageTag *nbt.Short
 	var countTag *nbt.Byte
@@ -275,7 +275,7 @@ func (s *Slot) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
 	return
 }
 
-func (s *Slot) MarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (s *Slot) MarshalNbt(tag *nbt.Compound) (err error) {
 	tag.Set("id", &nbt.Short{int16(s.ItemTypeId)})
 	tag.Set("Count", &nbt.Byte{int8(s.Count)})
 	tag.Set("Damage", &nbt.Short{int16(s.Data)})

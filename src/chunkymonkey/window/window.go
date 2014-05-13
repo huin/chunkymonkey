@@ -24,8 +24,8 @@ type IInventory interface {
 type IWindow interface {
 	WindowId() WindowId
 	Click(click *gamerules.Click) (txState TxState)
-	WriteWindowOpen(writer io.Writer) (err os.Error)
-	WriteWindowItems(writer io.Writer) (err os.Error)
+	WriteWindowOpen(writer io.Writer) (err error)
+	WriteWindowItems(writer io.Writer) (err error)
 	Finalize(sendClosePacket bool)
 }
 
@@ -132,7 +132,7 @@ func (w *Window) Finalize(sendClosePacket bool) {
 }
 
 // WriteWindowOpen writes a packet describing the window to the writer.
-func (w *Window) WriteWindowOpen(writer io.Writer) (err os.Error) {
+func (w *Window) WriteWindowOpen(writer io.Writer) (err error) {
 	// Note that the window size is the number of slots in the first inventory,
 	// not including the player inventories.
 	err = proto.WriteWindowOpen(
@@ -144,7 +144,7 @@ func (w *Window) WriteWindowOpen(writer io.Writer) (err os.Error) {
 
 // WriteWindowItems writes a packet describing the window contents to the
 // writer. It assumes that any required locks on the inventories are held.
-func (w *Window) WriteWindowItems(writer io.Writer) (err os.Error) {
+func (w *Window) WriteWindowItems(writer io.Writer) (err error) {
 	items := make([]proto.WindowSlot, w.numSlots)
 
 	for i := range w.views {

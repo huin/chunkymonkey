@@ -411,7 +411,7 @@ type AngleBytes byte
 type AngleDegrees float32
 
 func (d *AngleDegrees) ToAngleBytes() AngleBytes {
-	norm := math.Fmod(float64(*d), 360)
+	norm := math.Mod(float64(*d), 360)
 	if norm < 0 {
 		norm = 360 + norm
 	}

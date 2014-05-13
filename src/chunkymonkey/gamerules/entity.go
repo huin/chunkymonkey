@@ -16,11 +16,11 @@ import (
 // NBT data structures for persistency.
 type INbtSerializable interface {
 	// UnmarshalNbt reads the NBT tag to set the state of the object.
-	UnmarshalNbt(*nbt.Compound) os.Error
+	UnmarshalNbt(*nbt.Compound) error
 
 	// MarshalNbt creates an NBT tag representing the entity. This can be nil if
 	// the entity cannot be serialized.
-	MarshalNbt(*nbt.Compound) os.Error
+	MarshalNbt(*nbt.Compound) error
 }
 
 // IEntity represents common elements to all types of non-block entities that
@@ -31,11 +31,11 @@ type IEntity interface {
 
 	// SendSpawn writes the packets required to tell a client about the existance
 	// and current state of the entity.
-	SendSpawn(io.Writer) os.Error
+	SendSpawn(io.Writer) error
 
 	// SendUpdate writes the packets required to tell a client about the new
 	// state of the entity since the last SendUpdate or SendSpawn.
-	SendUpdate(io.Writer) os.Error
+	SendUpdate(io.Writer) error
 
 	// Returns the entity's current position.
 	Position() *AbsXyz

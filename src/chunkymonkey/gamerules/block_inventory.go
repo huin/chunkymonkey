@@ -37,7 +37,7 @@ func newBlockInventory(instance *BlockInstance, inv IInventory, ejectOnUnsubscri
 	return blkInv
 }
 
-func (blkInv *blockInventory) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (blkInv *blockInventory) UnmarshalNbt(tag *nbt.Compound) (err error) {
 	if err = blkInv.tileEntity.UnmarshalNbt(tag); err != nil {
 		return
 	}
@@ -49,7 +49,7 @@ func (blkInv *blockInventory) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
 	return nil
 }
 
-func (blkInv *blockInventory) MarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (blkInv *blockInventory) MarshalNbt(tag *nbt.Compound) (err error) {
 	if err = blkInv.tileEntity.MarshalNbt(tag); err != nil {
 		return
 	}

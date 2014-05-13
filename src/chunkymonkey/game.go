@@ -47,7 +47,7 @@ type Game struct {
 	maintenanceMsg string // if set, logins are disallowed.
 }
 
-func NewGame(worldPath string, listener net.Listener, serverDesc, maintenanceMsg string, maxPlayerCount int) (game *Game, err os.Error) {
+func NewGame(worldPath string, listener net.Listener, serverDesc, maintenanceMsg string, maxPlayerCount int) (game *Game, err error) {
 	worldStore, err := worldstore.LoadWorldStore(worldPath)
 	if err != nil {
 		return nil, err

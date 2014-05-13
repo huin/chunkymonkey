@@ -16,7 +16,7 @@ type chunkStoreAlpha struct {
 }
 
 // Creates an IChunkStore that reads the Minecraft Alpha world format.
-func newChunkStoreAlpha(worldPath string, dimension DimensionId) (s *chunkStoreAlpha, err os.Error) {
+func newChunkStoreAlpha(worldPath string, dimension DimensionId) (s *chunkStoreAlpha, err error) {
 	// Don't know the dimension directory structure for alpha, but it's likely
 	// not worth writing support for.
 
@@ -34,7 +34,7 @@ func (s *chunkStoreAlpha) chunkPath(chunkLoc ChunkXz) string {
 		"c."+base36Encode(int32(chunkLoc.X))+"."+base36Encode(int32(chunkLoc.Z))+".dat")
 }
 
-func (s *chunkStoreAlpha) ReadChunk(chunkLoc ChunkXz) (reader IChunkReader, err os.Error) {
+func (s *chunkStoreAlpha) ReadChunk(chunkLoc ChunkXz) (reader IChunkReader, err error) {
 	file, err := os.Open(s.chunkPath(chunkLoc))
 	if err != nil {
 		if errno, ok := util.Errno(err); ok && errno == os.ENOENT {
@@ -74,7 +74,7 @@ func (s *chunkStoreAlpha) Writer() IChunkWriter {
 	return newNbtChunkWriter()
 }
 
-func (s *chunkStoreAlpha) WriteChunk(writer IChunkWriter) (err os.Error) {
+func (s *chunkStoreAlpha) WriteChunk(writer IChunkWriter) (err error) {
 	nbtWriter, ok := writer.(*nbtChunkWriter)
 	if !ok {
 		return fmt.Errorf("%T is incorrect IChunkWriter implementation for %T", writer, s)

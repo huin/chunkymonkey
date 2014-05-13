@@ -20,7 +20,7 @@ func NewMusicTileEntity() ITileEntity {
 	return &musicTileEntity{}
 }
 
-func (music *musicTileEntity) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (music *musicTileEntity) UnmarshalNbt(tag *nbt.Compound) (err error) {
 	if err = music.tileEntity.UnmarshalNbt(tag); err != nil {
 		return
 	}
@@ -34,7 +34,7 @@ func (music *musicTileEntity) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
 	return nil
 }
 
-func (music *musicTileEntity) MarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (music *musicTileEntity) MarshalNbt(tag *nbt.Compound) (err error) {
 	if err = music.tileEntity.MarshalNbt(tag); err != nil {
 		return
 	}

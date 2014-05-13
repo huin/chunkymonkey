@@ -62,7 +62,7 @@ func (obj *PointObject) Init(position *AbsXyz, velocity *AbsVelocity) {
 	obj.onGround = false
 }
 
-func (obj *PointObject) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (obj *PointObject) UnmarshalNbt(tag *nbt.Compound) (err error) {
 	// Position within the chunk
 	if obj.position, err = nbtutil.ReadAbsXyz(tag, "Pos"); err != nil {
 		return
@@ -82,7 +82,7 @@ func (obj *PointObject) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
 	return nil
 }
 
-func (obj *PointObject) MarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (obj *PointObject) MarshalNbt(tag *nbt.Compound) (err error) {
 	var onGround int8
 	if obj.onGround {
 		onGround = 1
@@ -110,7 +110,7 @@ func (obj *PointObject) MarshalNbt(tag *nbt.Compound) (err os.Error) {
 // It assumes that the clients have either been sent packets via this method
 // before, or that the previous position/velocity sent was generated from the
 // LastSentPosition and LastSentVelocity attributes.
-func (obj *PointObject) SendUpdate(writer io.Writer, entityId EntityId, look *LookBytes) (err os.Error) {
+func (obj *PointObject) SendUpdate(writer io.Writer, entityId EntityId, look *LookBytes) (err error) {
 	curPosition := obj.position.ToAbsIntXyz()
 
 	dx := curPosition.X - obj.LastSentPosition.X

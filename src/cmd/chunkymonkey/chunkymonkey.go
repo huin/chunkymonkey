@@ -65,7 +65,7 @@ func usage() {
 	flag.PrintDefaults()
 }
 
-func startHttpServer(addr string) (err os.Error) {
+func startHttpServer(addr string) (err error) {
 	httpPort, err := net.Listen("tcp", addr)
 	if err != nil {
 		return
@@ -75,7 +75,7 @@ func startHttpServer(addr string) (err os.Error) {
 }
 
 func main() {
-	var err os.Error
+	var err error
 
 	flag.Usage = usage
 	flag.Parse()

@@ -11,7 +11,7 @@ import (
 
 type testCase struct {
 	name   string
-	result func(writer *bytes.Buffer) (err os.Error)
+	result func(writer *bytes.Buffer) (err error)
 	want   te.IBytesMatcher
 }
 
@@ -19,7 +19,7 @@ func TestMobSpawn(t *testing.T) {
 	tests := []testCase{
 		{
 			"pig",
-			func(writer *bytes.Buffer) os.Error {
+			func(writer *bytes.Buffer) error {
 				m := NewPig().(*Pig)
 				m.PointObject.Init(&types.AbsXyz{11, 70, -172}, &types.AbsVelocity{0, 0, 0})
 				m.Mob.EntityId = 0x1234
@@ -47,7 +47,7 @@ func TestMobSpawn(t *testing.T) {
 		},
 		{
 			"creeper",
-			func(writer *bytes.Buffer) os.Error {
+			func(writer *bytes.Buffer) error {
 				// Bogus position, changing below.
 				m := NewCreeper().(*Creeper)
 				m.PointObject.Init(&types.AbsXyz{11, 70, -172}, &types.AbsVelocity{})

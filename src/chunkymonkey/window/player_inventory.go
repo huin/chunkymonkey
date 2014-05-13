@@ -102,7 +102,7 @@ func (w *PlayerInventory) TakeOneHeldItem(into *gamerules.Slot) {
 }
 
 // Writes packets for other players to see the equipped items.
-func (w *PlayerInventory) SendFullEquipmentUpdate(writer io.Writer) (err os.Error) {
+func (w *PlayerInventory) SendFullEquipmentUpdate(writer io.Writer) (err error) {
 	slot, _ := w.HeldItem()
 	err = slot.SendEquipmentUpdate(writer, w.entityId, 0)
 	if err != nil {
@@ -134,7 +134,7 @@ func (w *PlayerInventory) CanTakeItem(item *gamerules.Slot) bool {
 	return w.holding.CanTakeItem(item) || w.main.CanTakeItem(item)
 }
 
-func (w *PlayerInventory) UnmarshalNbt(tag nbt.ITag) (err os.Error) {
+func (w *PlayerInventory) UnmarshalNbt(tag nbt.ITag) (err error) {
 	if tag == nil {
 		return
 	}
@@ -183,7 +183,7 @@ func (w *PlayerInventory) UnmarshalNbt(tag nbt.ITag) (err os.Error) {
 	return
 }
 
-func (w *PlayerInventory) MarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (w *PlayerInventory) MarshalNbt(tag *nbt.Compound) (err error) {
 	slots := make([]nbt.ITag, 0, 0)
 
 	// Add the holding inventory

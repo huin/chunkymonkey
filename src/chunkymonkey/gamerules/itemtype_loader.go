@@ -9,7 +9,7 @@ import (
 	. "chunkymonkey/types"
 )
 
-func LoadItemDefs(reader io.Reader) (items ItemTypeMap, err os.Error) {
+func LoadItemDefs(reader io.Reader) (items ItemTypeMap, err error) {
 	itemsStr := make(map[string]*ItemType)
 	decoder := json.NewDecoder(reader)
 	err = decoder.Decode(&itemsStr)
@@ -32,7 +32,7 @@ func LoadItemDefs(reader io.Reader) (items ItemTypeMap, err os.Error) {
 	return
 }
 
-func LoadItemTypesFromFile(filename string) (items ItemTypeMap, err os.Error) {
+func LoadItemTypesFromFile(filename string) (items ItemTypeMap, err error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return

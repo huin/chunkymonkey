@@ -27,7 +27,7 @@ type chunkStoreBeta struct {
 }
 
 // Creates a chunkStoreBeta that reads the Minecraft Beta world format.
-func newChunkStoreBeta(worldPath string, dimension DimensionId) (s *chunkStoreBeta, err os.Error) {
+func newChunkStoreBeta(worldPath string, dimension DimensionId) (s *chunkStoreBeta, err error) {
 	s = &chunkStoreBeta{
 		regionFiles: make(map[uint64]*regionFile),
 	}
@@ -45,7 +45,7 @@ func newChunkStoreBeta(worldPath string, dimension DimensionId) (s *chunkStoreBe
 	return
 }
 
-func (s *chunkStoreBeta) regionFile(chunkLoc ChunkXz) (rf *regionFile, err os.Error) {
+func (s *chunkStoreBeta) regionFile(chunkLoc ChunkXz) (rf *regionFile, err error) {
 	regionLoc := regionLocForChunkXz(chunkLoc)
 
 	rf, ok := s.regionFiles[regionLoc.regionKey()]
@@ -69,7 +69,7 @@ func (s *chunkStoreBeta) regionFile(chunkLoc ChunkXz) (rf *regionFile, err os.Er
 	return rf, nil
 }
 
-func (s *chunkStoreBeta) ReadChunk(chunkLoc ChunkXz) (reader IChunkReader, err os.Error) {
+func (s *chunkStoreBeta) ReadChunk(chunkLoc ChunkXz) (reader IChunkReader, err error) {
 	rf, err := s.regionFile(chunkLoc)
 	if err != nil {
 		return
@@ -91,7 +91,7 @@ func (s *chunkStoreBeta) Writer() IChunkWriter {
 	return newNbtChunkWriter()
 }
 
-func (s *chunkStoreBeta) WriteChunk(writer IChunkWriter) os.Error {
+func (s *chunkStoreBeta) WriteChunk(writer IChunkWriter) error {
 	nbtWriter, ok := writer.(*nbtChunkWriter)
 	if !ok {
 		return fmt.Errorf("%T is incorrect IChunkWriter implementation for %T", writer, s)

@@ -13,7 +13,7 @@ type tileEntity struct {
 	blockLoc BlockXyz
 }
 
-func (tileEntity *tileEntity) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (tileEntity *tileEntity) UnmarshalNbt(tag *nbt.Compound) (err error) {
 	if tileEntity.blockLoc, err = nbtutil.ReadBlockXyzCompound(tag); err != nil {
 		return
 	}
@@ -21,7 +21,7 @@ func (tileEntity *tileEntity) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
 	return nil
 }
 
-func (tileEntity *tileEntity) MarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (tileEntity *tileEntity) MarshalNbt(tag *nbt.Compound) (err error) {
 	nbtutil.WriteBlockXyzCompound(tag, tileEntity.blockLoc)
 	return nil
 }

@@ -31,7 +31,7 @@ func NewObject(objType ObjTypeId) (object *Object) {
 	return
 }
 
-func (object *Object) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (object *Object) UnmarshalNbt(tag *nbt.Compound) (err error) {
 	if err = object.PointObject.UnmarshalNbt(tag); err != nil {
 		return
 	}
@@ -53,7 +53,7 @@ func (object *Object) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
 	return
 }
 
-func (object *Object) MarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (object *Object) MarshalNbt(tag *nbt.Compound) (err error) {
 	objTypeName, ok := ObjNameByType[object.ObjTypeId]
 	if !ok {
 		return os.NewError("unknown object type")
@@ -66,7 +66,7 @@ func (object *Object) MarshalNbt(tag *nbt.Compound) (err os.Error) {
 	return
 }
 
-func (object *Object) SendSpawn(writer io.Writer) (err os.Error) {
+func (object *Object) SendSpawn(writer io.Writer) (err error) {
 	// TODO: Send non-nil ObjectData (is there any?)
 	err = proto.WriteObjectSpawn(writer, object.EntityId, object.ObjTypeId, &object.PointObject.LastSentPosition, nil)
 	if err != nil {
@@ -77,7 +77,7 @@ func (object *Object) SendSpawn(writer io.Writer) (err os.Error) {
 	return
 }
 
-func (object *Object) SendUpdate(writer io.Writer) (err os.Error) {
+func (object *Object) SendUpdate(writer io.Writer) (err error) {
 	if err = proto.WriteEntity(writer, object.EntityId); err != nil {
 		return
 	}

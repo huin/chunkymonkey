@@ -7,7 +7,7 @@ import (
 	"chunkymonkey/gamerules"
 )
 
-func dumpBlocks(filename string) (err os.Error) {
+func dumpBlocks(filename string) (err error) {
 	outputFile, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0640)
 	if err != nil {
 		return
@@ -20,7 +20,7 @@ func dumpBlocks(filename string) (err os.Error) {
 	return
 }
 
-func loadBlocks() (blocks gamerules.BlockTypeList, err os.Error) {
+func loadBlocks() (blocks gamerules.BlockTypeList, err error) {
 	file, err := os.Open("blocks.json")
 	if err != nil {
 		return

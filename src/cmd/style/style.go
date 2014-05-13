@@ -14,16 +14,16 @@ func main() {
 	flag.Parse()
 	filenames := flag.Args()
 	fset := token.NewFileSet()
-	pkgMap, firstErr := parser.ParseFiles(fset, filenames, 0)
-	if firstErr != nil {
-		fmt.Fprintf(os.Stderr, "Error while parsing: %v\n", firstErr)
-	}
 
 	v := NewNodeChecker(fset)
 	v.InterfaceName = regexp.MustCompile("[Ii][A-Z][A-Za-z]+")
 	v.InvalidMethodName = regexp.MustCompile("^Get(.+)") // can't do negative match in Go's regexp?
 
-	for _, pkg := range pkgMap {
+	for _, filename := range filenames {
+		pkg, firstErr := parser.ParseFile(fset, filename, nil, parser.PackageClauseOnly)
+		if firstErr != nil {
+			fmt.Fprintf(os.Stderr, "Error while parsing: %v\n", firstErr)
+		}
 		ast.Walk(v, pkg)
 	}
 }
@@ -88,7 +88,7 @@ func (v *NodeChecker) checkMethod(f *ast.FuncDecl) {
 
 func (v *NodeChecker) checkTypeName(typeSpec *ast.TypeSpec) {
 	name := typeSpec.Name.Name
-	switch t := typeSpec.Type.(type) {
+	switch typeSpec.Type.(type) {
 	case *ast.InterfaceType:
 		if !v.InterfaceName.MatchString(name) {
 			v.report(typeSpec.Name.NamePos, "Bad name for interface %q\n", name)

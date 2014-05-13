@@ -35,7 +35,7 @@ func NewItem(itemTypeId ItemTypeId, count ItemCount, data ItemData, position *Ab
 	return
 }
 
-func (item *Item) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (item *Item) UnmarshalNbt(tag *nbt.Compound) (err error) {
 	if err = item.PointObject.UnmarshalNbt(tag); err != nil {
 		return
 	}
@@ -62,7 +62,7 @@ func (item *Item) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
 	return nil
 }
 
-func (item *Item) MarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (item *Item) MarshalNbt(tag *nbt.Compound) (err error) {
 	if err = item.PointObject.MarshalNbt(tag); err != nil {
 		return
 	}
@@ -79,7 +79,7 @@ func (item *Item) GetSlot() *Slot {
 	return &item.Slot
 }
 
-func (item *Item) SendSpawn(writer io.Writer) (err os.Error) {
+func (item *Item) SendSpawn(writer io.Writer) (err error) {
 	err = proto.WriteItemSpawn(
 		writer, item.EntityId, item.ItemTypeId, item.Slot.Count, item.Slot.Data,
 		&item.PointObject.LastSentPosition, &item.orientation)
@@ -95,7 +95,7 @@ func (item *Item) SendSpawn(writer io.Writer) (err os.Error) {
 	return
 }
 
-func (item *Item) SendUpdate(writer io.Writer) (err os.Error) {
+func (item *Item) SendUpdate(writer io.Writer) (err error) {
 	if err = proto.WriteEntity(writer, item.EntityId); err != nil {
 		return
 	}

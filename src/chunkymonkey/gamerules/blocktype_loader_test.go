@@ -146,7 +146,7 @@ func TestLoadBlockDefs(t *testing.T) {
 // Test if loading blocks, saving them and loading them gives an equal result
 // to the original.
 func TestLoadSaveAndLoadBlockDefs(t *testing.T) {
-	var err os.Error
+	var err error
 
 	var originalBlocks BlockTypeList
 	{

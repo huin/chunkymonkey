@@ -51,7 +51,7 @@ func (r *Recipe) hash() (hash uint32) {
 	return inputHash(r.Input, indices)
 }
 
-func (r *Recipe) check() os.Error {
+func (r *Recipe) check() error {
 	for i := range r.Input {
 		slot := &r.Input[i]
 		if !slot.IsValidType() {
@@ -92,7 +92,7 @@ type RecipeSet struct {
 	recipeHash map[uint32][]*Recipe
 }
 
-func (r *RecipeSet) init() os.Error {
+func (r *RecipeSet) init() error {
 	r.recipeHash = make(map[uint32][]*Recipe)
 	for i := range r.recipes {
 		recipe := &r.recipes[i]
@@ -107,7 +107,7 @@ func (r *RecipeSet) init() os.Error {
 
 // check checks all the recipes to ensure that they seem consistent, i.e item
 // type IDs exist, etc.
-func (r *RecipeSet) check() os.Error {
+func (r *RecipeSet) check() error {
 	for i := range r.recipes {
 		if err := r.recipes[i].check(); err != nil {
 			return err

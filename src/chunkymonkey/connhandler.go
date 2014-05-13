@@ -118,7 +118,7 @@ type pktHandler struct {
 }
 
 func (l *pktHandler) handle() {
-	var err, clientErr os.Error
+	var err, clientErr error
 
 	defer func() {
 		if err != nil {
@@ -150,7 +150,7 @@ func (l *pktHandler) handle() {
 	}
 }
 
-func (l *pktHandler) handleLogin(conn net.Conn) (err, clientErr os.Error) {
+func (l *pktHandler) handleLogin(conn net.Conn) (err, clientErr error) {
 	if !validPlayerUsername.MatchString(l.username) {
 		err = clientErrUsername
 		clientErr = err
@@ -230,7 +230,7 @@ func (l *pktHandler) handleLogin(conn net.Conn) (err, clientErr os.Error) {
 	return
 }
 
-func (l *pktHandler) handleServerQuery(conn net.Conn) (err, clientErr os.Error) {
+func (l *pktHandler) handleServerQuery(conn net.Conn) (err, clientErr error) {
 	err = loginErrorServerList
 	clientErr = fmt.Errorf(
 		"%s§%d§%d",

@@ -52,7 +52,7 @@ func displayNbt(indentCount int, tag nbt.ITag) {
 	}
 }
 
-func cmdLevel(args []string) (err os.Error) {
+func cmdLevel(args []string) (err error) {
 	if len(args) != 1 {
 		os.Stderr.WriteString("usage: " + os.Args[0] + " level <world path>\n")
 		return
@@ -70,7 +70,7 @@ func cmdLevel(args []string) (err os.Error) {
 	return
 }
 
-func cmdChunk(args []string) (err os.Error) {
+func cmdChunk(args []string) (err error) {
 	if len(args) < 3 || len(args) > 4 {
 		os.Stderr.WriteString("usage: " + os.Args[0] + " chunk <world path> <chunk x> <chunk z> [dimension]\n")
 		return
@@ -119,7 +119,7 @@ func cmdChunk(args []string) (err os.Error) {
 	return
 }
 
-func cmdNbt(args []string) (err os.Error) {
+func cmdNbt(args []string) (err error) {
 	if len(args) != 1 {
 		os.Stderr.WriteString("usage: " + os.Args[0] + " nbt <NBT file path>\n")
 		return
@@ -161,7 +161,7 @@ func main() {
 		return
 	}
 
-	var err os.Error
+	var err error
 
 	switch command := os.Args[1]; command {
 	case "level":

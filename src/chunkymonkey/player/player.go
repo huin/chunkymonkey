@@ -24,7 +24,7 @@ import (
 var (
 	expVarPlayerConnectionCount    *expvar.Int
 	expVarPlayerDisconnectionCount *expvar.Int
-	errUnknownItemID               os.Error
+	errUnknownItemID               error
 
 	playerPingNoCheck = flag.Bool(
 		"player_ping_no_check", false,
@@ -76,8 +76,8 @@ type Player struct {
 	onDisconnect chan<- EntityId
 	mainQueue    chan func(*Player)
 	txQueue      chan []byte
-	txErrChan    chan os.Error
-	rxErrChan    chan os.Error
+	txErrChan    chan error
+	rxErrChan    chan error
 	rxRunning    bool // Only used by the receiveLoop.
 	stopPlayer   chan bool
 
@@ -135,8 +135,8 @@ func NewPlayer(entityId EntityId, shardConnecter gamerules.IShardConnecter, conn
 
 		mainQueue:  make(chan func(*Player), 128),
 		txQueue:    make(chan []byte, 128),
-		txErrChan:  make(chan os.Error, 1),
-		rxErrChan:  make(chan os.Error, 1),
+		txErrChan:  make(chan error, 1),
+		rxErrChan:  make(chan error, 1),
 		stopPlayer: make(chan bool, 1),
 
 		game: game,
@@ -176,7 +176,7 @@ func (player *Player) Look() LookDegrees {
 
 // UnmarshalNbt unpacks the player data from their persistantly stored NBT
 // data. It must only be called before Player.Run().
-func (player *Player) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (player *Player) UnmarshalNbt(tag *nbt.Compound) (err error) {
 	if player.position, err = nbtutil.ReadAbsXyz(tag, "Pos"); err != nil {
 		return
 	}
@@ -244,7 +244,7 @@ func (player *Player) UnmarshalNbt(tag *nbt.Compound) (err os.Error) {
 
 // MarshalNbt packs the player data into a nbt.Compound so it can be written to
 // persistant storage.
-func (player *Player) MarshalNbt(tag *nbt.Compound) (err os.Error) {
+func (player *Player) MarshalNbt(tag *nbt.Compound) (err error) {
 	if err = player.inventory.MarshalNbt(tag); err != nil {
 		return
 	}

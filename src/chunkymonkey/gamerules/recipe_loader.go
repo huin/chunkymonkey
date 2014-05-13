@@ -32,7 +32,7 @@ type recipeTemplate struct {
 }
 
 // init checks and initialises a recipe template.
-func (rt *recipeTemplate) init() (err os.Error) {
+func (rt *recipeTemplate) init() (err error) {
 	// Check width/height.
 	height := len(rt.Input)
 	if height < 1 || height > maxRecipeHeight {
@@ -78,7 +78,7 @@ func (rt *recipeTemplate) numRecipes() int {
 }
 
 // createRecipe creates one of the recipes from the template.
-func (rt *recipeTemplate) createRecipe(recipeIndex int, itemTypes ItemTypeMap) (recipe Recipe, err os.Error) {
+func (rt *recipeTemplate) createRecipe(recipeIndex int, itemTypes ItemTypeMap) (recipe Recipe, err error) {
 
 	recipe = Recipe{
 		Comment: rt.Comment,
@@ -122,7 +122,7 @@ func (rt *recipeTemplate) createRecipe(recipeIndex int, itemTypes ItemTypeMap) (
 
 // LoadRecipes reads recipes from a JSON template in reader. itemTypes must be
 // provided to map item type IDs to known items.
-func LoadRecipes(reader io.Reader, itemTypes ItemTypeMap) (recipes *RecipeSet, err os.Error) {
+func LoadRecipes(reader io.Reader, itemTypes ItemTypeMap) (recipes *RecipeSet, err error) {
 	var templates []recipeTemplate
 
 	decoder := json.NewDecoder(reader)
@@ -166,7 +166,7 @@ func LoadRecipes(reader io.Reader, itemTypes ItemTypeMap) (recipes *RecipeSet, e
 	return
 }
 
-func LoadRecipesFromFile(filename string, itemTypes ItemTypeMap) (recipes *RecipeSet, err os.Error) {
+func LoadRecipesFromFile(filename string, itemTypes ItemTypeMap) (recipes *RecipeSet, err error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return

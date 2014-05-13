@@ -16,7 +16,7 @@ type nbtChunkReader struct {
 }
 
 // Load a chunk from its NBT representation
-func newNbtChunkReader(reader io.Reader) (r *nbtChunkReader, err os.Error) {
+func newNbtChunkReader(reader io.Reader) (r *nbtChunkReader, err error) {
 	chunkTag, err := nbt.Read(reader)
 	if err != nil {
 		return
