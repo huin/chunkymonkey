@@ -4,7 +4,6 @@ package window
 import (
 	"bytes"
 	"io"
-	"os"
 
 	"chunkymonkey/gamerules"
 	"chunkymonkey/proto"

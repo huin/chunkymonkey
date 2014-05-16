@@ -1,9 +1,9 @@
 package window
 
 import (
+	"errors"
 	"fmt"
 	"io"
-	"os"
 
 	"chunkymonkey/gamerules"
 	. "chunkymonkey/types"
@@ -141,17 +141,17 @@ func (w *PlayerInventory) UnmarshalNbt(tag nbt.ITag) (err error) {
 
 	list, ok := tag.(*nbt.List)
 	if !ok {
-		return os.NewError("bad inventory - not a list")
+		return errors.New("bad inventory - not a list")
 	}
 
 	for _, slotTagITag := range list.Value {
 		slotTag, ok := slotTagITag.(*nbt.Compound)
 		if !ok {
-			return os.NewError("non-compound found for slot in player inventory")
+			return errors.New("non-compound found for slot in player inventory")
 		}
 		var slotIdTag *nbt.Byte
 		if slotIdTag, ok = slotTag.Lookup("Slot").(*nbt.Byte); !ok {
-			return os.NewError("slot ID not a byte")
+			return errors.New("slot ID not a byte")
 		}
 		slotId := SlotId(slotIdTag.Value)
 		// The mapping order in NBT differs from that used in the window protocol.
