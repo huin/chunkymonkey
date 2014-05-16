@@ -2,13 +2,13 @@ package player
 
 import (
 	"bytes"
+	"errors"
 	"expvar"
 	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
-	"os"
-	"rand"
 	"sync"
 	"time"
 
@@ -44,7 +44,7 @@ const (
 func init() {
 	expVarPlayerConnectionCount = expvar.NewInt("player-connection-count")
 	expVarPlayerDisconnectionCount = expvar.NewInt("player-disconnection-count")
-	errUnknownItemID = os.NewError("Unknown item ID")
+	errUnknownItemID = errors.New("Unknown item ID")
 }
 
 type Player struct {
@@ -613,7 +613,7 @@ func (player *Player) pingNew() {
 			// avoid misreading keep alive IDs.
 			player.ping.id = 1
 		}
-		player.ping.timestampNs = time.Nanoseconds()
+		player.ping.timestampNs = time.Now().Unix()
 
 		buf := new(bytes.Buffer)
 		proto.WriteKeepAlive(buf, player.ping.id)
@@ -658,7 +658,7 @@ func (player *Player) pingReceived(id int32) {
 	}
 
 	// Received valid keep-alive.
-	now := time.Nanoseconds()
+	now := time.Now().Unix()
 
 	if player.ping.timer != nil {
 		player.ping.timer.Stop()
