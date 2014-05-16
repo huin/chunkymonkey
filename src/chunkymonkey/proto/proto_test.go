@@ -1,7 +1,6 @@
 package proto
 
 import (
-	"os"
 	"testing"
 )
 
