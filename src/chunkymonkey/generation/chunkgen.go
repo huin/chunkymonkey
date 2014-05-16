@@ -4,11 +4,11 @@ import (
 	"chunkymonkey/chunkstore"
 	"chunkymonkey/gamerules"
 	. "chunkymonkey/types"
+	"errors"
 	"math/rand"
 	"nbt"
 	"perlin"
 	"time"
-	"errors"
 )
 
 const SeaLevel = 63
