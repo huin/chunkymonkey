@@ -1,9 +1,10 @@
 package gamerules
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
-	"encoding/json"
 	"os"
 	"strconv"
 
@@ -86,7 +87,7 @@ func (a *aspectArgs) UnmarshalJSON(raw []byte) error {
 	// argument after this function returns.
 	a.Raw = make([]byte, len(raw))
 	copy(a.Raw, raw)
-	return
+	return nil
 }
 
 func (a *aspectArgs) MarshalJSON() (raw []byte, err error) {
@@ -109,7 +110,7 @@ func LoadBlockDefs(reader io.Reader) (blocks BlockTypeList, err error) {
 			return
 		}
 		if id < BlockIdMin || id > BlockIdMax {
-			err = os.NewError(fmt.Sprintf(
+			err = errors.New(fmt.Sprintf(
 				"Encountered block type with ID %d which is outside the range"+
 					"%d <= N <= %d", id, BlockIdMin, BlockIdMax))
 			return
@@ -126,7 +127,7 @@ func LoadBlockDefs(reader io.Reader) (blocks BlockTypeList, err error) {
 		id, _ = strconv.Atoi(idStr)
 
 		if blocks[id].defined {
-			err = os.NewError(fmt.Sprintf(
+			err = errors.New(fmt.Sprintf(
 				"Block ID %d defined more than once.", id))
 		}
 

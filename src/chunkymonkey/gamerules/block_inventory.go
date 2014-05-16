@@ -1,8 +1,6 @@
 package gamerules
 
 import (
-	"os"
-
 	. "chunkymonkey/types"
 	"nbt"
 )
@@ -96,7 +94,7 @@ func (blkInv *blockInventory) AddSubscriber(player IPlayerClient) {
 }
 
 func (blkInv *blockInventory) RemoveSubscriber(entityId EntityId) {
-	blkInv.subscribers[entityId] = nil, false
+	delete(blkInv.subscribers, entityId)
 	blkInv.chunk.RemoveOnUnsubscribe(entityId, blkInv)
 	if blkInv.ejectOnUnsubscribe && len(blkInv.subscribers) == 0 {
 		blkInv.EjectItems()
@@ -114,7 +112,7 @@ func (blkInv *blockInventory) Destroyed() {
 // Unsubscribed implements IUnsubscribed. It removes a player's
 // subscription to the inventory when they unsubscribe from the chunk.
 func (blkInv *blockInventory) Unsubscribed(entityId EntityId) {
-	blkInv.subscribers[entityId] = nil, false
+	delete(blkInv.subscribers, entityId)
 }
 
 // EjectItems removes all items from the inventory and drops them at the

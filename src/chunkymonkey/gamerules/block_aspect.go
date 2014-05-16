@@ -1,7 +1,6 @@
 package gamerules
 
 import (
-	"os"
 	"math/rand"
 
 	. "chunkymonkey/types"

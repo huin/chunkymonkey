@@ -1,9 +1,8 @@
 package gamerules
 
 import (
-	"os"
-
 	. "chunkymonkey/types"
+	"errors"
 	"nbt"
 )
 
@@ -27,13 +26,13 @@ func (mobSpawner *mobSpawnerTileEntity) UnmarshalNbt(tag *nbt.Compound) (err err
 	}
 
 	if entityIdTag, ok := tag.Lookup("EntityId").(*nbt.String); !ok {
-		return os.NewError("missing or incorrect type for MobSpawner EntityId")
+		return errors.New("missing or incorrect type for MobSpawner EntityId")
 	} else {
 		mobSpawner.entityMobType = entityIdTag.Value
 	}
 
 	if delayTag, ok := tag.Lookup("Delay").(*nbt.Short); !ok {
-		return os.NewError("missing or incorrect type for MobSpawner Delay")
+		return errors.New("missing or incorrect type for MobSpawner Delay")
 	} else {
 		mobSpawner.delay = Ticks(delayTag.Value)
 	}

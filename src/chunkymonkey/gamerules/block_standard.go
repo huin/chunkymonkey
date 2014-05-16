@@ -2,7 +2,6 @@ package gamerules
 
 import (
 	"fmt"
-	"os"
 
 	. "chunkymonkey/types"
 )

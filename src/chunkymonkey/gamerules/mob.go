@@ -1,9 +1,9 @@
 package gamerules
 
 import (
+	"errors"
 	"expvar"
 	"io"
-	"os"
 
 	"chunkymonkey/nbtutil"
 	"chunkymonkey/physics"
@@ -66,7 +66,7 @@ func (mob *Mob) UnmarshalNbt(tag *nbt.Compound) (err error) {
 func (mob *Mob) MarshalNbt(tag *nbt.Compound) (err error) {
 	mobTypeName, ok := MobNameByType[mob.mobType]
 	if !ok {
-		return os.NewError("unknown mob type")
+		return errors.New("unknown mob type")
 	}
 	if err = mob.PointObject.MarshalNbt(tag); err != nil {
 		return

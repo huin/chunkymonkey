@@ -1,8 +1,6 @@
 package gamerules
 
 import (
-	"os"
-
 	"chunkymonkey/nbtutil"
 	. "chunkymonkey/types"
 	"nbt"

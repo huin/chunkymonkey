@@ -1,9 +1,8 @@
 package gamerules
 
 import (
-	"os"
-
 	. "chunkymonkey/types"
+	"errors"
 	"nbt"
 )
 
@@ -26,7 +25,7 @@ func (music *musicTileEntity) UnmarshalNbt(tag *nbt.Compound) (err error) {
 	}
 
 	if noteTag, ok := tag.Lookup("note").(*nbt.Byte); !ok {
-		return os.NewError("missing or incorrect type for Music note")
+		return errors.New("missing or incorrect type for Music note")
 	} else {
 		music.note = NotePitch(noteTag.Value)
 	}

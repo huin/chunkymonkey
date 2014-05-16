@@ -1,9 +1,9 @@
 package gamerules
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
-	"encoding/json"
 	"os"
 
 	. "chunkymonkey/types"

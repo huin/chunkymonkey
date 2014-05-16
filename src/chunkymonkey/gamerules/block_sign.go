@@ -1,8 +1,7 @@
 package gamerules
 
 import (
-	"os"
-
+	"errors"
 	"nbt"
 )
 
@@ -28,16 +27,16 @@ func (sign *signTileEntity) UnmarshalNbt(tag *nbt.Compound) (err error) {
 	var ok bool
 
 	if textTags[0], ok = tag.Lookup("Text1").(*nbt.String); !ok {
-		return os.NewError("tile entity sign missing or bad type Text1")
+		return errors.New("tile entity sign missing or bad type Text1")
 	}
 	if textTags[1], ok = tag.Lookup("Text2").(*nbt.String); !ok {
-		return os.NewError("tile entity sign missing or bad type Text2")
+		return errors.New("tile entity sign missing or bad type Text2")
 	}
 	if textTags[2], ok = tag.Lookup("Text3").(*nbt.String); !ok {
-		return os.NewError("tile entity sign missing or bad type Text3")
+		return errors.New("tile entity sign missing or bad type Text3")
 	}
 	if textTags[3], ok = tag.Lookup("Text4").(*nbt.String); !ok {
-		return os.NewError("tile entity sign missing or bad type Text4")
+		return errors.New("tile entity sign missing or bad type Text4")
 	}
 
 	for i, textTag := range textTags {

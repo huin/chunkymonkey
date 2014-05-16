@@ -1,8 +1,8 @@
 package gamerules
 
 import (
+	"errors"
 	"io"
-	"os"
 
 	"chunkymonkey/proto"
 	. "chunkymonkey/types"
@@ -259,13 +259,13 @@ func (s *Slot) UnmarshalNbt(tag *nbt.Compound) (err error) {
 	var countTag *nbt.Byte
 
 	if idTag, ok = tag.Lookup("id").(*nbt.Short); !ok {
-		return os.NewError("id tag not Short")
+		return errors.New("id tag not Short")
 	}
 	if countTag, ok = tag.Lookup("Count").(*nbt.Byte); !ok {
-		return os.NewError("Count tag not Byte")
+		return errors.New("Count tag not Byte")
 	}
 	if damageTag, ok = tag.Lookup("Damage").(*nbt.Short); !ok {
-		return os.NewError("Damage tag not Short")
+		return errors.New("Damage tag not Short")
 	}
 
 	s.ItemTypeId = ItemTypeId(idTag.Value)

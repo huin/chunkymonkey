@@ -3,7 +3,6 @@
 package gamerules
 
 import (
-	"os"
 	"testing"
 )
 

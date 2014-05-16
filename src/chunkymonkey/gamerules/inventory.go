@@ -1,10 +1,9 @@
 package gamerules
 
 import (
-	"os"
-
 	"chunkymonkey/proto"
 	. "chunkymonkey/types"
+	"errors"
 	"nbt"
 )
 
@@ -221,18 +220,18 @@ func (inv *Inventory) slotUpdate(slot *Slot, slotId SlotId) {
 func (inv *Inventory) UnmarshalNbt(tag *nbt.Compound) (err error) {
 	itemList, ok := tag.Lookup("Items").(*nbt.List)
 	if !ok {
-		return os.NewError("bad inventory - not a list")
+		return errors.New("bad inventory - not a list")
 	}
 
 	for _, slotTagITag := range itemList.Value {
 		slotTag, ok := slotTagITag.(*nbt.Compound)
 		if !ok {
-			return os.NewError("inventory slot not a compound")
+			return errors.New("inventory slot not a compound")
 		}
 
 		var slotIdTag *nbt.Byte
 		if slotIdTag, ok = slotTag.Lookup("Slot").(*nbt.Byte); !ok {
-			return os.NewError("Slot ID not a byte")
+			return errors.New("Slot ID not a byte")
 		}
 		slotId := SlotId(slotIdTag.Value)
 
@@ -272,7 +271,7 @@ func (inv *Inventory) MarshalNbt(tag *nbt.Compound) (err error) {
 
 func (inv *Inventory) SlotUnmarshalNbt(tag *nbt.Compound, slotId SlotId) (err error) {
 	if slotId < 0 || int(slotId) >= len(inv.slots) {
-		return os.NewError("Bad slot ID")
+		return errors.New("Bad slot ID")
 	}
 	return inv.slots[slotId].UnmarshalNbt(tag)
 }

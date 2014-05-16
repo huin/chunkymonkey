@@ -5,7 +5,6 @@ package gamerules
 
 import (
 	"io"
-	"os"
 
 	"chunkymonkey/physics"
 	. "chunkymonkey/types"

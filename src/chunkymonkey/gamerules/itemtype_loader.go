@@ -1,8 +1,8 @@
 package gamerules
 
 import (
-	"io"
 	"encoding/json"
+	"io"
 	"os"
 	"strconv"
 

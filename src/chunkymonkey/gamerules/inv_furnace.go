@@ -1,9 +1,8 @@
 package gamerules
 
 import (
-	"os"
-
 	. "chunkymonkey/types"
+	"errors"
 	"nbt"
 )
 
@@ -45,7 +44,7 @@ func (inv *FurnaceInventory) UnmarshalNbt(tag *nbt.Compound) (err error) {
 	}
 
 	if burnTimeTag, ok := tag.Lookup("BurnTime").(*nbt.Short); !ok {
-		return os.NewError("Bad or missing BurnTime tag in Furnace NBT")
+		return errors.New("Bad or missing BurnTime tag in Furnace NBT")
 	} else {
 		inv.burnTime = Ticks(burnTimeTag.Value)
 
@@ -55,7 +54,7 @@ func (inv *FurnaceInventory) UnmarshalNbt(tag *nbt.Compound) (err error) {
 	}
 
 	if cookTimeTag, ok := tag.Lookup("CookTime").(*nbt.Short); !ok {
-		return os.NewError("Bad or missing CookTime tag in Furnace NBT")
+		return errors.New("Bad or missing CookTime tag in Furnace NBT")
 	} else {
 		inv.cookTime = Ticks(cookTimeTag.Value)
 	}

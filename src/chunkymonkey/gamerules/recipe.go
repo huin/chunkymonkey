@@ -5,7 +5,6 @@ package gamerules
 
 import (
 	"fmt"
-	"os"
 )
 
 const (

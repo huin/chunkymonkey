@@ -1,12 +1,11 @@
 package gamerules
 
 import (
-	"io"
-	"os"
-
 	"chunkymonkey/physics"
 	"chunkymonkey/proto"
 	. "chunkymonkey/types"
+	"errors"
+	"io"
 	"nbt"
 )
 
@@ -42,7 +41,7 @@ func (item *Item) UnmarshalNbt(tag *nbt.Compound) (err error) {
 
 	itemInfo, ok := tag.Lookup("Item").(*nbt.Compound)
 	if !ok {
-		return os.NewError("bad item data")
+		return errors.New("bad item data")
 	}
 
 	// Grab the basic item data
@@ -50,7 +49,7 @@ func (item *Item) UnmarshalNbt(tag *nbt.Compound) (err error) {
 	count, countOk := itemInfo.Lookup("Count").(*nbt.Byte)
 	data, dataOk := itemInfo.Lookup("Damage").(*nbt.Short)
 	if !idOk || !countOk || !dataOk {
-		return os.NewError("bad item data")
+		return errors.New("bad item data")
 	}
 
 	item.Slot = Slot{

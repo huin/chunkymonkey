@@ -2,7 +2,6 @@ package gamerules
 
 import (
 	"bytes"
-	"os"
 	"testing"
 
 	"chunkymonkey/types"
