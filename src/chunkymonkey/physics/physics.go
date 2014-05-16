@@ -3,7 +3,6 @@ package physics
 import (
 	"io"
 	"math"
-	"os"
 
 	"chunkymonkey/nbtutil"
 	"chunkymonkey/proto"
