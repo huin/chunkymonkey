@@ -1,8 +1,8 @@
 package permission
 
 import (
-	"io"
 	"encoding/json"
+	"io"
 	"os"
 	"strings"
 )
