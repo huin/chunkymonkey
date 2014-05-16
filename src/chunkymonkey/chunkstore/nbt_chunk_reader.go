@@ -3,7 +3,6 @@ package chunkstore
 import (
 	"io"
 	"log"
-	"os"
 
 	"chunkymonkey/gamerules"
 	. "chunkymonkey/types"

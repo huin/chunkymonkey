@@ -2,7 +2,6 @@ package chunkstore
 
 import (
 	"log"
-	"os"
 
 	. "chunkymonkey/types"
 )

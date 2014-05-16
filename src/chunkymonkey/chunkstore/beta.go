@@ -6,7 +6,6 @@ import (
 	"path"
 
 	. "chunkymonkey/types"
-	"chunkymonkey/util"
 )
 
 const (
@@ -59,9 +58,10 @@ func (s *chunkStoreBeta) regionFile(chunkLoc ChunkXz) (rf *regionFile, err error
 	filePath := regionLoc.regionFilePath(s.regionPath)
 	rf, err = newRegionFile(filePath)
 	if err != nil {
-		if errno, ok := util.Errno(err); ok && errno == os.ENOENT {
-			err = NoSuchChunkError(false)
-		}
+		// TODO: Check if the file is there first instead
+		//if errno, ok := util.Errno(err); ok && errno == os.ENOENT {
+		//}
+		err = NoSuchChunkError(false)
 		return
 	}
 	s.regionFiles[regionLoc.regionKey()] = rf

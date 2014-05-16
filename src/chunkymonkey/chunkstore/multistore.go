@@ -1,7 +1,7 @@
 package chunkstore
 
 import (
-	"os"
+	"errors"
 
 	. "chunkymonkey/types"
 )
@@ -55,7 +55,7 @@ func (s *MultiStore) Writer() IChunkWriter {
 
 func (s *MultiStore) WriteChunk(writer IChunkWriter) error {
 	if s.writeStore == nil {
-		return os.NewError("writes not supported")
+		return errors.New("writes not supported")
 	}
 	s.writeStore.WriteChunk(writer)
 	return nil

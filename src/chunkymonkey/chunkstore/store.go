@@ -2,7 +2,6 @@ package chunkstore
 
 import (
 	"fmt"
-	"os"
 
 	"chunkymonkey/gamerules"
 	. "chunkymonkey/types"
@@ -114,12 +113,12 @@ func ChunkStoreForLevel(worldPath string, levelData nbt.ITag, dimension Dimensio
 
 type UnknownLevelVersion int32
 
-func (err UnknownLevelVersion) String() string {
+func (err UnknownLevelVersion) Error() string {
 	return fmt.Sprintf("Unknown level version %d", err)
 }
 
 type NoSuchChunkError bool
 
-func (err NoSuchChunkError) String() string {
+func (err NoSuchChunkError) Error() string {
 	return "Chunk does not exist."
 }

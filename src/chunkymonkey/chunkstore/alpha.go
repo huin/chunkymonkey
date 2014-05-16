@@ -2,6 +2,7 @@ package chunkstore
 
 import (
 	"compress/gzip"
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -37,10 +38,11 @@ func (s *chunkStoreAlpha) chunkPath(chunkLoc ChunkXz) string {
 func (s *chunkStoreAlpha) ReadChunk(chunkLoc ChunkXz) (reader IChunkReader, err error) {
 	file, err := os.Open(s.chunkPath(chunkLoc))
 	if err != nil {
-		if errno, ok := util.Errno(err); ok && errno == os.ENOENT {
-			err = NoSuchChunkError(false)
-		}
-		return
+		// TODO: Check if the file is present first.
+		// No errno. Assume it's not there.
+		//if errno, ok := util.Errno(err); ok && errno == os.ENOENT {
+		return nil, NoSuchChunkError(false)
+		//}
 	}
 	defer file.Close()
 
@@ -56,7 +58,7 @@ func (s *chunkStoreAlpha) ReadChunk(chunkLoc ChunkXz) (reader IChunkReader, err 
 
 	loadedLoc := reader.ChunkLoc()
 	if loadedLoc.X != chunkLoc.X || loadedLoc.Z != chunkLoc.Z {
-		err = os.NewError(fmt.Sprintf(
+		err = errors.New(fmt.Sprintf(
 			"Attempted to load chunk for %+v, but got chunk identified as %+v",
 			chunkLoc,
 			loadedLoc,
@@ -93,10 +95,7 @@ func (s *chunkStoreAlpha) WriteChunk(writer IChunkWriter) (err error) {
 	}
 	defer file.Close()
 
-	gzipWriter, err := gzip.NewWriter(file)
-	if err != nil {
-		return
-	}
+	gzipWriter := gzip.NewWriter(file)
 	defer gzipWriter.Close()
 
 	if err = nbt.Write(gzipWriter, nbtWriter.RootTag()); err != nil {

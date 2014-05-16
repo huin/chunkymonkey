@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"compress/zlib"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -27,9 +28,10 @@ type regionFile struct {
 func newRegionFile(filePath string) (rf *regionFile, err error) {
 	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
-		if sysErr, ok := err.(*os.SyscallError); ok && sysErr.Errno == os.ENOENT {
-			err = NoSuchChunkError(false)
-		}
+		// TODO: Check if the file is present first.
+		//if sysErr, ok := err.(*os.SyscallError); ok && sysErr.Errno == os.ENOENT {
+		err = NoSuchChunkError(false)
+		//}
 		return
 	}
 
@@ -42,7 +44,7 @@ func newRegionFile(filePath string) (rf *regionFile, err error) {
 		file: file,
 	}
 
-	if fi.Size == 0 {
+	if fi.Size() == 0 {
 		// Newly created region file. Create new header index if so.
 		if err = rf.offsets.Write(rf.file); err != nil {
 			return
@@ -88,7 +90,7 @@ func (rf *regionFile) ReadChunkData(chunkLoc ChunkXz) (r *nbtChunkReader, err er
 	sectorCount, sectorIndex := offset.Get()
 
 	if sectorIndex == 0 || sectorCount == 0 {
-		err = os.NewError("Header gave bad chunk offset.")
+		err = errors.New("Header gave bad chunk offset.")
 		return
 	}
 
@@ -160,16 +162,13 @@ func serializeChunkData(w *nbtChunkWriter) (chunkData []byte, err error) {
 	// Reserve room for the chunk data header at the start.
 	buffer := bytes.NewBuffer(make([]byte, chunkDataHeaderSize, chunkDataGuessSize))
 
-	if zlibWriter, err := zlib.NewWriter(buffer); err != nil {
+	zlibWriter := zlib.NewWriter(buffer)
+	if err = nbt.Write(zlibWriter, w.RootTag()); err != nil {
+		zlibWriter.Close()
 		return nil, err
-	} else {
-		if err = nbt.Write(zlibWriter, w.RootTag()); err != nil {
-			zlibWriter.Close()
-			return nil, err
-		}
-		if err = zlibWriter.Close(); err != nil {
-			return nil, err
-		}
+	}
+	if err = zlibWriter.Close(); err != nil {
+		return nil, err
 	}
 	chunkData = buffer.Bytes()
 
@@ -263,7 +262,7 @@ func (cdh *chunkDataHeader) DataReader(raw io.Reader) (output io.ReadCloser, err
 	case chunkCompressionZlib:
 		output, err = zlib.NewReader(limitReader)
 	default:
-		err = os.NewError("Chunk data header contained unknown version number.")
+		err = errors.New("Chunk data header contained unknown version number.")
 	}
 	return
 }
