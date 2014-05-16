@@ -6,7 +6,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"os"
+	"errors"
 	"regexp"
 	"unicode/utf8"
 
@@ -87,13 +87,13 @@ const (
 
 type UnexpectedPacketIdError byte
 
-func (err UnexpectedPacketIdError) String() string {
+func (err UnexpectedPacketIdError) Error() string {
 	return fmt.Sprintf("unexpected packet ID: 0x%02x", byte(err))
 }
 
 type UnknownPacketIdError byte
 
-func (err UnknownPacketIdError) String() string {
+func (err UnknownPacketIdError) Error() string {
 	return fmt.Sprintf("unknown packet ID: 0x%02x", byte(err))
 }
 
@@ -102,8 +102,8 @@ var checkChatMessageRegexp = regexp.MustCompile("[ !\"#$%&'()*+,-./0123456789:;<
 var checkColorsRegexp = regexp.MustCompile("§.$")
 
 // Errors
-var illegalCharErr = os.NewError("Found one or more illegal characters. This could crash clients.")
-var colorTagEndErr = os.NewError("Found a color tag at the end of a message. This could crash clients.")
+var illegalCharErr = errors.New("Found one or more illegal characters. This could crash clients.")
+var colorTagEndErr = errors.New("Found a color tag at the end of a message. This could crash clients.")
 
 // Packets commonly received by both client and server
 type IPacketHandler interface {
@@ -205,13 +205,13 @@ func encodeUtf8(codepoints []uint16) string {
 	bytesRequired := 0
 
 	for _, cp := range codepoints {
-		bytesRequired += utf8.RuneLen(int(cp))
+		bytesRequired += utf8.RuneLen(rune(cp))
 	}
 
 	bs := make([]byte, bytesRequired)
 	curByte := 0
 	for _, cp := range codepoints {
-		curByte += utf8.EncodeRune(bs[curByte:], int(cp))
+		curByte += utf8.EncodeRune(bs[curByte:], rune(cp))
 	}
 
 	return string(bs)
@@ -2059,10 +2059,7 @@ func readPreChunk(reader io.Reader, handler IClientPacketHandler) (err error) {
 
 func WriteMapChunk(writer io.Writer, chunkLoc *ChunkXz, blocks, blockData, blockLight, skyLight []byte) (err error) {
 	buf := &bytes.Buffer{}
-	compressed, err := zlib.NewWriter(buf)
-	if err != nil {
-		return
-	}
+	compressed := zlib.NewWriter(buf)
 
 	compressed.Write(blocks)
 	compressed.Write(blockData)
@@ -2758,7 +2755,7 @@ func readWindowItems(reader io.Reader, handler IClientPacketHandler) (err error)
 				return
 			}
 		} else if itemTypeId == 0 {
-			err = os.NewError("Invalid item ID 0 in window")
+			err = errors.New("Invalid item ID 0 in window")
 			return
 		} else {
 			// We use zero as the null item internally.

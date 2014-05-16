@@ -2,7 +2,7 @@ package gamerules
 
 import (
 	"io"
-	"json"
+	"encoding/json"
 	"os"
 	"strconv"
 

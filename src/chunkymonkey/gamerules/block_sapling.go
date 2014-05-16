@@ -3,7 +3,7 @@ package gamerules
 import (
 	. "chunkymonkey/types"
 	"log"
-	"rand"
+	"math/rand"
 )
 
 // Behaviour of a sapling block, takes care of growing or dying depending on

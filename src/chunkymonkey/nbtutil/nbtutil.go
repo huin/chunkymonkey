@@ -3,7 +3,6 @@ package nbtutil
 
 import (
 	"fmt"
-	"os"
 
 	. "chunkymonkey/types"
 	"nbt"

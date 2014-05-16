@@ -3,7 +3,7 @@ package gamerules
 import (
 	"fmt"
 	"io"
-	"json"
+	"encoding/json"
 	"os"
 	"strconv"
 
