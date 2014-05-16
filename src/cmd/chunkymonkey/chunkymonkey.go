@@ -3,10 +3,10 @@ package main
 import (
 	_ "expvar"
 	"flag"
-	"http"
-	_ "http/pprof"
 	"log"
 	"net"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 
 	"chunkymonkey"
@@ -104,7 +104,7 @@ func main() {
 		fi, err = os.Stat(worldPath)
 	}
 
-	if fi == nil || !fi.IsDirectory() {
+	if fi == nil || !fi.IsDir() {
 		log.Printf("Error loading world %v: Not a directory", worldPath)
 		os.Exit(1)
 	}
