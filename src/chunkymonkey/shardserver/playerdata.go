@@ -2,7 +2,6 @@ package shardserver
 
 import (
 	"io"
-	"os"
 
 	"chunkymonkey/gamerules"
 	"chunkymonkey/proto"

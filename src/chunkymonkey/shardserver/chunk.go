@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
-	"rand"
+	"math/rand"
 	"time"
 
 	"chunkymonkey/chunkstore"
@@ -47,7 +47,7 @@ func newChunkFromReader(reader chunkstore.IChunkReader, shard *ChunkShard) (chun
 		heightMap:    reader.HeightMap(),
 		entities:     make(map[EntityId]gamerules.INonPlayerEntity),
 		tileEntities: make(map[BlockIndex]gamerules.ITileEntity),
-		rand:         rand.New(rand.NewSource(time.UTC().Seconds())),
+		rand:         rand.New(rand.NewSource(time.Now().Unix())),
 		subscribers:  make(map[EntityId]gamerules.IPlayerClient),
 		playersData:  make(map[EntityId]*playerData),
 		onUnsub:      make(map[EntityId][]gamerules.IUnsubscribed),
@@ -115,7 +115,7 @@ func (chunk *Chunk) setBlock(blockLoc *BlockXyz, subLoc *SubChunkXyz, index Bloc
 	index.SetBlockId(chunk.blocks, blockType)
 	index.SetBlockData(chunk.blockData, blockData)
 
-	chunk.tileEntities[index] = nil, false
+	delete(chunk.tileEntities, index)
 
 	// Tell players that the block changed.
 	packet := new(bytes.Buffer)
@@ -174,7 +174,7 @@ func (chunk *Chunk) AddEntity(s gamerules.INonPlayerEntity) {
 func (chunk *Chunk) removeEntity(s gamerules.INonPlayerEntity) {
 	e := s.GetEntityId()
 	chunk.shard.entityMgr.RemoveEntityById(e)
-	chunk.entities[e] = nil, false
+	delete(chunk.entities, e)
 	// Tell all subscribers that the spawn's entity is destroyed.
 	buf := new(bytes.Buffer)
 	proto.WriteEntityDestroy(buf, e)
@@ -191,7 +191,11 @@ func (chunk *Chunk) TileEntity(index BlockIndex) gamerules.ITileEntity {
 }
 
 func (chunk *Chunk) SetTileEntity(index BlockIndex, tileEntity gamerules.ITileEntity) {
-	chunk.tileEntities[index] = tileEntity, tileEntity != nil
+	if tileEntity != nil {
+		chunk.tileEntities[index] = tileEntity
+	} else {
+		delete(chunk.tileEntities, index)
+	}
 	chunk.storeDirty = true
 }
 
@@ -464,7 +468,7 @@ func (chunk *Chunk) spawnTick() {
 		// Transfer spawns to new chunk.
 		for _, e := range outgoingEntities {
 			// Remove mob/items from this chunk.
-			chunk.entities[e.GetEntityId()] = nil, false
+			delete(chunk.entities, e.GetEntityId())
 
 			// Transfer to other chunk.
 			chunkLoc := e.Position().ToChunkXz()
@@ -490,7 +494,7 @@ func (chunk *Chunk) blockTick() {
 
 	for blockIndex := range chunk.newActiveBlocks {
 		chunk.activeBlocks[blockIndex] = true
-		chunk.newActiveBlocks[blockIndex] = false, false
+		delete(chunk.newActiveBlocks, blockIndex)
 	}
 
 	var ok bool
@@ -501,7 +505,7 @@ func (chunk *Chunk) blockTick() {
 		blockInstance.BlockType, blockInstance.Data, ok = chunk.blockTypeAndData(blockIndex)
 		if !ok {
 			// Invalid block.
-			chunk.activeBlocks[blockIndex] = false, false
+			delete(chunk.activeBlocks, blockIndex)
 		}
 
 		blockInstance.SubLoc = blockIndex.ToSubChunkXyz()
@@ -510,7 +514,7 @@ func (chunk *Chunk) blockTick() {
 
 		if !blockInstance.BlockType.Aspect.Tick(&blockInstance) {
 			// Block now inactive. Remove this block from the active list.
-			chunk.activeBlocks[blockIndex] = false, false
+			delete(chunk.activeBlocks, blockIndex)
 		}
 	}
 
@@ -535,10 +539,10 @@ func (chunk *Chunk) blockTickAll() {
 
 			if blockInstance.BlockType.Aspect.Tick(&blockInstance) {
 				// Block now active, so re-queue this
-				chunk.activeBlocks[blockIndex] = true, true
+				chunk.activeBlocks[blockIndex] = true
 			} else {
 				// Block now inactive. Remove this block from the active list.
-				chunk.activeBlocks[blockIndex] = false, false
+				delete(chunk.activeBlocks, blockIndex)
 			}
 		}
 	}
@@ -621,11 +625,11 @@ func (chunk *Chunk) reqSubscribeChunk(entityId EntityId, player gamerules.IPlaye
 
 func (chunk *Chunk) reqUnsubscribeChunk(entityId EntityId, sendPacket bool) {
 	if player, ok := chunk.subscribers[entityId]; ok {
-		chunk.subscribers[entityId] = nil, false
+		delete(chunk.subscribers, entityId)
 
 		// Call any observers registered with AddOnUnsubscribe.
 		if observers, ok := chunk.onUnsub[entityId]; ok {
-			chunk.onUnsub[entityId] = nil, false
+			delete(chunk.onUnsub, entityId)
 			for _, observer := range observers {
 				observer.Unsubscribed(entityId)
 			}
@@ -664,7 +668,11 @@ func (chunk *Chunk) RemoveOnUnsubscribe(entityId EntityId, observer gamerules.IU
 			observers = observers[:len(observers)-1]
 
 			// Replace slice in map, or remove if empty.
-			chunk.onUnsub[entityId] = observers, (len(observers) > 0)
+			if len(observers) > 0 {
+				chunk.onUnsub[entityId] = observers
+			} else {
+				delete(chunk.onUnsub, entityId)
+			}
 
 			return
 		}
@@ -697,7 +705,7 @@ func (chunk *Chunk) reqAddPlayerData(entityId EntityId, name string, pos AbsXyz,
 }
 
 func (chunk *Chunk) reqRemovePlayerData(entityId EntityId, isDisconnect bool) {
-	chunk.playersData[entityId] = nil, false
+	delete(chunk.playersData, entityId)
 
 	if isDisconnect {
 		buf := new(bytes.Buffer)
