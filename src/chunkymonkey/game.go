@@ -4,9 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
-	"os"
-	"rand"
 	"regexp"
 	"time"
 
@@ -123,8 +122,8 @@ func (game *Game) onPlayerConnect(newPlayer *player.Player) {
 // A player has disconnected from the server
 func (game *Game) onPlayerDisconnect(entityId EntityId) {
 	oldPlayer := game.players[entityId]
-	game.players[entityId] = nil, false
-	game.playerNames[oldPlayer.Name()] = nil, false
+	delete(game.players, entityId)
+	delete(game.playerNames, oldPlayer.Name())
 	game.entityManager.RemoveEntityById(entityId)
 
 	playerData := nbt.NewCompound()

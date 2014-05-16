@@ -1,10 +1,10 @@
 package chunkymonkey
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net"
-	"os"
 
 	. "chunkymonkey/entity"
 	"chunkymonkey/gamerules"
@@ -26,17 +26,17 @@ const (
 )
 
 var (
-	clientErrGeneral      = os.NewError("Server error.")
-	clientErrUsername     = os.NewError("Bad username.")
-	clientErrLoginDenied  = os.NewError("You do not have access to this server.")
-	clientErrHandshake    = os.NewError("Handshake error.")
-	clientErrLoginGeneral = os.NewError("Login error.")
-	clientErrAuthFailed   = os.NewError("Minecraft authentication failed.")
-	clientErrUserData     = os.NewError("Error reading user data. Please contact the server administrator.")
+	clientErrGeneral      = errors.New("Server error.")
+	clientErrUsername     = errors.New("Bad username.")
+	clientErrLoginDenied  = errors.New("You do not have access to this server.")
+	clientErrHandshake    = errors.New("Handshake error.")
+	clientErrLoginGeneral = errors.New("Login error.")
+	clientErrAuthFailed   = errors.New("Minecraft authentication failed.")
+	clientErrUserData     = errors.New("Error reading user data. Please contact the server administrator.")
 
-	loginErrorConnType    = os.NewError("unknown/bad connection type")
-	loginErrorMaintenance = os.NewError("server under maintenance")
-	loginErrorServerList  = os.NewError("server list poll")
+	loginErrorConnType    = errors.New("unknown/bad connection type")
+	loginErrorMaintenance = errors.New("server under maintenance")
+	loginErrorServerList  = errors.New("server list poll")
 )
 
 type GameInfo struct {
@@ -122,11 +122,11 @@ func (l *pktHandler) handle() {
 
 	defer func() {
 		if err != nil {
-			log.Print("Connection closed ", err.String())
+			log.Print("Connection closed ", err.Error())
 			if clientErr == nil {
 				clientErr = clientErrGeneral
 			}
-			proto.WriteDisconnect(l.conn, clientErr.String())
+			proto.WriteDisconnect(l.conn, clientErr.Error())
 			l.conn.Close()
 		}
 	}()
@@ -162,7 +162,7 @@ func (l *pktHandler) handleLogin(conn net.Conn) (err, clientErr error) {
 	// TODO Allow admins to connect.
 	if l.gameInfo.maintenanceMsg != "" {
 		err = loginErrorMaintenance
-		clientErr = os.NewError(l.gameInfo.maintenanceMsg)
+		clientErr = errors.New(l.gameInfo.maintenanceMsg)
 		return
 	}
 
@@ -185,7 +185,7 @@ func (l *pktHandler) handleLogin(conn net.Conn) (err, clientErr error) {
 		if !authenticated || err != nil {
 			var reason string
 			if err != nil {
-				reason = "Authentication check failed: " + err.String()
+				reason = "Authentication check failed: " + err.Error()
 			} else {
 				reason = "Failed authentication"
 			}

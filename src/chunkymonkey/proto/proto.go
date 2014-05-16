@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"compress/zlib"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
-	"errors"
 	"regexp"
 	"unicode/utf8"
 

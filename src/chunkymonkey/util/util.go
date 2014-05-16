@@ -1,10 +1,10 @@
 package util
 
 import (
-	"os"
-	"math/rand"
-	"strconv"
 	"errors"
+	"math/rand"
+	"os"
+	"strconv"
 )
 
 // OpenFileUniqueName creates a file with a unique (and randomly generated)

@@ -4,12 +4,12 @@ package worldstore
 
 import (
 	"compress/gzip"
+	"errors"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"path"
-	"math/rand"
-	"errors"
 	"time"
 
 	"chunkymonkey/chunkstore"
@@ -127,8 +127,8 @@ func (world *WorldStore) PlayerData(user string) (playerData *nbt.Compound, err 
 	file, err := os.Open(path.Join(world.WorldPath, "players", user+".dat"))
 	if err != nil {
 		//if errno, ok := util.Errno(err); ok && errno == os.ENOENT {
-			// Player data simply doesn't exist. Not an error, playerData = nil is
-			// the result.
+		// Player data simply doesn't exist. Not an error, playerData = nil is
+		// the result.
 		//	return nil, nil
 		//}
 		return nil, nil
