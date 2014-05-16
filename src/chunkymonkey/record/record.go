@@ -11,7 +11,7 @@ import (
 // Log record header
 type header struct {
 	Timestamp time.Duration // delay since last data read, in nanoseconds
-	Length    int32 // length of data bytes
+	Length    int32         // length of data bytes
 }
 
 type ReaderRecorder struct {

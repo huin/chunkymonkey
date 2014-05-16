@@ -2,10 +2,10 @@ package server_auth
 
 import (
 	"expvar"
-	"net/http"
-	"time"
-	"net/url"
 	"io"
+	"net/http"
+	"net/url"
+	"time"
 )
 
 var (
