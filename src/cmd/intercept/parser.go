@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"io"
 	"log"
-	"os"
 
 	"chunkymonkey/proto"
 	. "chunkymonkey/types"
@@ -347,7 +346,7 @@ func (p *MessageParser) CsParse(reader io.Reader, logger *log.Logger) {
 	for {
 		err := proto.ServerReadPacket(reader, p)
 		if err != nil {
-			if err != os.EOF {
+			if err != io.EOF {
 				p.printf("ReceiveLoop failed: %v", err)
 			} else {
 				p.printf("ReceiveLoop hit EOF")
@@ -374,7 +373,7 @@ func (p *MessageParser) ScParse(reader io.Reader, logger *log.Logger) {
 	for {
 		err := proto.ClientReadPacket(reader, p)
 		if err != nil {
-			if err != os.EOF {
+			if err != io.EOF {
 				p.printf("ReceiveLoop failed: %v", err)
 			} else {
 				p.printf("ReceiveLoop hit EOF")

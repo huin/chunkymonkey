@@ -3,7 +3,6 @@ package nbt
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"reflect"
 	"testing"
 

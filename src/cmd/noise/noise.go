@@ -3,6 +3,7 @@ package main
 import (
 	"image"
 	"image/png"
+	"image/color"
 	"log"
 	"os"
 
@@ -86,7 +87,7 @@ func main() {
 		}
 	}
 
-	img := image.NewGray(w, h)
+	img := image.NewGray(image.Rect(0, 0, w, h))
 
 	base := valueStat.min
 	scale := 255 / (valueStat.max - valueStat.min)
@@ -94,7 +95,7 @@ func main() {
 	for row := 0; row < h; row++ {
 		for col := 0; col < w; col++ {
 			scaled := scale * (values[row*w+col] - base)
-			img.Set(col, row, image.GrayColor{uint8(scaled)})
+			img.Set(col, row, color.Gray{uint8(scaled)})
 		}
 	}
 

@@ -98,7 +98,7 @@ func serveConn(clientConn net.Conn, remoteaddr string, connNumber int) {
 func serve(localaddr, remoteaddr string) (err error) {
 	listener, err := net.Listen("tcp", localaddr)
 	if err != nil {
-		log.Fatal("Listen: ", err.String())
+		log.Fatal("Listen: ", err.Error())
 		return
 	}
 
@@ -110,7 +110,7 @@ func serve(localaddr, remoteaddr string) (err error) {
 	for {
 		clientConn, acceptErr := listener.Accept()
 		if acceptErr != nil {
-			log.Printf("Accept error: %s", acceptErr.String())
+			log.Printf("Accept error: %s", acceptErr.Error())
 			break
 		} else {
 			go serveConn(clientConn, remoteaddr, connNumber)
