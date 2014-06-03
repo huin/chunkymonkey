@@ -6,6 +6,7 @@ import (
 	"code.google.com/p/gomock/gomock"
 
 	"github.com/huin/chunkymonkey/gamerules"
+	"github.com/huin/chunkymonkey/gamerules_mock"
 	"github.com/huin/chunkymonkey/testmatcher"
 )
 
@@ -15,9 +16,9 @@ func TestCommandFramework(t *testing.T) {
 
 	itemType1 := gamerules.ItemType{1, "1", 64, 0, 0}
 
-	mockGame := gamerules.NewMockIGame(mockCtrl)
-	mockPlayer := gamerules.NewMockIPlayerClient(mockCtrl)
-	mockOther := gamerules.NewMockIPlayerClient(mockCtrl)
+	mockGame := gamerules_mock.NewMockIGame(mockCtrl)
+	mockPlayer := gamerules_mock.NewMockIPlayerClient(mockCtrl)
+	mockOther := gamerules_mock.NewMockIPlayerClient(mockCtrl)
 
 	cf := NewCommandFramework("/")
 
