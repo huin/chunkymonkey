@@ -8,7 +8,7 @@ import (
 
 	"chunkymonkey/physics"
 	. "chunkymonkey/types"
-	"nbt"
+	"github.com/huin/chunkymonkey/nbt"
 )
 
 // INbtSerializable is the interface for all objects that can be serialized to

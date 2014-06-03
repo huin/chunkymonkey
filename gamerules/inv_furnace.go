@@ -3,7 +3,7 @@ package gamerules
 import (
 	. "chunkymonkey/types"
 	"errors"
-	"nbt"
+	"github.com/huin/chunkymonkey/nbt"
 )
 
 const (

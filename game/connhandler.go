@@ -14,7 +14,7 @@ import (
 	"chunkymonkey/shardserver"
 	. "chunkymonkey/types"
 	"chunkymonkey/worldstore"
-	"nbt"
+	"github.com/huin/chunkymonkey/nbt"
 )
 
 // TODO Refactor this more simply after a good re-working of the chunkymonkey/proto package.

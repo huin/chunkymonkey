@@ -6,7 +6,7 @@ import (
 
 	"chunkymonkey/gamerules"
 	. "chunkymonkey/types"
-	"nbt"
+	"github.com/huin/chunkymonkey/nbt"
 )
 
 // Returned to chunks to pull their data from.

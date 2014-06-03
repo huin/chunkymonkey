@@ -10,7 +10,7 @@ import (
 	"chunkymonkey/physics"
 	"chunkymonkey/proto"
 	. "chunkymonkey/types"
-	"nbt"
+	"github.com/huin/chunkymonkey/nbt"
 )
 
 // TODO Object sub-types?

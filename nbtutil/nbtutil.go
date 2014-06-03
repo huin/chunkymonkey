@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	. "chunkymonkey/types"
-	"nbt"
+	"github.com/huin/chunkymonkey/nbt"
 )
 
 func ReadFloat2(tag nbt.ITag, path string) (x, y float32, err error) {

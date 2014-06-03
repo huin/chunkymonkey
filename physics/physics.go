@@ -7,7 +7,7 @@ import (
 	"chunkymonkey/nbtutil"
 	"chunkymonkey/proto"
 	. "chunkymonkey/types"
-	"nbt"
+	"github.com/huin/chunkymonkey/nbt"
 )
 
 const (

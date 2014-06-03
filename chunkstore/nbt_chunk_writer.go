@@ -5,7 +5,7 @@ import (
 
 	"chunkymonkey/gamerules"
 	. "chunkymonkey/types"
-	"nbt"
+	"github.com/huin/chunkymonkey/nbt"
 )
 
 func cloneByteArray(in []byte) []byte {

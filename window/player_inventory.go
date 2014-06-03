@@ -7,7 +7,7 @@ import (
 
 	"chunkymonkey/gamerules"
 	. "chunkymonkey/types"
-	"nbt"
+	"github.com/huin/chunkymonkey/nbt"
 )
 
 const (

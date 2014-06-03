@@ -15,7 +15,7 @@ import (
 	"chunkymonkey/chunkstore"
 	"chunkymonkey/generation"
 	. "chunkymonkey/types"
-	"nbt"
+	"github.com/huin/chunkymonkey/nbt"
 )
 
 type WorldStore struct {

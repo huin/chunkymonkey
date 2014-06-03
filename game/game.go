@@ -18,7 +18,7 @@ import (
 	"chunkymonkey/shardserver"
 	. "chunkymonkey/types"
 	"chunkymonkey/worldstore"
-	"nbt"
+	"github.com/huin/chunkymonkey/nbt"
 )
 
 // We regard usernames as valid if they don't contain "dangerous" characters.

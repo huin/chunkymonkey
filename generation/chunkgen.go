@@ -6,7 +6,7 @@ import (
 	. "chunkymonkey/types"
 	"errors"
 	"math/rand"
-	"nbt"
+	"github.com/huin/chunkymonkey/nbt"
 	"perlin"
 	"time"
 )

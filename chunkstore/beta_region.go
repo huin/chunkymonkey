@@ -12,7 +12,7 @@ import (
 	"path"
 
 	. "chunkymonkey/types"
-	"nbt"
+	"github.com/huin/chunkymonkey/nbt"
 )
 
 // TODO Handle timestamps of chunks.

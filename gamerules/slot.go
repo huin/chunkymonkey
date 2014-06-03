@@ -6,7 +6,7 @@ import (
 
 	"chunkymonkey/proto"
 	. "chunkymonkey/types"
-	"nbt"
+	"github.com/huin/chunkymonkey/nbt"
 )
 
 // Represents an inventory slot, e.g in a player's inventory, their cursor, a

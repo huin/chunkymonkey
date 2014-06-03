@@ -6,7 +6,7 @@ import (
 	. "chunkymonkey/types"
 	"errors"
 	"io"
-	"nbt"
+	"github.com/huin/chunkymonkey/nbt"
 )
 
 type Item struct {

@@ -4,7 +4,7 @@ import (
 	"chunkymonkey/proto"
 	. "chunkymonkey/types"
 	"errors"
-	"nbt"
+	"github.com/huin/chunkymonkey/nbt"
 )
 
 type IInventorySubscriber interface {

@@ -9,7 +9,7 @@ import (
 
 	. "chunkymonkey/types"
 	"chunkymonkey/worldstore"
-	"nbt"
+	"github.com/huin/chunkymonkey/nbt"
 )
 
 func displayNbt(indentCount int, tag nbt.ITag) {

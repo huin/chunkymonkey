@@ -2,7 +2,7 @@ package gamerules
 
 import (
 	"errors"
-	"nbt"
+	"github.com/huin/chunkymonkey/nbt"
 )
 
 func makeSignAspect() (aspect IBlockAspect) {

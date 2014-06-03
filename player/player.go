@@ -18,7 +18,7 @@ import (
 	"chunkymonkey/proto"
 	. "chunkymonkey/types"
 	"chunkymonkey/window"
-	"nbt"
+	"github.com/huin/chunkymonkey/nbt"
 )
 
 var (

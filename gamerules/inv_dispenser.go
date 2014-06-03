@@ -1,7 +1,7 @@
 package gamerules
 
 import (
-	"nbt"
+	"github.com/huin/chunkymonkey/nbt"
 )
 
 const (
