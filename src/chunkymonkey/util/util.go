@@ -19,13 +19,11 @@ func OpenFileUniqueName(prefix string, flag int, perm os.FileMode) (file *os.Fil
 		rnd := rand.Int()
 		if file, err := os.OpenFile(prefix+strconv.Itoa(rnd), useFlag, perm); err == nil {
 			return file, err
-		} else {
-			// Assume the error is that the file already exists. Try again up to 1000 times.
-			// TODO: Check if the file already exists first.
-			//if errno, ok := Errno(err); ok && errno == os.EEXIST {
+		} else if os.IsExist(err) {
+			// Try again up to 1000 times.
 			continue
-			//}
-			//return nil, err
+		} else {
+			return nil, err
 		}
 	}
 	return nil, errors.New("gave up trying to create unique filename")

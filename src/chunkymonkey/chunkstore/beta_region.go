@@ -26,12 +26,9 @@ type regionFile struct {
 }
 
 func newRegionFile(filePath string) (rf *regionFile, err error) {
-	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0666)
+	var file *os.File
+	file, err = os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
-		// TODO: Check if the file is present first.
-		//if sysErr, ok := err.(*os.SyscallError); ok && sysErr.Errno == os.ENOENT {
-		err = NoSuchChunkError(false)
-		//}
 		return
 	}
 
