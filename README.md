@@ -10,7 +10,7 @@ the MIT open source license, please see the LICENSE file for more information.
 
 Website: http://github.com/huin/chunkymonkey
 Mailing list: https://groups.google.com/group/chunkymonkey-minecraft
-Contact: [John Beisley][3]
+Contact: [John Beisley][2]
 
 Status
 ------
@@ -42,26 +42,8 @@ Currently missing features include:
 Contributing
 ------------
 
-Chunky Monkey is looking for assistance in furthering its development.
-
-Key skills:
-
-*   Use of Git and Github.
-*   Moderate skill in the Go programming language.
-*   Ability to write clear, maintainable code.
-*   Unit testing knowledge.
-*   Understanding of goroutine concurrency primitives.
-
-Highly desireable skills:
-
-*   Embedding a scripting environment (perhaps Lua?) into Go.
-*   Low-latency reliable network communication.
-*   Server scalabilty and reliability architecture.
-*   Service monitoring.
-*   World generation (including noise generation).
-
-If you're interested in working on the project - it's best to contact [Huin][3]
-via Github, or on the Freenode IRC network in the #mcdevs channel.
+Huin is no longer actively developing Chunky Monkey. People are welcome to take
+it over with a fork.
 
 
 Requirements
@@ -75,15 +57,22 @@ against the weekly releases (gofix might be able to fix such cases).
 Building & Testing
 ------------------
 
-[Godag][2] is used to build chunkymonkey. Install it, and run:
+Any of the binaries in the `cmd` subdirectory can be built with the standard
+`go` command, for example, the server can be compiles with:
 
-    $ make
+    $ go install github.com/huin/chunkymonkey/cmd/chunkymonkey
 
-If you are developing, you are encouraged to run the unit tests with:
+The mocks can be regenerated with:
 
-    $ make test
+    $ make clean mocks
 
-The unit tests require [GoMock][4] to be installed.
+The unit tests require [GoMock][3] to be installed:
+
+    $ go install code.google.com/p/gomock/mockgen
+
+The unit tests can be run with:
+
+    $ go test github.com/huin/chunkymonkey/...
 
 
 Running
@@ -91,7 +80,7 @@ Running
 
 Serve up a single player world:
 
-    $ bin/chunkymonkey ~/.minecraft/saves/World1
+    $ chunkymonkey ~/.minecraft/saves/World1
     2010/10/03 16:32:13 Listening on  :25565
 
 Record/replay
@@ -103,7 +92,7 @@ without having real people logging in.
 
 To record a session, run the intercept proxy:
 
-    $ bin/intercept -record player.log localhost:25567 localhost:25565
+    $ intercept -record player.log localhost:25567 localhost:25565
 
 Which will accept client connections on localhost port 25567 and relay the
 connection to the server at localhost port 25565. This has the side effect of
@@ -115,10 +104,9 @@ connection).
 
 To replay a session:
 
-    $ bin/replay localhost:25565 player.log-1
+    $ replay localhost:25565 player.log-1
 
 
 [1]: http://golang.org/doc/install.html          "Go toolchain installation"
-[2]: http://code.google.com/p/godag/wiki/Install "Godag builder"
-[3]: https://github.com/huin                     "Huin on Github"
-[4]: http://code.google.com/p/gomock/            "GoMock mocking library"
+[2]: https://github.com/huin                     "Huin on Github"
+[3]: http://code.google.com/p/gomock/            "GoMock mocking library"
