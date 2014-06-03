@@ -3,7 +3,7 @@ package chunkstore
 import (
 	"errors"
 
-	. "chunkymonkey/types"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 // MultiStore provides the ability to load a chunk from one or more potential

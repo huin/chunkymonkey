@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	. "chunkymonkey/types"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 func slotEq(s1, s2 *Slot) bool {

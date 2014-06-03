@@ -3,9 +3,9 @@ package shardserver
 import (
 	"io"
 
-	"chunkymonkey/gamerules"
-	"chunkymonkey/proto"
-	. "chunkymonkey/types"
+	"github.com/huin/chunkymonkey/gamerules"
+	"github.com/huin/chunkymonkey/proto"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 const (

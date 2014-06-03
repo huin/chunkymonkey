@@ -5,10 +5,10 @@ import (
 	"expvar"
 	"io"
 
-	"chunkymonkey/nbtutil"
-	"chunkymonkey/physics"
-	"chunkymonkey/proto"
-	. "chunkymonkey/types"
+	"github.com/huin/chunkymonkey/nbtutil"
+	"github.com/huin/chunkymonkey/physics"
+	"github.com/huin/chunkymonkey/proto"
+	. "github.com/huin/chunkymonkey/types"
 	"github.com/huin/chunkymonkey/nbt"
 )
 

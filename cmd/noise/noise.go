@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	. "chunkymonkey/generation"
+	. "github.com/huin/chunkymonkey/generation"
 	"perlin"
 )
 

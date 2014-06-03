@@ -1,9 +1,9 @@
 package player
 
 import (
-	"chunkymonkey/gamerules"
-	"chunkymonkey/proto"
-	. "chunkymonkey/types"
+	"github.com/huin/chunkymonkey/gamerules"
+	"github.com/huin/chunkymonkey/proto"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 type RemoteInventory struct {

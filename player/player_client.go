@@ -2,9 +2,9 @@ package player
 
 import (
 	"bytes"
-	"chunkymonkey/gamerules"
-	"chunkymonkey/proto"
-	. "chunkymonkey/types"
+	"github.com/huin/chunkymonkey/gamerules"
+	"github.com/huin/chunkymonkey/proto"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 // playerClient presents a thread-safe interface for interacting with a Player

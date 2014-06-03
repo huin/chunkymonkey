@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	. "chunkymonkey/types"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 const twoBlocks = ("{\n" +

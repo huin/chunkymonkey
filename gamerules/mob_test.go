@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"chunkymonkey/types"
+	"github.com/huin/chunkymonkey/types"
 	te "testencoding"
 )
 

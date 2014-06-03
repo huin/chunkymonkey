@@ -1,9 +1,9 @@
 package generation
 
 import (
-	"chunkymonkey/chunkstore"
-	"chunkymonkey/gamerules"
-	. "chunkymonkey/types"
+	"github.com/huin/chunkymonkey/chunkstore"
+	"github.com/huin/chunkymonkey/gamerules"
+	. "github.com/huin/chunkymonkey/types"
 	"errors"
 	"math/rand"
 	"github.com/huin/chunkymonkey/nbt"

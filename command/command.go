@@ -1,7 +1,7 @@
 package command
 
 import (
-	"chunkymonkey/gamerules"
+	"github.com/huin/chunkymonkey/gamerules"
 )
 
 // A CommandCallback takes the name of the player invoking the command, any

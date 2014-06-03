@@ -4,8 +4,8 @@ import (
 	"errors"
 	"io"
 
-	"chunkymonkey/proto"
-	. "chunkymonkey/types"
+	"github.com/huin/chunkymonkey/proto"
+	. "github.com/huin/chunkymonkey/types"
 	"github.com/huin/chunkymonkey/nbt"
 )
 

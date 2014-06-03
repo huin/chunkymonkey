@@ -1,7 +1,7 @@
 package shardserver
 
 import (
-	. "chunkymonkey/types"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 // iShardRequest represents a request for the ChunkShard to perform.

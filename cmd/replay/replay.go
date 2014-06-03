@@ -7,7 +7,7 @@ import (
 	"net"
 	"os"
 
-	"chunkymonkey/record"
+	"github.com/huin/chunkymonkey/record"
 )
 
 func usage() {

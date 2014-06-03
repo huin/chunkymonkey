@@ -10,8 +10,8 @@ import (
 	"os"
 
 	"chunkymonkey"
-	"chunkymonkey/gamerules"
-	"chunkymonkey/worldstore"
+	"github.com/huin/chunkymonkey/gamerules"
+	"github.com/huin/chunkymonkey/worldstore"
 )
 
 var addr = flag.String(

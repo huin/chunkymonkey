@@ -3,7 +3,7 @@ package chunkstore
 import (
 	"log"
 
-	. "chunkymonkey/types"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 type readRequest struct {

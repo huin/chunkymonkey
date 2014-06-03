@@ -6,7 +6,7 @@ import (
 	"os"
 	"strconv"
 
-	. "chunkymonkey/types"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 func LoadItemDefs(reader io.Reader) (items ItemTypeMap, err error) {

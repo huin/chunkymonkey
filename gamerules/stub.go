@@ -1,8 +1,8 @@
 package gamerules
 
 import (
-	"chunkymonkey/proto"
-	. "chunkymonkey/types"
+	"github.com/huin/chunkymonkey/proto"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 // IShardConnecter is used to look up shards and connect to them.

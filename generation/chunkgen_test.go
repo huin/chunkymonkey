@@ -3,7 +3,7 @@ package generation
 import (
 	"testing"
 
-	. "chunkymonkey/types"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 func Benchmark_TestGenerator_generate(b *testing.B) {

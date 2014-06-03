@@ -4,9 +4,9 @@ import (
 	"io"
 	"math"
 
-	"chunkymonkey/nbtutil"
-	"chunkymonkey/proto"
-	. "chunkymonkey/types"
+	"github.com/huin/chunkymonkey/nbtutil"
+	"github.com/huin/chunkymonkey/proto"
+	. "github.com/huin/chunkymonkey/types"
 	"github.com/huin/chunkymonkey/nbt"
 )
 

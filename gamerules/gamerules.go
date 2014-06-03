@@ -1,7 +1,7 @@
 package gamerules
 
 import (
-	"chunkymonkey/permission"
+	"github.com/huin/chunkymonkey/permission"
 )
 
 // GameRules is a container type for block, item and recipe definitions.

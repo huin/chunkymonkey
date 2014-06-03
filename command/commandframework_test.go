@@ -5,7 +5,7 @@ import (
 
 	"code.google.com/p/gomock/gomock"
 
-	"chunkymonkey/gamerules"
+	"github.com/huin/chunkymonkey/gamerules"
 	"testmatcher"
 )
 

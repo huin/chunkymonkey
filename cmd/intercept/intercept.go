@@ -8,7 +8,7 @@ import (
 	"net"
 	"os"
 
-	"chunkymonkey/record"
+	"github.com/huin/chunkymonkey/record"
 )
 
 var recordBase = flag.String(

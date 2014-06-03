@@ -7,10 +7,10 @@ import (
 	"math/rand"
 	"time"
 
-	"chunkymonkey/chunkstore"
-	"chunkymonkey/gamerules"
-	"chunkymonkey/proto"
-	. "chunkymonkey/types"
+	"github.com/huin/chunkymonkey/chunkstore"
+	"github.com/huin/chunkymonkey/gamerules"
+	"github.com/huin/chunkymonkey/proto"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 // A chunk is slice of the world map.

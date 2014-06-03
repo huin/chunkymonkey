@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	. "chunkymonkey/types"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 // FurnaceData contains data on furnace reactions.

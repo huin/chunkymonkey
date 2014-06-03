@@ -1,8 +1,8 @@
 package shardserver
 
 import (
-	"chunkymonkey/gamerules"
-	. "chunkymonkey/types"
+	"github.com/huin/chunkymonkey/gamerules"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 // localPlayerShardClient implements IPlayerShardClient for LocalShardManager.

@@ -3,7 +3,7 @@ package entity
 import (
 	"sync"
 
-	. "chunkymonkey/types"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 type EntityManager struct {

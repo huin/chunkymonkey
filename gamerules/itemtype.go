@@ -1,7 +1,7 @@
 package gamerules
 
 import (
-	. "chunkymonkey/types"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 const (

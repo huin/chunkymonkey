@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	. "chunkymonkey/types"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 // Tests that the chunk locations are all within expected bounds, and that all

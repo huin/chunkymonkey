@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"chunkymonkey/gamerules"
+	"github.com/huin/chunkymonkey/gamerules"
 )
 
 func dumpBlocks(filename string) (err error) {

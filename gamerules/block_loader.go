@@ -8,7 +8,7 @@ import (
 	"os"
 	"strconv"
 
-	. "chunkymonkey/types"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 type aspectMakerFn func() (aspect IBlockAspect)

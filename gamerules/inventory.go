@@ -1,8 +1,8 @@
 package gamerules
 
 import (
-	"chunkymonkey/proto"
-	. "chunkymonkey/types"
+	"github.com/huin/chunkymonkey/proto"
+	. "github.com/huin/chunkymonkey/types"
 	"errors"
 	"github.com/huin/chunkymonkey/nbt"
 )

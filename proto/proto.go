@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"unicode/utf8"
 
-	. "chunkymonkey/types"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 const (

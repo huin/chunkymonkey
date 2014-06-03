@@ -3,10 +3,10 @@ package shardserver
 import (
 	"sync"
 
-	"chunkymonkey/chunkstore"
-	"chunkymonkey/entity"
-	"chunkymonkey/gamerules"
-	. "chunkymonkey/types"
+	"github.com/huin/chunkymonkey/chunkstore"
+	"github.com/huin/chunkymonkey/entity"
+	"github.com/huin/chunkymonkey/gamerules"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 // LocalShardManager contains all chunk shards and can look them up. It

@@ -4,7 +4,7 @@ package nbtutil
 import (
 	"fmt"
 
-	. "chunkymonkey/types"
+	. "github.com/huin/chunkymonkey/types"
 	"github.com/huin/chunkymonkey/nbt"
 )
 

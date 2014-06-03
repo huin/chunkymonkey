@@ -5,8 +5,8 @@ import (
 	"io"
 	"log"
 
-	"chunkymonkey/proto"
-	. "chunkymonkey/types"
+	"github.com/huin/chunkymonkey/proto"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 // Hex dumps the input to the log

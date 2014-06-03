@@ -1,9 +1,9 @@
 package gamerules
 
 import (
-	"chunkymonkey/physics"
-	"chunkymonkey/proto"
-	. "chunkymonkey/types"
+	"github.com/huin/chunkymonkey/physics"
+	"github.com/huin/chunkymonkey/proto"
+	. "github.com/huin/chunkymonkey/types"
 	"errors"
 	"io"
 	"github.com/huin/chunkymonkey/nbt"

@@ -7,8 +7,8 @@ import (
 	"os"
 	"path"
 
-	. "chunkymonkey/types"
-	"chunkymonkey/util"
+	. "github.com/huin/chunkymonkey/types"
+	"github.com/huin/chunkymonkey/util"
 	"github.com/huin/chunkymonkey/nbt"
 )
 

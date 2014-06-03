@@ -4,8 +4,8 @@ import (
 	"io"
 	"log"
 
-	"chunkymonkey/gamerules"
-	. "chunkymonkey/types"
+	"github.com/huin/chunkymonkey/gamerules"
+	. "github.com/huin/chunkymonkey/types"
 	"github.com/huin/chunkymonkey/nbt"
 )
 

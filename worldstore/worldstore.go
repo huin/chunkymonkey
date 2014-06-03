@@ -12,9 +12,9 @@ import (
 	"path"
 	"time"
 
-	"chunkymonkey/chunkstore"
-	"chunkymonkey/generation"
-	. "chunkymonkey/types"
+	"github.com/huin/chunkymonkey/chunkstore"
+	"github.com/huin/chunkymonkey/generation"
+	. "github.com/huin/chunkymonkey/types"
 	"github.com/huin/chunkymonkey/nbt"
 )
 

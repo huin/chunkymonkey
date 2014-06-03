@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"chunkymonkey/gamerules"
+	"github.com/huin/chunkymonkey/gamerules"
 )
 
 var blockDefs = flag.String(

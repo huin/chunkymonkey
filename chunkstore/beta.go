@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	. "chunkymonkey/types"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 const (

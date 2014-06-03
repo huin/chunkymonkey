@@ -6,8 +6,8 @@ package gamerules
 import (
 	"io"
 
-	"chunkymonkey/physics"
-	. "chunkymonkey/types"
+	"github.com/huin/chunkymonkey/physics"
+	. "github.com/huin/chunkymonkey/types"
 	"github.com/huin/chunkymonkey/nbt"
 )
 

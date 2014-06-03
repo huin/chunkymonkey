@@ -1,8 +1,8 @@
 package gamerules
 
 import (
-	"chunkymonkey/nbtutil"
-	. "chunkymonkey/types"
+	"github.com/huin/chunkymonkey/nbtutil"
+	. "github.com/huin/chunkymonkey/types"
 	"github.com/huin/chunkymonkey/nbt"
 )
 

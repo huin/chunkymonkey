@@ -3,7 +3,7 @@ package gamerules
 import (
 	"fmt"
 
-	. "chunkymonkey/types"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 func makeStandardAspect() (aspect IBlockAspect) {

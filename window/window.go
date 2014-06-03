@@ -5,9 +5,9 @@ import (
 	"bytes"
 	"io"
 
-	"chunkymonkey/gamerules"
-	"chunkymonkey/proto"
-	. "chunkymonkey/types"
+	"github.com/huin/chunkymonkey/gamerules"
+	"github.com/huin/chunkymonkey/proto"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 // IInventory is the interface that windows require of inventories.

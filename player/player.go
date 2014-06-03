@@ -12,12 +12,12 @@ import (
 	"sync"
 	"time"
 
-	"chunkymonkey/gamerules"
-	"chunkymonkey/nbtutil"
-	"chunkymonkey/physics"
-	"chunkymonkey/proto"
-	. "chunkymonkey/types"
-	"chunkymonkey/window"
+	"github.com/huin/chunkymonkey/gamerules"
+	"github.com/huin/chunkymonkey/nbtutil"
+	"github.com/huin/chunkymonkey/physics"
+	"github.com/huin/chunkymonkey/proto"
+	. "github.com/huin/chunkymonkey/types"
+	"github.com/huin/chunkymonkey/window"
 	"github.com/huin/chunkymonkey/nbt"
 )
 

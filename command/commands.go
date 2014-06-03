@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"chunkymonkey/gamerules"
-	. "chunkymonkey/types"
+	"github.com/huin/chunkymonkey/gamerules"
+	. "github.com/huin/chunkymonkey/types"
 	"log"
 )
 

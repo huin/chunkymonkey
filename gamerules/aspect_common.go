@@ -3,7 +3,7 @@ package gamerules
 import (
 	"fmt"
 
-	. "chunkymonkey/types"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 // spawnItemInBlock creates an item in a block. It must be run within

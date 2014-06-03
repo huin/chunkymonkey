@@ -3,7 +3,7 @@ package gamerules
 import (
 	"math/rand"
 
-	. "chunkymonkey/types"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 // The distance from the edge of a block that items spawn at in fractional

@@ -6,7 +6,7 @@ import (
 
 	gomock "code.google.com/p/gomock/gomock"
 
-	. "chunkymonkey/types"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 func almostEqual(v1, v2 float64) bool {

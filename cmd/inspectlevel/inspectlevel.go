@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	. "chunkymonkey/types"
-	"chunkymonkey/worldstore"
+	. "github.com/huin/chunkymonkey/types"
+	"github.com/huin/chunkymonkey/worldstore"
 	"github.com/huin/chunkymonkey/nbt"
 )
 

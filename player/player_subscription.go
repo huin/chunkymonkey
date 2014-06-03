@@ -3,8 +3,8 @@ package player
 import (
 	"log"
 
-	"chunkymonkey/gamerules"
-	. "chunkymonkey/types"
+	"github.com/huin/chunkymonkey/gamerules"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 // shardRef holds a reference to a shard connection and context for the number

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"chunkymonkey/gamerules"
+	"github.com/huin/chunkymonkey/gamerules"
 )
 
 var ErrCmdExists = errors.New("The command already exists.")

@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"testing"
 
-	. "chunkymonkey/types"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 const (
