@@ -9,7 +9,9 @@ Chunky Monkey is a Minecraft Beta multiplayer server.  It is licensed under
 the MIT open source license, please see the LICENSE file for more information.
 
 Website: http://github.com/huin/chunkymonkey
+
 Mailing list: https://groups.google.com/group/chunkymonkey-minecraft
+
 Contact: [John Beisley][2]
 
 Status
