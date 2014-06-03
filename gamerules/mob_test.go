@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"testing"
 
+	te "github.com/huin/chunkymonkey/testencoding"
 	"github.com/huin/chunkymonkey/types"
-	te "testencoding"
 )
 
 type testCase struct {

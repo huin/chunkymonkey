@@ -6,7 +6,7 @@ import (
 	"code.google.com/p/gomock/gomock"
 
 	"github.com/huin/chunkymonkey/gamerules"
-	"testmatcher"
+	"github.com/huin/chunkymonkey/testmatcher"
 )
 
 func TestCommandFramework(t *testing.T) {

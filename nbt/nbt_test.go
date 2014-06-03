@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	te "testencoding"
+	te "github.com/huin/chunkymonkey/testencoding"
 )
 
 type Test struct {
