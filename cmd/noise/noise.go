@@ -2,13 +2,13 @@ package main
 
 import (
 	"image"
-	"image/png"
 	"image/color"
+	"image/png"
 	"log"
 	"os"
 
 	. "github.com/huin/chunkymonkey/generation"
-	"perlin"
+	"github.com/huin/chunkymonkey/perlin"
 )
 
 type Stat struct {

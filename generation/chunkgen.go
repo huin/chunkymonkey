@@ -1,14 +1,15 @@
 package generation
 
 import (
-	"github.com/huin/chunkymonkey/chunkstore"
-	"github.com/huin/chunkymonkey/gamerules"
-	. "github.com/huin/chunkymonkey/types"
 	"errors"
 	"math/rand"
-	"github.com/huin/chunkymonkey/nbt"
-	"perlin"
 	"time"
+
+	"github.com/huin/chunkymonkey/chunkstore"
+	"github.com/huin/chunkymonkey/gamerules"
+	"github.com/huin/chunkymonkey/nbt"
+	"github.com/huin/chunkymonkey/perlin"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 const SeaLevel = 63

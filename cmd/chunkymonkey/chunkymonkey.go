@@ -9,7 +9,7 @@ import (
 	_ "net/http/pprof"
 	"os"
 
-	"chunkymonkey"
+	"github.com/huin/chunkymonkey/game"
 	"github.com/huin/chunkymonkey/gamerules"
 	"github.com/huin/chunkymonkey/worldstore"
 )
