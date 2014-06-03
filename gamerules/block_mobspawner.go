@@ -1,9 +1,9 @@
 package gamerules
 
 import (
-	. "github.com/huin/chunkymonkey/types"
 	"errors"
 	"github.com/huin/chunkymonkey/nbt"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 func makeMobSpawnerAspect() (aspect IBlockAspect) {

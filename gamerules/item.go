@@ -1,12 +1,12 @@
 package gamerules
 
 import (
+	"errors"
+	"github.com/huin/chunkymonkey/nbt"
 	"github.com/huin/chunkymonkey/physics"
 	"github.com/huin/chunkymonkey/proto"
 	. "github.com/huin/chunkymonkey/types"
-	"errors"
 	"io"
-	"github.com/huin/chunkymonkey/nbt"
 )
 
 type Item struct {

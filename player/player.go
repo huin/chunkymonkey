@@ -13,12 +13,12 @@ import (
 	"time"
 
 	"github.com/huin/chunkymonkey/gamerules"
+	"github.com/huin/chunkymonkey/nbt"
 	"github.com/huin/chunkymonkey/nbtutil"
 	"github.com/huin/chunkymonkey/physics"
 	"github.com/huin/chunkymonkey/proto"
 	. "github.com/huin/chunkymonkey/types"
 	"github.com/huin/chunkymonkey/window"
-	"github.com/huin/chunkymonkey/nbt"
 )
 
 var (

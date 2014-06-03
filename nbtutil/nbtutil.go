@@ -4,8 +4,8 @@ package nbtutil
 import (
 	"fmt"
 
-	. "github.com/huin/chunkymonkey/types"
 	"github.com/huin/chunkymonkey/nbt"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 func ReadFloat2(tag nbt.ITag, path string) (x, y float32, err error) {

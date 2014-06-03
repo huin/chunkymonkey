@@ -4,9 +4,9 @@ import (
 	"errors"
 	"io"
 
+	"github.com/huin/chunkymonkey/nbt"
 	"github.com/huin/chunkymonkey/proto"
 	. "github.com/huin/chunkymonkey/types"
-	"github.com/huin/chunkymonkey/nbt"
 )
 
 // Represents an inventory slot, e.g in a player's inventory, their cursor, a

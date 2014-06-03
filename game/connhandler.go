@@ -8,13 +8,13 @@ import (
 
 	. "github.com/huin/chunkymonkey/entity"
 	"github.com/huin/chunkymonkey/gamerules"
+	"github.com/huin/chunkymonkey/nbt"
 	"github.com/huin/chunkymonkey/player"
 	"github.com/huin/chunkymonkey/proto"
 	"github.com/huin/chunkymonkey/server_auth"
 	"github.com/huin/chunkymonkey/shardserver"
 	. "github.com/huin/chunkymonkey/types"
 	"github.com/huin/chunkymonkey/worldstore"
-	"github.com/huin/chunkymonkey/nbt"
 )
 
 // TODO Refactor this more simply after a good re-working of the chunkymonkey/proto package.

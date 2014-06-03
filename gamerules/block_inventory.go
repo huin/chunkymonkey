@@ -1,8 +1,8 @@
 package gamerules
 
 import (
-	. "github.com/huin/chunkymonkey/types"
 	"github.com/huin/chunkymonkey/nbt"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 // blockInventory is the data stored in Chunk.SetTileEntity by some block

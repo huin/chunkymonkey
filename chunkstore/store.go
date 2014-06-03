@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/huin/chunkymonkey/gamerules"
-	. "github.com/huin/chunkymonkey/types"
 	"github.com/huin/chunkymonkey/nbt"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 type ChunkReadResult struct {

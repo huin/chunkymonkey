@@ -5,8 +5,8 @@ import (
 	"log"
 
 	"github.com/huin/chunkymonkey/gamerules"
-	. "github.com/huin/chunkymonkey/types"
 	"github.com/huin/chunkymonkey/nbt"
+	. "github.com/huin/chunkymonkey/types"
 )
 
 // Returned to chunks to pull their data from.

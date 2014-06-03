@@ -7,9 +7,9 @@ import (
 	"os"
 	"path"
 
+	"github.com/huin/chunkymonkey/nbt"
 	. "github.com/huin/chunkymonkey/types"
 	"github.com/huin/chunkymonkey/util"
-	"github.com/huin/chunkymonkey/nbt"
 )
 
 type chunkStoreAlpha struct {

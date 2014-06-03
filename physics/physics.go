@@ -4,10 +4,10 @@ import (
 	"io"
 	"math"
 
+	"github.com/huin/chunkymonkey/nbt"
 	"github.com/huin/chunkymonkey/nbtutil"
 	"github.com/huin/chunkymonkey/proto"
 	. "github.com/huin/chunkymonkey/types"
-	"github.com/huin/chunkymonkey/nbt"
 )
 
 const (

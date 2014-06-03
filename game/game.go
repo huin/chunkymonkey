@@ -12,13 +12,13 @@ import (
 	"github.com/huin/chunkymonkey/command"
 	. "github.com/huin/chunkymonkey/entity"
 	"github.com/huin/chunkymonkey/gamerules"
+	"github.com/huin/chunkymonkey/nbt"
 	"github.com/huin/chunkymonkey/player"
 	"github.com/huin/chunkymonkey/proto"
 	"github.com/huin/chunkymonkey/server_auth"
 	"github.com/huin/chunkymonkey/shardserver"
 	. "github.com/huin/chunkymonkey/types"
 	"github.com/huin/chunkymonkey/worldstore"
-	"github.com/huin/chunkymonkey/nbt"
 )
 
 // We regard usernames as valid if they don't contain "dangerous" characters.

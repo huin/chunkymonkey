@@ -6,9 +6,9 @@ package gamerules
 import (
 	"io"
 
+	"github.com/huin/chunkymonkey/nbt"
 	"github.com/huin/chunkymonkey/physics"
 	. "github.com/huin/chunkymonkey/types"
-	"github.com/huin/chunkymonkey/nbt"
 )
 
 // INbtSerializable is the interface for all objects that can be serialized to

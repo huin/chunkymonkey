@@ -32,10 +32,10 @@ package nbt
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
-	"errors"
 )
 
 // ITag is the interface for all tags that can be represented in an NBT tree.

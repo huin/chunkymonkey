@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/huin/chunkymonkey/nbt"
 	. "github.com/huin/chunkymonkey/types"
 	"github.com/huin/chunkymonkey/worldstore"
-	"github.com/huin/chunkymonkey/nbt"
 )
 
 func displayNbt(indentCount int, tag nbt.ITag) {

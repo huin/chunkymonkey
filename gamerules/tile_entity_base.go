@@ -1,9 +1,9 @@
 package gamerules
 
 import (
+	"github.com/huin/chunkymonkey/nbt"
 	"github.com/huin/chunkymonkey/nbtutil"
 	. "github.com/huin/chunkymonkey/types"
-	"github.com/huin/chunkymonkey/nbt"
 )
 
 type tileEntity struct {
